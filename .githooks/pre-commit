@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+# Redirect output to stderr.
+exec 1>&2
+
+which 'ktlint' >/dev/null || brew install ktlint
+
+files_to_format="$(git diff --name-only --cached --relative -- '*.kt' '*.kts')"
+if [[ -z "$files_to_format" ]]; then
+  exit 0
+fi
+
+if [[ -z "$files_to_format" ]]; then
+  exit 0
+fi
+
+echo "Formatting kotlin files..."
+
+# keep a copy of any unstaged files
+git diff > unstaged.diff
+git apply --allow-empty -R unstaged.diff
+
+on_exit() {
+  # re-apply the unstaged files
+  git apply --allow-empty unstaged.diff
+  rm unstaged.diff
+  exit 0
+}
+trap 'on_exit' EXIT
+
+# if formatting fails, don't fail the commit
+echo "$files_to_format" | tr '\n' '\0' | ktlint -F --relative --patterns-from-stdin=''
+
+# Stage the formatted files so they can be committed
+while IFS= read -r file; do
+  git add "$file"
+done <<< "$files_to_format"
