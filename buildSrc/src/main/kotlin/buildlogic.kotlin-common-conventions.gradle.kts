@@ -1,4 +1,3 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 /*
@@ -20,12 +19,11 @@ repositories {
 }
 
 dependencies {
-    testImplementation(libs.strikt.core)
-    testFixturesImplementation(libs.strikt.core)
-    testImplementation(libs.junit.jupiter)
-    testFixturesImplementation(libs.junit.jupiter)
-    testImplementation(libs.jqwik.kotlin)
-    testFixturesImplementation(libs.jqwik.kotlin)
+    implementation(platform(libs.http4k.bom))
+    implementation(libs.result4k)
+    testFixturesApi(libs.strikt.core)
+    testFixturesApi(libs.junit.jupiter)
+    testFixturesApi(libs.jqwik.kotlin)
     testRuntimeOnly(libs.junit.platform.launcher)
     compileOnly("org.jetbrains:annotations:23.0.0")
 }
@@ -39,14 +37,15 @@ java {
 
 tasks.named<Test>("test") {
     useJUnitPlatform()
+    systemProperty("junit.jupiter.execution.timeout.test.method.default", "2s")
+    systemProperty("junit.jupiter.execution.timeout.mode", "disabled_on_debug")
 }
 
-tasks.withType<KotlinCompile> {
+tasks.withType(KotlinCompile::class).all {
     compilerOptions {
-        freeCompilerArgs = listOf(
-            "-Xnullability-annotations=@org.jspecify.annotations:strict",
-            "-Xemit-jvm-type-annotations",
-        )
+        freeCompilerArgs.add("-Xcontext-receivers")
+        freeCompilerArgs.add("-Xnullability-annotations=@org.jspecify.annotations:strict")
+        freeCompilerArgs.add("-Xemit-jvm-type-annotations")
         javaParameters = true
     }
 }

@@ -11,4 +11,4 @@ plugins {
 }
 
 rootProject.name = "skull-king"
-include("application")
+include("application", "adapter-web")
