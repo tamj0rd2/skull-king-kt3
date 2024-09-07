@@ -1,28 +1,24 @@
 package com.tamj0rd2.skullking.port.input
 
+import com.tamj0rd2.skullking.ApplicationDriver
 import com.tamj0rd2.skullking.domain.model.GameId
-import com.tamj0rd2.skullking.domain.model.PlayerId
-import com.tamj0rd2.skullking.domain.model.PlayerJoined
 import com.tamj0rd2.skullking.port.input.JoinGameUseCase.JoinGameCommand
-import com.tamj0rd2.skullking.port.output.GameEventsPort
-import dev.forkhandles.values.ZERO
+import com.tamj0rd2.skullking.port.input.ViewPlayerGameStateUseCase.ViewPlayerGameStateQuery
 import dev.forkhandles.values.random
 import org.junit.jupiter.api.Test
 import strikt.api.expectThat
-import strikt.assertions.isEqualTo
-import strikt.assertions.isNotEqualTo
+import strikt.assertions.contains
 
 abstract class JoinGameUseCaseContract {
-    protected abstract val gameEventsPort: GameEventsPort
-    protected abstract val useCase: JoinGameUseCase
+    protected abstract val driver: ApplicationDriver
 
     @Test
     fun `can join a game`() {
         val gameId = GameId.random()
 
-        val output = useCase(JoinGameCommand(gameId))
+        val playerId = driver(JoinGameCommand(gameId)).playerId
+        val gameState = driver(ViewPlayerGameStateQuery(gameId, playerId))
 
-        expectThat(output.playerId).isNotEqualTo(PlayerId.ZERO)
-        expectThat(gameEventsPort.find(gameId)).isEqualTo(listOf(PlayerJoined(gameId, output.playerId)))
+        expectThat(gameState.players).contains(playerId)
     }
 }
