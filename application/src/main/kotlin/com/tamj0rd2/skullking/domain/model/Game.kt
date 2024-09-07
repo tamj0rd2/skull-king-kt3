@@ -9,11 +9,14 @@ value class GameId private constructor(override val value: UUID): Value<UUID> {
     companion object : UUIDValueFactory<GameId>(::GameId)
 }
 
-sealed interface GameEvent {
-    val gameId: GameId
-}
+data class Game private constructor(
+    val id: GameId,
+    val players: List<PlayerId>
+) {
+    companion object {
+        fun new(id: GameId): Game = Game(id, emptyList())
+    }
 
-data class PlayerJoined(
-    override val gameId: GameId,
-    val playerId: PlayerId,
-): GameEvent
+    fun addPlayer(playerId: PlayerId): Game =
+        copy(players = players + playerId)
+}

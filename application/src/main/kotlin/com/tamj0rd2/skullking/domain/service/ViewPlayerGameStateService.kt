@@ -1,24 +1,11 @@
 package com.tamj0rd2.skullking.domain.service
 
-import com.tamj0rd2.skullking.domain.model.GameId
-import com.tamj0rd2.skullking.domain.model.PlayerId
+import com.tamj0rd2.skullking.domain.model.Game
 import com.tamj0rd2.skullking.domain.model.PlayerJoined
 import com.tamj0rd2.skullking.port.input.ViewPlayerGameStateOutput
 import com.tamj0rd2.skullking.port.input.ViewPlayerGameStateQuery
 import com.tamj0rd2.skullking.port.input.ViewPlayerGameStateUseCase
 import com.tamj0rd2.skullking.port.output.GameEventsPort
-
-data class Game private constructor(
-    val id: GameId,
-    val players: List<PlayerId>
-) {
-    companion object {
-        fun new(id: GameId): Game = Game(id, emptyList())
-    }
-
-    fun addPlayer(playerId: PlayerId): Game =
-        copy(players = players + playerId)
-}
 
 class ViewPlayerGameStateService(
     private val gameEventsPort: GameEventsPort
