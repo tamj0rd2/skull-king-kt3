@@ -11,6 +11,7 @@ val libs = the<org.gradle.accessors.dm.LibrariesForLibs>()
 plugins {
     // Apply the org.jetbrains.kotlin.jvm Plugin to add support for Kotlin.
     id("org.jetbrains.kotlin.jvm")
+    `java-test-fixtures`
 }
 
 repositories {
@@ -20,8 +21,11 @@ repositories {
 
 dependencies {
     testImplementation(libs.strikt.core)
+    testFixturesImplementation(libs.strikt.core)
     testImplementation(libs.junit.jupiter)
+    testFixturesImplementation(libs.junit.jupiter)
     testImplementation(libs.jqwik.kotlin)
+    testFixturesImplementation(libs.jqwik.kotlin)
     testRuntimeOnly(libs.junit.platform.launcher)
     compileOnly("org.jetbrains:annotations:23.0.0")
 }

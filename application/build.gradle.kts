@@ -3,5 +3,5 @@ plugins {
 }
 
 dependencies {
-    implementation(libs.values4k)
+    api(libs.values4k)
 }
