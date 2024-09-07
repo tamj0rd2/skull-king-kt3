@@ -7,4 +7,4 @@ sealed interface GameEvent {
 data class PlayerJoined(
     override val gameId: GameId,
     val playerId: PlayerId,
-): GameEvent
+) : GameEvent

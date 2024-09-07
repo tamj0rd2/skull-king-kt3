@@ -5,6 +5,8 @@ import dev.forkhandles.values.Value
 import java.util.UUID
 
 @JvmInline
-value class PlayerId private constructor(override val value: UUID): Value<UUID> {
+value class PlayerId private constructor(
+    override val value: UUID,
+) : Value<UUID> {
     companion object : UUIDValueFactory<PlayerId>(::PlayerId)
 }

@@ -13,5 +13,4 @@ interface JoinGameUseCase {
     data class JoinGameOutput(
         val playerId: PlayerId,
     )
-
 }

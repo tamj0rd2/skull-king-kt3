@@ -16,7 +16,6 @@ abstract class ViewPlayerGameStateUseCaseContract {
     protected abstract val gameEventsPort: GameEventsPort
     protected abstract val useCase: ViewPlayerGameStateUseCase
 
-
     // TODO: In this test alone, it's already slightly hard to follow who the actor etc is because there are a few players in the game.
     //  roles could help... And maybe also address the first issue above.
     @Test
@@ -27,12 +26,13 @@ abstract class ViewPlayerGameStateUseCaseContract {
 
         gameEventsPort.save(playersInTheGame.map { PlayerJoined(gameId, it) })
 
-        val gameState = useCase(
-            ViewPlayerGameStateQuery(
-                gameId = gameId,
-                playerId = thisPlayer
+        val gameState =
+            useCase(
+                ViewPlayerGameStateQuery(
+                    gameId = gameId,
+                    playerId = thisPlayer,
+                ),
             )
-        )
 
         expectThat(gameState) {
             get { players }.describedAs("players").isEqualTo(playersInTheGame)

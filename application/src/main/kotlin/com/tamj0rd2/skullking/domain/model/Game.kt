@@ -5,18 +5,19 @@ import dev.forkhandles.values.Value
 import java.util.UUID
 
 @JvmInline
-value class GameId private constructor(override val value: UUID): Value<UUID> {
+value class GameId private constructor(
+    override val value: UUID,
+) : Value<UUID> {
     companion object : UUIDValueFactory<GameId>(::GameId)
 }
 
 data class Game private constructor(
     val id: GameId,
-    val players: List<PlayerId>
+    val players: List<PlayerId>,
 ) {
     companion object {
         fun new(id: GameId): Game = Game(id, emptyList())
     }
 
-    fun addPlayer(playerId: PlayerId): Game =
-        copy(players = players + playerId)
+    fun addPlayer(playerId: PlayerId): Game = copy(players = players + playerId)
 }

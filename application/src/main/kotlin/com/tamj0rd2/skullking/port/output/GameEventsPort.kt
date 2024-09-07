@@ -5,6 +5,8 @@ import com.tamj0rd2.skullking.domain.model.GameId
 
 interface GameEventsPort {
     fun find(gameId: GameId): List<GameEvent>
+
     fun save(events: List<GameEvent>)
+
     fun save(vararg event: GameEvent) = save(event.toList())
 }

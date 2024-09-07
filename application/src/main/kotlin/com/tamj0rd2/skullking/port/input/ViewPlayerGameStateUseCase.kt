@@ -15,9 +15,11 @@ fun interface ViewPlayerGameStateUseCase {
         val players: List<PlayerId>,
     ) {
         companion object {
-            val empty get() = ViewPlayerGameStateOutput(
-                players = emptyList(),
-            )
+            val empty
+                get() =
+                    ViewPlayerGameStateOutput(
+                        players = emptyList(),
+                    )
         }
     }
 }
