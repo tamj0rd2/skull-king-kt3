@@ -6,5 +6,7 @@ import com.tamj0rd2.skullking.port.input.ViewPlayerGameStateUseCaseContract
 import com.tamj0rd2.skullking.port.output.GameEventsInMemoryAdapter
 
 class ViewPlayerGameStateServiceTest : ViewPlayerGameStateUseCaseContract() {
-    override val driver: ApplicationDriver = ApplicationDomainDriver(GameEventsInMemoryAdapter())
+    private val gameEventsPort = GameEventsInMemoryAdapter()
+
+    override fun newDriver(): ApplicationDriver = ApplicationDomainDriver(gameEventsPort)
 }
