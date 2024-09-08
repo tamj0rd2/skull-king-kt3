@@ -29,6 +29,10 @@ data class Game private constructor(
             }
         }
 
-        private fun new(id: GameId): Game = Game(id, emptyList())
+        private fun new(id: GameId): Game =
+            Game(
+                id = id,
+                players = emptyList(),
+            )
     }
 }
