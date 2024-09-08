@@ -3,7 +3,6 @@ package com.tamj0rd2.skullking.domain.model
 import com.tamj0rd2.skullking.port.output.GameEventsPort
 import dev.forkhandles.values.UUIDValueFactory
 import dev.forkhandles.values.Value
-import dev.forkhandles.values.random
 import java.util.UUID
 
 @JvmInline
@@ -31,10 +30,11 @@ data class Game private constructor(
         }
 
         context(GameEventsPort)
-        internal fun join(gameId: GameId): PlayerId {
-            val playerId = PlayerId.random()
+        internal fun addPlayer(
+            gameId: GameId,
+            playerId: PlayerId,
+        ) {
             saveGameEvents(listOf(PlayerJoined(gameId, playerId)))
-            return playerId
         }
 
         private fun new(id: GameId): Game =
