@@ -7,6 +7,4 @@ interface GameEventsPort {
     fun findGameEvents(gameId: GameId): List<GameEvent>
 
     fun saveGameEvents(events: List<GameEvent>)
-
-    fun saveGameEvents(vararg event: GameEvent) = saveGameEvents(event.toList())
 }

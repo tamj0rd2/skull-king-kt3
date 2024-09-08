@@ -33,7 +33,7 @@ data class Game private constructor(
         context(GameEventsPort)
         fun join(gameId: GameId): PlayerId {
             val playerId = PlayerId.random()
-            saveGameEvents(PlayerJoined(gameId, playerId))
+            saveGameEvents(listOf(PlayerJoined(gameId, playerId)))
             return playerId
         }
 
