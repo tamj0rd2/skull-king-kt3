@@ -6,7 +6,7 @@ import com.tamj0rd2.skullking.domain.model.GameId
 class GameEventsInMemoryAdapter : GameEventsPort {
     private val savedEvents = mutableMapOf<GameId, List<GameEvent>>()
 
-    override fun findGameEvents(gameId: GameId): List<GameEvent> = savedEvents.getValue(gameId)
+    override fun findGameEvents(gameId: GameId): List<GameEvent> = savedEvents.getOrDefault(gameId, emptyList())
 
     override fun saveGameEvents(events: List<GameEvent>) {
         events.forEach {
