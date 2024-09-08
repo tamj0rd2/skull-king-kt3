@@ -11,8 +11,6 @@ value class GameId private constructor(
     override val value: UUID,
 ) : Value<UUID> {
     companion object : UUIDValueFactory<GameId>(::GameId)
-
-    fun externalForm() = GameId.show(this)
 }
 
 data class Game private constructor(

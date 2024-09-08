@@ -40,7 +40,7 @@ class ApplicationWebDriver(
         val countDownLatch = CountDownLatch(2)
         val ws =
             SuperSocket.nonBlocking(
-                baseUri.path("/join/${gameId.externalForm()}"),
+                baseUri.path("/join/${GameId.show(gameId)}"),
                 timeout = Duration.ofSeconds(5),
             ) { countDownLatch.countDown() }
 
