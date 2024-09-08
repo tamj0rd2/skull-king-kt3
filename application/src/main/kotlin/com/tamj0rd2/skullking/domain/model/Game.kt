@@ -21,7 +21,7 @@ data class Game private constructor(
 ) {
     companion object {
         context(GameEventsPort)
-        fun load(id: GameId): Game {
+        internal fun load(id: GameId): Game {
             val eventsForThisGame = findGameEvents(id)
             return eventsForThisGame.fold(new(id)) { game, event ->
                 when (event) {
@@ -31,7 +31,7 @@ data class Game private constructor(
         }
 
         context(GameEventsPort)
-        fun join(gameId: GameId): PlayerId {
+        internal fun join(gameId: GameId): PlayerId {
             val playerId = PlayerId.random()
             saveGameEvents(listOf(PlayerJoined(gameId, playerId)))
             return playerId
