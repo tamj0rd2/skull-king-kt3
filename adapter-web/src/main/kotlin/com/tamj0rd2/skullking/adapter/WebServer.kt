@@ -80,11 +80,11 @@ object WebServer {
 }
 
 class GameEventsDummyAdapter : GameEventsPort {
-    override fun find(gameId: GameId): List<GameEvent> {
+    override fun findGameEvents(gameId: GameId): List<GameEvent> {
         TODO("Not yet implemented")
     }
 
-    override fun save(events: List<GameEvent>) {
+    override fun saveGameEvents(events: List<GameEvent>) {
         TODO("Not yet implemented")
     }
 }
