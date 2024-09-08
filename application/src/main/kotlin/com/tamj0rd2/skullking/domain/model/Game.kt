@@ -13,6 +13,8 @@ value class GameId private constructor(
     companion object : UUIDValueFactory<GameId>(::GameId)
 }
 
+@Suppress("CONTEXT_RECEIVERS_DEPRECATED") // When contextParameters are available, I'll migrate.
+@ConsistentCopyVisibility
 data class Game private constructor(
     val id: GameId,
     val players: List<PlayerId>,
