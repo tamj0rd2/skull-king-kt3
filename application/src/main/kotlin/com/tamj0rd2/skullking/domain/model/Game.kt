@@ -1,5 +1,6 @@
 package com.tamj0rd2.skullking.domain.model
 
+import com.tamj0rd2.skullking.port.output.GameEventsPort
 import dev.forkhandles.values.UUIDValueFactory
 import dev.forkhandles.values.Value
 import java.util.UUID
@@ -18,8 +19,16 @@ data class Game private constructor(
     val players: List<PlayerId>,
 ) {
     companion object {
-        fun new(id: GameId): Game = Game(id, emptyList())
-    }
+        context(GameEventsPort)
+        fun load(id: GameId): Game {
+            val eventsForThisGame = find(id)
+            return eventsForThisGame.fold(new(id)) { game, event ->
+                when (event) {
+                    is PlayerJoined -> game.copy(players = game.players + event.playerId)
+                }
+            }
+        }
 
-    fun addPlayer(playerId: PlayerId): Game = copy(players = players + playerId)
+        private fun new(id: GameId): Game = Game(id, emptyList())
+    }
 }

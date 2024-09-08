@@ -1,7 +1,6 @@
 package com.tamj0rd2.skullking.domain.service
 
 import com.tamj0rd2.skullking.domain.model.Game
-import com.tamj0rd2.skullking.domain.model.PlayerJoined
 import com.tamj0rd2.skullking.port.input.ViewPlayerGameStateUseCase
 import com.tamj0rd2.skullking.port.input.ViewPlayerGameStateUseCase.ViewPlayerGameStateOutput
 import com.tamj0rd2.skullking.port.input.ViewPlayerGameStateUseCase.ViewPlayerGameStateQuery
@@ -11,14 +10,7 @@ class ViewPlayerGameStateService(
     private val gameEventsPort: GameEventsPort,
 ) : ViewPlayerGameStateUseCase {
     override fun invoke(query: ViewPlayerGameStateQuery): ViewPlayerGameStateOutput {
-        val events = gameEventsPort.find(query.gameId)
-
-        val game =
-            events.fold(Game.new(query.gameId)) { game, event ->
-                when (event) {
-                    is PlayerJoined -> game.addPlayer(event.playerId)
-                }
-            }
+        val game = with(gameEventsPort) { Game.load(query.gameId) }
 
         return ViewPlayerGameStateOutput(
             players = game.players,
