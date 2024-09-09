@@ -17,12 +17,11 @@ import org.http4k.websocket.WsResponse
 object WebServer {
     @JvmStatic
     fun main(args: Array<String>) {
-        createServer(
-            application =
-                ApplicationDomainDriver.create(
-                    gameEventsPort = GameEventsDummyAdapter(),
-                ),
-        ).start()
+        val app =
+            ApplicationDomainDriver.create(
+                gameEventsPort = GameEventsDummyAdapter(),
+            )
+        createServer(app).start()
     }
 
     fun createServer(application: ApplicationDomainDriver): Http4kServer {

@@ -19,8 +19,7 @@ class ApplicationWebDriver(
     private var playerId = PlayerId.ZERO
 
     override fun invoke(command: JoinGameCommand): JoinGameOutput {
-        val response =
-            ws.sendAndAwaitNextResponse(wsLens(JoinGameMessage(command.gameId))).asMessage<JoinAcknowledgedMessage>()
+        val response = ws.sendAndAwaitNextResponse(wsLens(JoinGameMessage(command.gameId))).asMessage<JoinAcknowledgedMessage>()
         playerId = response.playerId
         return JoinGameOutput(playerId)
     }
@@ -36,7 +35,8 @@ class ApplicationWebDriver(
             SuperSocket.nonBlocking(
                 uri = baseUri,
                 timeout = Duration.ofSeconds(5),
-            ) { countDownLatch.countDown() }
+                onConnect = { countDownLatch.countDown() },
+            )
         ws.onError { println("client: error: $it") }
         ws.onClose { println("client: connection closed: $it") }
         countDownLatch.await()
