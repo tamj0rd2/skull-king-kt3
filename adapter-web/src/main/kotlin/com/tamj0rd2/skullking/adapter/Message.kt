@@ -1,5 +1,6 @@
 package com.tamj0rd2.skullking.adapter
 
+import com.tamj0rd2.skullking.domain.model.GameId
 import com.tamj0rd2.skullking.domain.model.PlayerId
 import com.tamj0rd2.skullking.port.input.ViewPlayerGameStateUseCase.ViewPlayerGameStateOutput
 import com.ubertob.kondor.json.JAny
@@ -17,6 +18,10 @@ sealed interface Message
 
 data class JoinAcknowledgedMessage(
     val playerId: PlayerId,
+) : Message
+
+data class JoinGameMessage(
+    val gameId: GameId,
 ) : Message
 
 data object GetGameStateMessage : Message
@@ -41,6 +46,7 @@ private object JMessage : JSealed<Message>() {
                 "join-acknowledged" to JAcknowledged,
                 "get-game-state" to JSingleton(GetGameStateMessage),
                 "game-state" to JGameState,
+                "join-game" to JJoinGameMessage,
             )
 
     override fun extractTypeName(obj: Message): String =
@@ -48,12 +54,18 @@ private object JMessage : JSealed<Message>() {
             is JoinAcknowledgedMessage -> "join-acknowledged"
             is GetGameStateMessage -> "get-game-state"
             is GameStateMessage -> "game-state"
+            is JoinGameMessage -> "join-game"
         }
 }
 
 private object JPlayerId : JStringRepresentable<PlayerId>() {
     override val cons: (String) -> PlayerId = PlayerId.Companion::parse
     override val render: (PlayerId) -> String = PlayerId.Companion::show
+}
+
+private object JGameId : JStringRepresentable<GameId>() {
+    override val cons: (String) -> GameId = GameId.Companion::parse
+    override val render: (GameId) -> String = GameId.Companion::show
 }
 
 private object JAcknowledged : JAny<JoinAcknowledgedMessage>() {
@@ -65,7 +77,16 @@ private object JAcknowledged : JAny<JoinAcknowledgedMessage>() {
         )
 }
 
-class JSingleton<T : Any>(
+private object JJoinGameMessage : JAny<JoinGameMessage>() {
+    private val gameId by str(JGameId, JoinGameMessage::gameId)
+
+    override fun JsonNodeObject.deserializeOrThrow() =
+        JoinGameMessage(
+            gameId = +gameId,
+        )
+}
+
+private class JSingleton<T : Any>(
     private val instance: T,
 ) : JAny<T>() {
     override fun JsonNodeObject.deserializeOrThrow() = instance
