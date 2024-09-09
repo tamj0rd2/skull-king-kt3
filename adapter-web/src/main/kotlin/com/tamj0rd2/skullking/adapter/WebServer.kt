@@ -28,7 +28,7 @@ object WebServer {
     fun main(args: Array<String>) {
         createServer(
             application =
-                ApplicationDomainDriver(
+                ApplicationDomainDriver.create(
                     gameEventsPort = GameEventsDummyAdapter(),
                 ),
         ).start()

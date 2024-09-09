@@ -7,7 +7,7 @@ import com.tamj0rd2.skullking.port.output.GameEventsInMemoryAdapter
 
 class JoinGameServiceTest : JoinGameUseCaseContract() {
     override val driver: ApplicationDriver =
-        ApplicationDomainDriver(
+        ApplicationDomainDriver.create(
             gameEventsPort = GameEventsInMemoryAdapter(),
         )
 }

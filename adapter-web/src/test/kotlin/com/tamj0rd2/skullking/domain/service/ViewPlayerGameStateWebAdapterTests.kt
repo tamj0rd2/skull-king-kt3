@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Timeout
 class ViewPlayerGameStateWebAdapterTests : ViewPlayerGameStateUseCaseContract() {
     private val server =
         WebServer.createServer(
-            ApplicationDomainDriver(
+            ApplicationDomainDriver.create(
                 gameEventsPort = GameEventsInMemoryAdapter(),
             ),
         )
