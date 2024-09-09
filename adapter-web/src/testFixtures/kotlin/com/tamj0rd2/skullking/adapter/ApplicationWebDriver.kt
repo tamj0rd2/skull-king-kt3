@@ -6,11 +6,11 @@ import com.tamj0rd2.skullking.port.input.JoinGameUseCase.JoinGameCommand
 import com.tamj0rd2.skullking.port.input.JoinGameUseCase.JoinGameOutput
 import com.tamj0rd2.skullking.port.input.ViewPlayerGameStateUseCase.ViewPlayerGameStateOutput
 import com.tamj0rd2.skullking.port.input.ViewPlayerGameStateUseCase.ViewPlayerGameStateQuery
+import com.tamj0rd2.skullking.testhelpers.Await
 import dev.forkhandles.values.ZERO
 import org.http4k.core.Uri
 import org.http4k.websocket.WsMessage
 import java.time.Duration
-import java.util.concurrent.CountDownLatch
 
 class ApplicationWebDriver(
     private val baseUri: Uri,
@@ -30,16 +30,19 @@ class ApplicationWebDriver(
     }
 
     private fun connectToWs(): SuperSocket {
-        val countDownLatch = CountDownLatch(1)
         val ws =
-            SuperSocket.nonBlocking(
-                uri = baseUri,
-                timeout = Duration.ofSeconds(5),
-                onConnect = { countDownLatch.countDown() },
-            )
-        ws.onError { println("client: error: $it") }
-        ws.onClose { println("client: connection closed: $it") }
-        countDownLatch.await()
+            Await {
+                SuperSocket
+                    .nonBlocking(
+                        uri = baseUri,
+                        timeout = Duration.ofSeconds(5),
+                        onConnect = { resume() },
+                    ).apply {
+                        onError { println("client: error: $it") }
+                        onClose { println("client: connection closed: $it") }
+                    }
+            }
+
         println("client: connected")
         return ws
     }

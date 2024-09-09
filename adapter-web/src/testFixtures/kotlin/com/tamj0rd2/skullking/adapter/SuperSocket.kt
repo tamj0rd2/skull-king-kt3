@@ -1,5 +1,6 @@
 package com.tamj0rd2.skullking.adapter
 
+import com.tamj0rd2.skullking.testhelpers.Await
 import org.http4k.core.Uri
 import org.http4k.websocket.Websocket
 import org.http4k.websocket.WsConsumer
@@ -15,27 +16,27 @@ import java.nio.ByteBuffer
 import java.time.Duration
 import java.time.Duration.ZERO
 import java.util.UUID
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit.MILLISECONDS
 import java.util.concurrent.atomic.AtomicReference
+import kotlin.time.Duration.Companion.milliseconds
 
 class SuperSocket(
     private val client: WebSocketClient,
 ) : Websocket {
     // todo: I think this will work nicely with a sequence, because I can tell it how many messages to take before closing.
     fun sendAndAwaitNextResponse(message: WsMessage): WsMessage {
-        val latch = CountDownLatch(1)
         val handlerId = UUID.randomUUID()
-
         var receivedMessage: WsMessage? = null
-        messageHandlers[handlerId] = {
-            messageHandlers.remove(handlerId)
-            receivedMessage = it
-            latch.countDown()
+
+        Await(300.milliseconds) {
+            messageHandlers[handlerId] = {
+                messageHandlers.remove(handlerId)
+                receivedMessage = it
+                resume()
+            }
+
+            send(message)
         }
 
-        send(message)
-        latch.await(300, MILLISECONDS)
         return requireNotNull(receivedMessage) { "no followup messages were received by the client" }
     }
 
