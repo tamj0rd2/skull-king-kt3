@@ -39,7 +39,7 @@ private object JMessage : JSealed<Message>() {
         get() =
             mapOf(
                 "join-acknowledged" to JAcknowledged,
-                "get-game-state" to JGetGameState,
+                "get-game-state" to JSingleton(GetGameStateMessage),
                 "game-state" to JGameState,
             )
 
@@ -65,8 +65,10 @@ private object JAcknowledged : JAny<JoinAcknowledgedMessage>() {
         )
 }
 
-private object JGetGameState : JAny<GetGameStateMessage>() {
-    override fun JsonNodeObject.deserializeOrThrow() = GetGameStateMessage
+class JSingleton<T : Any>(
+    private val instance: T,
+) : JAny<T>() {
+    override fun JsonNodeObject.deserializeOrThrow() = instance
 }
 
 private object JGameState : JAny<GameStateMessage>() {
