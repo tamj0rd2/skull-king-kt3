@@ -6,10 +6,10 @@ import com.tamj0rd2.skullking.port.input.JoinGameUseCase.JoinGameCommand
 import com.tamj0rd2.skullking.port.input.JoinGameUseCase.JoinGameOutput
 import com.tamj0rd2.skullking.port.input.ViewPlayerGameStateUseCase.ViewPlayerGameStateOutput
 import com.tamj0rd2.skullking.port.input.ViewPlayerGameStateUseCase.ViewPlayerGameStateQuery
-import com.tamj0rd2.skullking.testhelpers.Await
 import dev.forkhandles.values.ZERO
+import org.http4k.client.WebsocketClient
 import org.http4k.core.Uri
-import org.http4k.websocket.WsMessage
+import org.http4k.websocket.WsClient
 import java.time.Duration
 
 class ApplicationWebDriver(
@@ -19,36 +19,23 @@ class ApplicationWebDriver(
     private var playerId = PlayerId.ZERO
 
     override fun invoke(command: JoinGameCommand): JoinGameOutput {
-        val response = ws.sendAndAwaitNextResponse(wsLens(JoinGameMessage(command.gameId))).asMessage<JoinAcknowledgedMessage>()
+        ws.send(wsLens(JoinGameMessage(command.gameId)))
+        val response = ws.responses().firstOfKind<JoinAcknowledgedMessage>()
         playerId = response.playerId
         return JoinGameOutput(playerId)
     }
 
     override fun invoke(query: ViewPlayerGameStateQuery): ViewPlayerGameStateOutput {
-        val response = ws.sendAndAwaitNextResponse(wsLens(GetGameStateMessage))
-        return (wsLens(response) as GameStateMessage).state
+        ws.send(wsLens(GetGameStateMessage))
+        return ws.responses().firstOfKind<GameStateMessage>().state
     }
 
-    private fun connectToWs(): SuperSocket {
-        val ws =
-            Await {
-                SuperSocket
-                    .nonBlocking(
-                        uri = baseUri,
-                        timeout = Duration.ofSeconds(5),
-                        onConnect = { resume() },
-                    ).apply {
-                        onError { println("client: error: $it") }
-                        onClose { println("client: connection closed: $it") }
-                    }
-            }
+    private fun connectToWs(): WsClient = WebsocketClient.blocking(uri = baseUri, timeout = Duration.ofSeconds(5))
 
-        println("client: connected")
-        return ws
-    }
+    private fun WsClient.responses() =
+        received()
+            .map(wsLens)
+            .onEach { println("client: received $it") }
 }
 
-private fun <T : Message> WsMessage.asMessage(): T {
-    @Suppress("UNCHECKED_CAST")
-    return wsLens(this) as T
-}
+private inline fun <reified T : Message> Sequence<Message>.firstOfKind(): T = filterIsInstance<T>().first()
