@@ -13,11 +13,12 @@ import strikt.assertions.contains
 import strikt.assertions.isNotEqualTo
 
 abstract class JoinGameUseCaseContract {
-    protected abstract val driver: ApplicationDriver
+    protected abstract fun newDriver(): ApplicationDriver
 
     @Test
     fun `can join a game`() {
         val gameId = GameId.random()
+        val driver = newDriver()
 
         val playerId = driver(JoinGameCommand(gameId)).playerId
         expectThat(playerId).isNotEqualTo(PlayerId.ZERO)

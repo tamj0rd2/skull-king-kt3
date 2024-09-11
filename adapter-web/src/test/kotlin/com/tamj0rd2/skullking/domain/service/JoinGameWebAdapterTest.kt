@@ -19,7 +19,8 @@ class JoinGameWebAdapterTest : JoinGameUseCaseContract() {
                 gameEventsPort = GameEventsInMemoryAdapter(),
             ),
         )
-    override val driver: ApplicationDriver = ApplicationWebDriver(Uri.of("ws://localhost:${server.port()}"))
+
+    override fun newDriver(): ApplicationDriver = ApplicationWebDriver(Uri.of("ws://localhost:${server.port()}"))
 
     @BeforeEach
     fun startServer() {
