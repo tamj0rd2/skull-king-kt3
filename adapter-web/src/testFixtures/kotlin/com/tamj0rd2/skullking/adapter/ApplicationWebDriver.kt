@@ -15,7 +15,7 @@ import java.time.Duration
 class ApplicationWebDriver(
     private val baseUri: Uri,
 ) : ApplicationDriver {
-    private val ws by lazy { connectToWs() }
+    private val ws by lazy { WebsocketClient.blocking(uri = baseUri, timeout = Duration.ofSeconds(5)) }
     private var playerId = PlayerId.ZERO
 
     override fun invoke(command: JoinGameCommand): JoinGameOutput {
@@ -29,8 +29,6 @@ class ApplicationWebDriver(
         ws.send(wsLens(GetGameStateMessage))
         return ws.responses().firstOfKind<GameStateMessage>().state
     }
-
-    private fun connectToWs(): WsClient = WebsocketClient.blocking(uri = baseUri, timeout = Duration.ofSeconds(5))
 
     private fun WsClient.responses() =
         received()
