@@ -33,3 +33,6 @@ http4k-client = [
     "http4k-client-websocket",
     "http4k-format-kondor"
 ]
+json = [
+    "http4k-format-kondor"
+]
