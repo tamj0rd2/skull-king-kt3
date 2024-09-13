@@ -7,7 +7,7 @@ import dev.forkhandles.result4k.Success
 import dev.forkhandles.result4k.onFailure
 import dev.forkhandles.values.UUIDValueFactory
 import dev.forkhandles.values.Value
-import java.util.UUID
+import java.util.*
 
 @JvmInline
 value class GameId private constructor(
@@ -18,15 +18,32 @@ value class GameId private constructor(
 
 @Suppress("CONTEXT_RECEIVERS_DEPRECATED") // When contextParameters are available, I'll migrate.
 class Game private constructor(
-    val id: GameId,
+    private val id: GameId,
+    history: List<GameEvent> = emptyList(),
 ) {
+    private var initialized = false
+    private val changes = mutableListOf<GameEvent>()
     private val _players = mutableListOf<PlayerId>()
     val players get() = _players.toList()
+
+    init {
+        history.forEach { event ->
+            when (event) {
+                is PlayerJoined -> addPlayer(event.playerId)
+            }
+        }
+        initialized = true
+    }
 
     fun addPlayer(playerId: PlayerId): Result4k<Unit, AddPlayerErrorCode> {
         if (players.size >= MAXIMUM_PLAYER_COUNT) return Failure(GameIsFull)
         _players.add(playerId)
+        recordEvent(PlayerJoined(id, playerId))
         return Success(Unit)
+    }
+
+    private fun recordEvent(event: GameEvent) {
+        if (initialized) changes.add(event)
     }
 
     companion object {
@@ -34,12 +51,7 @@ class Game private constructor(
 
         context(GameEventsPort)
         internal fun load(id: GameId): Game {
-            val eventsForThisGame = findGameEvents(id)
-            return eventsForThisGame.fold(Game(id)) { game, event ->
-                when (event) {
-                    is PlayerJoined -> game.apply { addPlayer(event.playerId) }
-                }
-            }
+            return Game(id, findGameEvents(id))
         }
 
         context(GameEventsPort)
@@ -47,8 +59,9 @@ class Game private constructor(
             gameId: GameId,
             playerId: PlayerId,
         ): Result4k<Unit, AddPlayerErrorCode> {
-            load(gameId).addPlayer(playerId).onFailure { return it }
-            saveGameEvents(listOf(PlayerJoined(gameId, playerId)))
+            val game = load(gameId)
+            game.addPlayer(playerId).onFailure { return it }
+            saveGameEvents(game.changes)
             return Success(Unit)
         }
     }
