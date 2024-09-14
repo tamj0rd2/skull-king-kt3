@@ -1,7 +1,7 @@
 package com.tamj0rd2.skullking
 
-import com.tamj0rd2.skullking.domain.service.JoinGameService
-import com.tamj0rd2.skullking.domain.service.ViewPlayerGameStateService
+import com.tamj0rd2.skullking.application.service.JoinGameService
+import com.tamj0rd2.skullking.application.service.ViewPlayerGameStateService
 import com.tamj0rd2.skullking.port.input.JoinGameUseCase.JoinGameCommand
 import com.tamj0rd2.skullking.port.input.ViewPlayerGameStateUseCase.ViewPlayerGameStateQuery
 import com.tamj0rd2.skullking.port.output.GameRepository
