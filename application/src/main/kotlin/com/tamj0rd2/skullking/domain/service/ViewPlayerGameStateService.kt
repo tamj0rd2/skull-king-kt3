@@ -10,7 +10,7 @@ class ViewPlayerGameStateService(
     private val gameEventsPort: GameEventsPort,
 ) : ViewPlayerGameStateUseCase {
     override fun invoke(query: ViewPlayerGameStateQuery): ViewPlayerGameStateOutput {
-        val game = with(gameEventsPort) { Game.load(query.gameId) }
+        val game = Game(query.gameId, gameEventsPort.findGameEvents(query.gameId))
 
         return ViewPlayerGameStateOutput(
             players = game.players,

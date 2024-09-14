@@ -7,6 +7,7 @@ import dev.forkhandles.result4k.Success
 import dev.forkhandles.result4k.onFailure
 import dev.forkhandles.values.UUIDValueFactory
 import dev.forkhandles.values.Value
+import dev.forkhandles.values.random
 import java.util.*
 
 @JvmInline
@@ -17,7 +18,7 @@ value class GameId private constructor(
 }
 
 @Suppress("CONTEXT_RECEIVERS_DEPRECATED") // When contextParameters are available, I'll migrate.
-class Game private constructor(
+class Game(
     private val id: GameId,
     history: List<GameEvent> = emptyList(),
 ) {
@@ -49,17 +50,14 @@ class Game private constructor(
     companion object {
         const val MAXIMUM_PLAYER_COUNT = 6
 
-        context(GameEventsPort)
-        internal fun load(id: GameId): Game {
-            return Game(id, findGameEvents(id))
-        }
+        fun new() = Game(GameId.random(), emptyList())
 
         context(GameEventsPort)
         internal fun addPlayer(
             gameId: GameId,
             playerId: PlayerId,
         ): Result4k<Unit, AddPlayerErrorCode> {
-            val game = load(gameId)
+            val game = Game(gameId, findGameEvents(gameId))
             game.addPlayer(playerId).onFailure { return it }
             saveGameEvents(game.changes)
             return Success(Unit)
