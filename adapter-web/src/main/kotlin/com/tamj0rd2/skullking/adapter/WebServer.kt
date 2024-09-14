@@ -54,15 +54,15 @@ private class ServerSidePlayerSocket(
 
     fun handle(message: Message) {
         when (message) {
-            is GetGameStateMessage -> {
-                val gameState = app(ViewPlayerGameStateQuery(gameId, playerId))
-                ws.send(wsLens(GameStateMessage(gameState)))
-            }
-
             is JoinGameMessage -> {
                 gameId = message.gameId
                 playerId = app(JoinGameCommand(message.gameId)).playerId
                 ws.send(wsLens(JoinAcknowledgedMessage(playerId)))
+            }
+
+            is GetGameStateMessage -> {
+                val gameState = app(ViewPlayerGameStateQuery(gameId, playerId))
+                ws.send(wsLens(GameStateMessage(gameState)))
             }
 
             else -> TODO("server received $message but has no handler")
