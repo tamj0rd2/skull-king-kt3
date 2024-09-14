@@ -8,6 +8,6 @@ import com.tamj0rd2.skullking.port.output.GameEventsInMemoryAdapter
 class ViewPlayerGameStateServiceTest : ViewPlayerGameStateUseCaseContract() {
     override fun newDriver(): ApplicationDriver =
         ApplicationDomainDriver.create(
-            gameEventsPort = GameEventsInMemoryAdapter(),
+            gameRepository = GameEventsInMemoryAdapter(),
         )
 }

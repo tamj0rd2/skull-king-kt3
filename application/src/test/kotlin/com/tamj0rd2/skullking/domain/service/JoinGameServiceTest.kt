@@ -6,10 +6,10 @@ import com.tamj0rd2.skullking.port.input.JoinGameUseCaseContract
 import com.tamj0rd2.skullking.port.output.GameEventsInMemoryAdapter
 
 class JoinGameServiceTest : JoinGameUseCaseContract() {
-    private val gameEventsPort = GameEventsInMemoryAdapter()
+    private val gameRepository = GameEventsInMemoryAdapter()
 
     override fun newDriver(): ApplicationDriver =
         ApplicationDomainDriver.create(
-            gameEventsPort = gameEventsPort,
+            gameRepository = gameRepository,
         )
 }

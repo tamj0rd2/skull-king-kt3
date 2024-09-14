@@ -7,9 +7,7 @@ import com.tamj0rd2.skullking.domain.model.GameId
 class GameEventsInMemoryAdapter : GameRepository {
     private val savedEvents = mutableMapOf<GameId, List<GameEvent>>()
 
-    override fun load(gameId: GameId): Game {
-        return Game(gameId, findGameEvents(gameId))
-    }
+    override fun load(gameId: GameId): Game = Game(gameId, findGameEvents(gameId))
 
     override fun save(game: Game) {
         saveGameEvents(game.changes)

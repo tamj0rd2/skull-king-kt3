@@ -10,16 +10,16 @@ import strikt.assertions.all
 import strikt.assertions.hasSize
 import strikt.assertions.isEqualTo
 
-abstract class GameEventsPortContract {
-    protected abstract val gameEventsPort: GameRepository
+abstract class gameRepositoryContract {
+    protected abstract val gameRepository: GameRepository
 
     @Test
     fun `can save and retrieve game events`() {
         val gameId = GameId.random()
         val event = PlayerJoined(gameId, PlayerId.random())
 
-        gameEventsPort.saveGameEvents(listOf(event))
-        expectThat(gameEventsPort.findGameEvents(gameId)).isEqualTo(listOf(event))
+        gameRepository.saveGameEvents(listOf(event))
+        expectThat(gameRepository.findGameEvents(gameId)).isEqualTo(listOf(event))
     }
 
     @Test
@@ -27,13 +27,13 @@ abstract class GameEventsPortContract {
         val gameIWant = GameId.random()
         val someOtherGame = GameId.random()
 
-        gameEventsPort.saveGameEvents(
+        gameRepository.saveGameEvents(
             listOf(
                 PlayerJoined(gameIWant, PlayerId.random()),
                 PlayerJoined(someOtherGame, PlayerId.random()),
                 PlayerJoined(gameIWant, PlayerId.random()),
             ),
         )
-        expectThat(gameEventsPort.findGameEvents(gameIWant)).all { get { gameId }.isEqualTo(gameIWant) }.hasSize(2)
+        expectThat(gameRepository.findGameEvents(gameIWant)).all { get { gameId }.isEqualTo(gameIWant) }.hasSize(2)
     }
 }

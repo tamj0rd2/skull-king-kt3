@@ -21,7 +21,7 @@ object WebServer {
 
     fun createApp(): ApplicationDomainDriver =
         ApplicationDomainDriver.create(
-            gameEventsPort = GameEventsEsdbAdapter(),
+            gameRepository = GameEventsEsdbAdapter(),
         )
 
     fun createServer(

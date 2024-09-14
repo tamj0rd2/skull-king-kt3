@@ -6,6 +6,7 @@ import com.tamj0rd2.skullking.domain.model.GameId
 
 interface GameRepository {
     fun load(gameId: GameId): Game
+
     fun save(game: Game)
 
     fun findGameEvents(gameId: GameId): List<GameEvent>

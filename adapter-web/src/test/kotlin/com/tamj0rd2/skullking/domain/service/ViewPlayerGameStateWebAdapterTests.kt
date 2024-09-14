@@ -16,7 +16,7 @@ class ViewPlayerGameStateWebAdapterTests : ViewPlayerGameStateUseCaseContract() 
     private val server =
         WebServer.createServer(
             ApplicationDomainDriver.create(
-                gameEventsPort = GameEventsInMemoryAdapter(),
+                gameRepository = GameEventsInMemoryAdapter(),
             ),
         )
 
