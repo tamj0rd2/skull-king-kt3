@@ -5,6 +5,7 @@ import dev.forkhandles.result4k.Failure
 import dev.forkhandles.result4k.Result4k
 import dev.forkhandles.result4k.Success
 import dev.forkhandles.result4k.onFailure
+import dev.forkhandles.result4k.orThrow
 import dev.forkhandles.values.UUIDValueFactory
 import dev.forkhandles.values.Value
 import dev.forkhandles.values.random
@@ -34,7 +35,7 @@ class Game(
         history.forEach { event ->
             when (event) {
                 is PlayerJoined -> addPlayer(event.playerId)
-            }
+            }.orThrow()
         }
         initialized = true
     }
@@ -68,8 +69,11 @@ class Game(
     }
 }
 
-sealed interface GameErrorCode
+sealed class GameErrorCode : RuntimeException()
 
-sealed interface AddPlayerErrorCode : GameErrorCode
+sealed class AddPlayerErrorCode : GameErrorCode()
 
-data object GameIsFull : AddPlayerErrorCode
+data object GameIsFull : AddPlayerErrorCode() {
+    @Suppress("unused")
+    private fun readResolve(): Any = GameIsFull
+}
