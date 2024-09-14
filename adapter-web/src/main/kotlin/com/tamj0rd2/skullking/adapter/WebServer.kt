@@ -1,27 +1,33 @@
 package com.tamj0rd2.skullking.adapter
 
 import com.tamj0rd2.skullking.ApplicationDomainDriver
-import com.tamj0rd2.skullking.domain.model.GameEvent
-import com.tamj0rd2.skullking.domain.model.GameId
-import com.tamj0rd2.skullking.port.output.GameEventsPort
 import org.http4k.server.Http4kServer
 import org.http4k.server.Undertow
 import org.http4k.server.asServer
 import org.http4k.websocket.Websocket
 import org.http4k.websocket.WsHandler
 import org.http4k.websocket.WsResponse
+import java.net.ServerSocket
 
 object WebServer {
+    const val DEFAULT_PORT = 9000
+
     @JvmStatic
     fun main(args: Array<String>) {
-        val app =
-            ApplicationDomainDriver.create(
-                gameEventsPort = GameEventsDummyAdapter(),
-            )
-        createServer(app).start()
+        start(DEFAULT_PORT)
     }
 
-    fun createServer(application: ApplicationDomainDriver): Http4kServer {
+    fun start(port: Int = getUnusedPort()) = createServer(application = createApp(), port = port).start()
+
+    fun createApp(): ApplicationDomainDriver =
+        ApplicationDomainDriver.create(
+            gameEventsPort = GameEventsEsdbAdapter(),
+        )
+
+    fun createServer(
+        application: ApplicationDomainDriver,
+        port: Int = getUnusedPort(),
+    ): Http4kServer {
         val ws: WsHandler = {
             WsResponse { ws: Websocket ->
                 val playerSocket = ServerSidePlayerSocket(ws, application)
@@ -34,16 +40,13 @@ object WebServer {
             }
         }
 
-        return ws.asServer(Undertow(9000))
-    }
-}
-
-class GameEventsDummyAdapter : GameEventsPort {
-    override fun findGameEvents(gameId: GameId): List<GameEvent> {
-        TODO("Not yet implemented")
+        return ws.asServer(Undertow(port))
     }
 
-    override fun saveGameEvents(events: List<GameEvent>) {
-        TODO("Not yet implemented")
+    private fun getUnusedPort(): Int {
+        val socket = ServerSocket(0)
+        val port = socket.localPort
+        socket.close()
+        return port
     }
 }
