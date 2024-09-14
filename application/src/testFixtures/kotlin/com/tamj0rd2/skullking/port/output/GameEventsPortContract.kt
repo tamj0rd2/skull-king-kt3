@@ -11,7 +11,7 @@ import strikt.assertions.all
 import strikt.assertions.hasSize
 import strikt.assertions.isEqualTo
 
-abstract class gameRepositoryContract {
+abstract class GameRepositoryContract {
     protected abstract val gameRepository: GameRepository
 
     @Test
