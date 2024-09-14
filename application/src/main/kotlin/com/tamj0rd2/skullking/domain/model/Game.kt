@@ -24,11 +24,11 @@ class Game(
 ) {
     private var initialized = false
 
-    private val _changes = mutableListOf<GameEvent>()
-    val changes get() = _changes.toList()
+    val changes: List<GameEvent>
+        field = mutableListOf<GameEvent>()
 
-    private val _players = mutableListOf<PlayerId>()
-    val players get() = _players.toList()
+    val players: List<PlayerId>
+        field = mutableListOf<PlayerId>()
 
     init {
         history.forEach { event ->
@@ -41,13 +41,13 @@ class Game(
 
     fun addPlayer(playerId: PlayerId): Result4k<Unit, AddPlayerErrorCode> {
         if (players.size >= MAXIMUM_PLAYER_COUNT) return Failure(GameIsFull)
-        _players.add(playerId)
+        players.add(playerId)
         recordEvent(PlayerJoined(id, playerId))
         return Success(Unit)
     }
 
     private fun recordEvent(event: GameEvent) {
-        if (initialized) _changes.add(event)
+        if (initialized) changes.add(event)
     }
 
     companion object {
