@@ -3,8 +3,8 @@ package com.tamj0rd2.skullking.adapter
 import com.tamj0rd2.skullking.ApplicationDomainDriver
 import com.tamj0rd2.skullking.domain.model.GameId
 import com.tamj0rd2.skullking.domain.model.PlayerId
-import com.tamj0rd2.skullking.port.input.JoinGameUseCase
-import com.tamj0rd2.skullking.port.input.ViewPlayerGameStateUseCase
+import com.tamj0rd2.skullking.port.input.JoinGameUseCase.JoinGameCommand
+import com.tamj0rd2.skullking.port.input.ViewPlayerGameStateUseCase.ViewPlayerGameStateQuery
 import dev.forkhandles.values.ZERO
 import org.http4k.websocket.Websocket
 
@@ -32,13 +32,13 @@ internal class ServerSidePlayerSocket(
     }
 
     private fun respondToJoinRequest(message: JoinGameMessage): Pair<GameId, PlayerId> {
-        val playerId = app(JoinGameUseCase.JoinGameCommand(message.gameId)).playerId
+        val playerId = app(JoinGameCommand(message.gameId)).playerId
         ws.send(wsLens(JoinAcknowledgedMessage(playerId)))
         return message.gameId to playerId
     }
 
     private fun respondToGameStateRequest() {
-        val gameState = app(ViewPlayerGameStateUseCase.ViewPlayerGameStateQuery(gameId, playerId))
+        val gameState = app(ViewPlayerGameStateQuery(gameId, playerId))
         ws.send(wsLens(GameStateMessage(gameState)))
     }
 }
