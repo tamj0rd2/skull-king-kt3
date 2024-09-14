@@ -7,6 +7,7 @@ import com.tamj0rd2.skullking.domain.model.PlayerId
 import com.tamj0rd2.skullking.port.input.JoinGameUseCase.JoinGameCommand
 import com.tamj0rd2.skullking.port.input.ViewPlayerGameStateUseCase.ViewPlayerGameStateQuery
 import com.tamj0rd2.skullking.port.output.GameEventsPort
+import dev.forkhandles.values.ZERO
 import org.http4k.server.Http4kServer
 import org.http4k.server.Undertow
 import org.http4k.server.asServer
@@ -45,10 +46,11 @@ private class ServerSidePlayerSocket(
     private val ws: Websocket,
     private val app: ApplicationDomainDriver,
 ) {
-    private var _gameId: GameId? = null
-    private var _playerId: PlayerId? = null
-    val gameId get() = _gameId!!
-    val playerId get() = _playerId!!
+    var gameId = GameId.ZERO
+        get() = field.takeIf { it != GameId.ZERO } ?: error("gameId not set")
+
+    var playerId = PlayerId.ZERO
+        get() = field.takeIf { it != PlayerId.ZERO } ?: error("playerId not set")
 
     fun handle(message: Message) {
         when (message) {
@@ -58,8 +60,8 @@ private class ServerSidePlayerSocket(
             }
 
             is JoinGameMessage -> {
-                _gameId = message.gameId
-                _playerId = app(JoinGameCommand(message.gameId)).playerId
+                gameId = message.gameId
+                playerId = app(JoinGameCommand(message.gameId)).playerId
                 ws.send(wsLens(JoinAcknowledgedMessage(playerId)))
             }
 
