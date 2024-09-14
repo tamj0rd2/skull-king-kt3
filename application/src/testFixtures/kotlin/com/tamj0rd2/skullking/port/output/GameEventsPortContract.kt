@@ -17,19 +17,20 @@ abstract class GameRepositoryContract {
 
     @Property
     fun `all previously saved changes for a game can be retrieved`(
-        @ForAll @IntRange(min = 0, max = MAXIMUM_PLAYER_COUNT) timesToSave: Int
+        @ForAll @IntRange(min = 0, max = MAXIMUM_PLAYER_COUNT) timesToSave: Int,
     ) {
         val gameId = GameId.random()
 
-        val allChangesMadeAcrossSaves = buildList {
-            repeat(timesToSave) {
-                val loadedGame = gameRepository.load(gameId)
-                loadedGame.addPlayer(PlayerId.random())
-                gameRepository.save(loadedGame)
-                @Suppress("UNCHECKED_CAST")
-                addAll(loadedGame.changes as List<PlayerJoined>)
+        val allChangesMadeAcrossSaves =
+            buildList {
+                repeat(timesToSave) {
+                    val loadedGame = gameRepository.load(gameId)
+                    loadedGame.addPlayer(PlayerId.random())
+                    gameRepository.save(loadedGame)
+                    @Suppress("UNCHECKED_CAST")
+                    addAll(loadedGame.changes as List<PlayerJoined>)
+                }
             }
-        }
 
         val loadedGameAfterAllSaves = gameRepository.load(gameId)
         expectThat(loadedGameAfterAllSaves.players).isEqualTo(allChangesMadeAcrossSaves.map { it.playerId })

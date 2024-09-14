@@ -30,6 +30,7 @@ class Game(
         field = mutableListOf<PlayerId>()
 
     init {
+        // TODO: Throw a typed exception here. Or maybe even turn this into a factory somehow?
         check(history.all { it.gameId == id }) { "GameId mismatch" }
 
         history.forEach { event ->

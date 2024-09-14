@@ -34,13 +34,15 @@ class GameTest {
 
         val thisGameId = GameId.random()
 
-        val eventsForThisGame = buildList {
-            repeat(eventsForThisGame) { add(PlayerJoined(thisGameId, PlayerId.random())) }
-        }
+        val eventsForThisGame =
+            buildList {
+                repeat(eventsForThisGame) { add(PlayerJoined(thisGameId, PlayerId.random())) }
+            }
 
-        val eventsForOtherGames = buildList {
-            repeat(eventsForOtherGames) { add(PlayerJoined(GameId.random(), PlayerId.random())) }
-        }
+        val eventsForOtherGames =
+            buildList {
+                repeat(eventsForOtherGames) { add(PlayerJoined(GameId.random(), PlayerId.random())) }
+            }
 
         val eventsContainingMultipleGames = eventsForThisGame.take(1) + (eventsForThisGame.drop(1) + eventsForOtherGames).shuffled()
         expectThrows<IllegalStateException> { Game(thisGameId, eventsContainingMultipleGames) }
