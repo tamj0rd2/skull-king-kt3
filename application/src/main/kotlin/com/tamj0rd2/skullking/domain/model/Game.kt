@@ -1,10 +1,8 @@
 package com.tamj0rd2.skullking.domain.model
 
-import com.tamj0rd2.skullking.port.output.GameEventsPort
 import dev.forkhandles.result4k.Failure
 import dev.forkhandles.result4k.Result4k
 import dev.forkhandles.result4k.Success
-import dev.forkhandles.result4k.onFailure
 import dev.forkhandles.result4k.orThrow
 import dev.forkhandles.values.UUIDValueFactory
 import dev.forkhandles.values.Value
@@ -55,17 +53,6 @@ class Game(
         const val MAXIMUM_PLAYER_COUNT = 6
 
         fun new() = Game(GameId.random(), emptyList())
-
-        context(GameEventsPort)
-        internal fun addPlayer(
-            gameId: GameId,
-            playerId: PlayerId,
-        ): Result4k<Unit, AddPlayerErrorCode> {
-            val game = Game(gameId, findGameEvents(gameId))
-            game.addPlayer(playerId).onFailure { return it }
-            saveGameEvents(game.changes)
-            return Success(Unit)
-        }
     }
 }
 
