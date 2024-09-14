@@ -4,5 +4,4 @@ plugins {
 
 dependencies {
     api(libs.values4k)
-    api(project(":domain"))
 }
