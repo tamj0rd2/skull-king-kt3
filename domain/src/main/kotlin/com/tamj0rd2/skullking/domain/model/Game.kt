@@ -18,7 +18,7 @@ value class GameId private constructor(
 
 @Suppress("CONTEXT_RECEIVERS_DEPRECATED") // When contextParameters are available, I'll migrate.
 class Game(
-    private val id: GameId,
+    val id: GameId,
     history: List<GameEvent> = emptyList(),
 ) {
     private var initialized = false
@@ -30,6 +30,8 @@ class Game(
         field = mutableListOf<PlayerId>()
 
     init {
+        check(history.all { it.gameId == id }) { "GameId mismatch" }
+
         history.forEach { event ->
             when (event) {
                 is PlayerJoined -> addPlayer(event.playerId)

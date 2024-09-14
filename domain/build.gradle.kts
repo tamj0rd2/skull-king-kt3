@@ -4,4 +4,5 @@ plugins {
 
 dependencies {
     api(libs.values4k)
+    api(libs.result4k)
 }

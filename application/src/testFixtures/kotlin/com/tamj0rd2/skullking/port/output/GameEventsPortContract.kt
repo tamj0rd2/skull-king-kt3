@@ -1,40 +1,37 @@
 package com.tamj0rd2.skullking.port.output
 
 import com.tamj0rd2.skullking.application.port.output.GameRepository
+import com.tamj0rd2.skullking.domain.model.Game.Companion.MAXIMUM_PLAYER_COUNT
 import com.tamj0rd2.skullking.domain.model.GameId
 import com.tamj0rd2.skullking.domain.model.PlayerId
 import com.tamj0rd2.skullking.domain.model.PlayerJoined
 import dev.forkhandles.values.random
-import org.junit.jupiter.api.Test
+import net.jqwik.api.ForAll
+import net.jqwik.api.Property
+import net.jqwik.api.constraints.IntRange
 import strikt.api.expectThat
-import strikt.assertions.all
-import strikt.assertions.hasSize
 import strikt.assertions.isEqualTo
 
 abstract class GameRepositoryContract {
     protected abstract val gameRepository: GameRepository
 
-    @Test
-    fun `can save and retrieve game events`() {
+    @Property
+    fun `all previously saved changes for a game can be retrieved`(
+        @ForAll @IntRange(min = 0, max = MAXIMUM_PLAYER_COUNT) timesToSave: Int
+    ) {
         val gameId = GameId.random()
-        val event = PlayerJoined(gameId, PlayerId.random())
 
-        gameRepository.saveGameEvents(listOf(event))
-        expectThat(gameRepository.findGameEvents(gameId)).isEqualTo(listOf(event))
-    }
+        val allChangesMadeAcrossSaves = buildList {
+            repeat(timesToSave) {
+                val loadedGame = gameRepository.load(gameId)
+                loadedGame.addPlayer(PlayerId.random())
+                gameRepository.save(loadedGame)
+                @Suppress("UNCHECKED_CAST")
+                addAll(loadedGame.changes as List<PlayerJoined>)
+            }
+        }
 
-    @Test
-    fun `searching for a specific game will not bring back game events for a different game`() {
-        val gameIWant = GameId.random()
-        val someOtherGame = GameId.random()
-
-        gameRepository.saveGameEvents(
-            listOf(
-                PlayerJoined(gameIWant, PlayerId.random()),
-                PlayerJoined(someOtherGame, PlayerId.random()),
-                PlayerJoined(gameIWant, PlayerId.random()),
-            ),
-        )
-        expectThat(gameRepository.findGameEvents(gameIWant)).all { get { gameId }.isEqualTo(gameIWant) }.hasSize(2)
+        val loadedGameAfterAllSaves = gameRepository.load(gameId)
+        expectThat(loadedGameAfterAllSaves.players).isEqualTo(allChangesMadeAcrossSaves.map { it.playerId })
     }
 }
