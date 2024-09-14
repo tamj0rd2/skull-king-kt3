@@ -11,7 +11,7 @@ import strikt.assertions.hasSize
 import strikt.assertions.isEqualTo
 
 abstract class GameEventsPortContract {
-    protected abstract val gameEventsPort: GameEventsPort
+    protected abstract val gameEventsPort: GameRepository
 
     @Test
     fun `can save and retrieve game events`() {

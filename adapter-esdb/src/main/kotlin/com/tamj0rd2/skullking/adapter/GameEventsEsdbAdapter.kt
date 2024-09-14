@@ -8,7 +8,7 @@ import com.tamj0rd2.skullking.domain.model.GameEvent
 import com.tamj0rd2.skullking.domain.model.GameId
 import com.tamj0rd2.skullking.domain.model.PlayerId
 import com.tamj0rd2.skullking.domain.model.PlayerJoined
-import com.tamj0rd2.skullking.port.output.GameEventsPort
+import com.tamj0rd2.skullking.port.output.GameRepository
 import com.ubertob.kondor.json.JAny
 import com.ubertob.kondor.json.JSealed
 import com.ubertob.kondor.json.JStringRepresentable
@@ -22,7 +22,7 @@ class GameEventsEsdbAdapter(
         EventStoreDBClient.create(
             EventStoreDBConnectionString.parseOrThrow("esdb://localhost:2113?tls=false"),
         ),
-) : GameEventsPort {
+) : GameRepository {
     override fun findGameEvents(gameId: GameId): List<GameEvent> {
         val options = ReadStreamOptions.get().forwards()
         val result = client.readStream("game-events", options).get()

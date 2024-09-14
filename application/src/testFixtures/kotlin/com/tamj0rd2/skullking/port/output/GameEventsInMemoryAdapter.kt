@@ -3,7 +3,7 @@ package com.tamj0rd2.skullking.port.output
 import com.tamj0rd2.skullking.domain.model.GameEvent
 import com.tamj0rd2.skullking.domain.model.GameId
 
-class GameEventsInMemoryAdapter : GameEventsPort {
+class GameEventsInMemoryAdapter : GameRepository {
     private val savedEvents = mutableMapOf<GameId, List<GameEvent>>()
 
     override fun findGameEvents(gameId: GameId): List<GameEvent> = savedEvents.getOrDefault(gameId, emptyList())

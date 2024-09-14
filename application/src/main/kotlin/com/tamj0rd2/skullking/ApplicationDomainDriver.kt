@@ -5,7 +5,7 @@ import com.tamj0rd2.skullking.domain.service.JoinGameService
 import com.tamj0rd2.skullking.domain.service.ViewPlayerGameStateService
 import com.tamj0rd2.skullking.port.input.JoinGameUseCase.JoinGameCommand
 import com.tamj0rd2.skullking.port.input.ViewPlayerGameStateUseCase.ViewPlayerGameStateQuery
-import com.tamj0rd2.skullking.port.output.GameEventsPort
+import com.tamj0rd2.skullking.port.output.GameRepository
 
 class ApplicationDomainDriver private constructor(
     private val joinGameService: JoinGameService,
@@ -16,7 +16,7 @@ class ApplicationDomainDriver private constructor(
     override fun invoke(query: ViewPlayerGameStateQuery) = viewPlayerGameStateService.invoke(query)
 
     companion object {
-        fun create(gameEventsPort: GameEventsPort): ApplicationDomainDriver {
+        fun create(gameEventsPort: GameRepository): ApplicationDomainDriver {
             val gameRepository = DeprecatedGameRepository(gameEventsPort)
             return ApplicationDomainDriver(
                 joinGameService = JoinGameService(gameRepository),

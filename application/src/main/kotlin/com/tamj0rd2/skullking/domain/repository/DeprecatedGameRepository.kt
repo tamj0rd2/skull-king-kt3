@@ -2,10 +2,10 @@ package com.tamj0rd2.skullking.domain.repository
 
 import com.tamj0rd2.skullking.domain.model.Game
 import com.tamj0rd2.skullking.domain.model.GameId
-import com.tamj0rd2.skullking.port.output.GameEventsPort
+import com.tamj0rd2.skullking.port.output.GameRepository
 
 class DeprecatedGameRepository(
-    private val gameEventsPort: GameEventsPort,
+    private val gameEventsPort: GameRepository,
 ) {
     fun load(gameId: GameId): Game = Game(gameId, gameEventsPort.findGameEvents(gameId))
 
