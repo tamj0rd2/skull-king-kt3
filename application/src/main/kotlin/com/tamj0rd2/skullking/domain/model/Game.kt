@@ -23,7 +23,7 @@ class Game(
 ) {
     private var initialized = false
 
-    internal val changes: List<GameEvent>
+    val changes: List<GameEvent>
         field = mutableListOf<GameEvent>()
 
     val players: List<PlayerId>

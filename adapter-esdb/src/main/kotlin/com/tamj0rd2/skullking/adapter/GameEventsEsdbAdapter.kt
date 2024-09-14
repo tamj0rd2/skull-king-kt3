@@ -4,6 +4,7 @@ import com.eventstore.dbclient.EventDataBuilder
 import com.eventstore.dbclient.EventStoreDBClient
 import com.eventstore.dbclient.EventStoreDBConnectionString
 import com.eventstore.dbclient.ReadStreamOptions
+import com.tamj0rd2.skullking.domain.model.Game
 import com.tamj0rd2.skullking.domain.model.GameEvent
 import com.tamj0rd2.skullking.domain.model.GameId
 import com.tamj0rd2.skullking.domain.model.PlayerId
@@ -23,6 +24,14 @@ class GameEventsEsdbAdapter(
             EventStoreDBConnectionString.parseOrThrow("esdb://localhost:2113?tls=false"),
         ),
 ) : GameRepository {
+    override fun load(gameId: GameId): Game {
+        return Game(gameId, findGameEvents(gameId))
+    }
+
+    override fun save(game: Game) {
+        saveGameEvents(game.changes)
+    }
+
     override fun findGameEvents(gameId: GameId): List<GameEvent> {
         val options = ReadStreamOptions.get().forwards()
         val result = client.readStream("game-events", options).get()
