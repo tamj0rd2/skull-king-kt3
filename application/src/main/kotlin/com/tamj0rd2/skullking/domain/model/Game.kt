@@ -23,7 +23,10 @@ class Game(
     history: List<GameEvent> = emptyList(),
 ) {
     private var initialized = false
-    private val changes = mutableListOf<GameEvent>()
+
+    private val _changes = mutableListOf<GameEvent>()
+    val changes get() = _changes.toList()
+
     private val _players = mutableListOf<PlayerId>()
     val players get() = _players.toList()
 
@@ -44,7 +47,7 @@ class Game(
     }
 
     private fun recordEvent(event: GameEvent) {
-        if (initialized) changes.add(event)
+        if (initialized) _changes.add(event)
     }
 
     companion object {
