@@ -1,10 +1,10 @@
 package com.tamj0rd2.skullking
 
-import com.tamj0rd2.skullking.application.service.JoinGameService
-import com.tamj0rd2.skullking.application.service.ViewPlayerGameStateService
 import com.tamj0rd2.skullking.application.port.input.JoinGameUseCase.JoinGameCommand
 import com.tamj0rd2.skullking.application.port.input.ViewPlayerGameStateUseCase.ViewPlayerGameStateQuery
 import com.tamj0rd2.skullking.application.port.output.GameRepository
+import com.tamj0rd2.skullking.application.service.JoinGameService
+import com.tamj0rd2.skullking.application.service.ViewPlayerGameStateService
 
 class ApplicationDomainDriver private constructor(
     private val joinGameService: JoinGameService,

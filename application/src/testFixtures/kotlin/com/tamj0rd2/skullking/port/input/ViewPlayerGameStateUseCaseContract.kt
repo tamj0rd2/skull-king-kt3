@@ -1,9 +1,9 @@
 package com.tamj0rd2.skullking.port.input
 
 import com.tamj0rd2.skullking.ApplicationDriver
-import com.tamj0rd2.skullking.domain.model.GameId
 import com.tamj0rd2.skullking.application.port.input.JoinGameUseCase.JoinGameCommand
 import com.tamj0rd2.skullking.application.port.input.ViewPlayerGameStateUseCase.ViewPlayerGameStateQuery
+import com.tamj0rd2.skullking.domain.model.GameId
 import dev.forkhandles.values.random
 import org.junit.jupiter.api.Test
 import strikt.api.expectThat
