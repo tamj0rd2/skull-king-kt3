@@ -3,8 +3,8 @@ package com.tamj0rd2.skullking.adapter
 import com.tamj0rd2.skullking.ApplicationDomainDriver
 import com.tamj0rd2.skullking.domain.model.GameId
 import com.tamj0rd2.skullking.domain.model.PlayerId
-import com.tamj0rd2.skullking.port.input.JoinGameUseCase.JoinGameCommand
-import com.tamj0rd2.skullking.port.input.ViewPlayerGameStateUseCase.ViewPlayerGameStateQuery
+import com.tamj0rd2.skullking.application.port.input.JoinGameUseCase.JoinGameCommand
+import com.tamj0rd2.skullking.application.port.input.ViewPlayerGameStateUseCase.ViewPlayerGameStateQuery
 import dev.forkhandles.values.ZERO
 import org.http4k.websocket.Websocket
 

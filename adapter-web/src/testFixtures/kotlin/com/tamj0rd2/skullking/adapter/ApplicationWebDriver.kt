@@ -2,10 +2,10 @@ package com.tamj0rd2.skullking.adapter
 
 import com.tamj0rd2.skullking.ApplicationDriver
 import com.tamj0rd2.skullking.domain.model.PlayerId
-import com.tamj0rd2.skullking.port.input.JoinGameUseCase.JoinGameCommand
-import com.tamj0rd2.skullking.port.input.JoinGameUseCase.JoinGameOutput
-import com.tamj0rd2.skullking.port.input.ViewPlayerGameStateUseCase.ViewPlayerGameStateOutput
-import com.tamj0rd2.skullking.port.input.ViewPlayerGameStateUseCase.ViewPlayerGameStateQuery
+import com.tamj0rd2.skullking.application.port.input.JoinGameUseCase.JoinGameCommand
+import com.tamj0rd2.skullking.application.port.input.JoinGameUseCase.JoinGameOutput
+import com.tamj0rd2.skullking.application.port.input.ViewPlayerGameStateUseCase.ViewPlayerGameStateOutput
+import com.tamj0rd2.skullking.application.port.input.ViewPlayerGameStateUseCase.ViewPlayerGameStateQuery
 import dev.forkhandles.values.ZERO
 import org.http4k.client.WebsocketClient
 import org.http4k.core.Uri

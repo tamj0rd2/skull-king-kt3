@@ -1,7 +1,7 @@
 package com.tamj0rd2.skullking.adapter
 
 import com.tamj0rd2.skullking.domain.model.GameId
-import com.tamj0rd2.skullking.port.input.JoinGameUseCase.JoinGameCommand
+import com.tamj0rd2.skullking.application.port.input.JoinGameUseCase.JoinGameCommand
 import dev.forkhandles.values.random
 import org.http4k.core.Uri
 import org.junit.jupiter.api.Test

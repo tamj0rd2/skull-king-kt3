@@ -1,10 +1,10 @@
 package com.tamj0rd2.skullking.application.service
 
+import com.tamj0rd2.skullking.application.port.input.JoinGameUseCase
+import com.tamj0rd2.skullking.application.port.input.JoinGameUseCase.JoinGameCommand
+import com.tamj0rd2.skullking.application.port.input.JoinGameUseCase.JoinGameOutput
+import com.tamj0rd2.skullking.application.port.output.GameRepository
 import com.tamj0rd2.skullking.domain.model.Player
-import com.tamj0rd2.skullking.port.input.JoinGameUseCase
-import com.tamj0rd2.skullking.port.input.JoinGameUseCase.JoinGameCommand
-import com.tamj0rd2.skullking.port.input.JoinGameUseCase.JoinGameOutput
-import com.tamj0rd2.skullking.port.output.GameRepository
 import dev.forkhandles.result4k.orThrow
 
 class JoinGameService(
