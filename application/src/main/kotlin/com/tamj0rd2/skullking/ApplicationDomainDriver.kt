@@ -1,6 +1,6 @@
 package com.tamj0rd2.skullking
 
-import com.tamj0rd2.skullking.domain.repository.GameRepository
+import com.tamj0rd2.skullking.domain.repository.DeprecatedGameRepository
 import com.tamj0rd2.skullking.domain.service.JoinGameService
 import com.tamj0rd2.skullking.domain.service.ViewPlayerGameStateService
 import com.tamj0rd2.skullking.port.input.JoinGameUseCase.JoinGameCommand
@@ -17,7 +17,7 @@ class ApplicationDomainDriver private constructor(
 
     companion object {
         fun create(gameEventsPort: GameEventsPort): ApplicationDomainDriver {
-            val gameRepository = GameRepository(gameEventsPort)
+            val gameRepository = DeprecatedGameRepository(gameEventsPort)
             return ApplicationDomainDriver(
                 joinGameService = JoinGameService(gameRepository),
                 viewPlayerGameStateService = ViewPlayerGameStateService(gameRepository),

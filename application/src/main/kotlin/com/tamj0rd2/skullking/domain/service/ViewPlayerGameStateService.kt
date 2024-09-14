@@ -1,12 +1,12 @@
 package com.tamj0rd2.skullking.domain.service
 
-import com.tamj0rd2.skullking.domain.repository.GameRepository
+import com.tamj0rd2.skullking.domain.repository.DeprecatedGameRepository
 import com.tamj0rd2.skullking.port.input.ViewPlayerGameStateUseCase
 import com.tamj0rd2.skullking.port.input.ViewPlayerGameStateUseCase.ViewPlayerGameStateOutput
 import com.tamj0rd2.skullking.port.input.ViewPlayerGameStateUseCase.ViewPlayerGameStateQuery
 
 class ViewPlayerGameStateService(
-    private val gameRepository: GameRepository,
+    private val gameRepository: DeprecatedGameRepository,
 ) : ViewPlayerGameStateUseCase {
     override fun invoke(query: ViewPlayerGameStateQuery): ViewPlayerGameStateOutput {
         val game = gameRepository.load(query.gameId)
