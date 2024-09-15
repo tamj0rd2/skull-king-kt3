@@ -20,19 +20,20 @@ kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", v
 strikt-core = { module = "io.strikt:strikt-core", version = "0.34.0" }
 values4k = { module = "dev.forkhandles:values4k", version.ref = "forkhandles" }
 result4k = { module = "dev.forkhandles:result4k", version.ref = "forkhandles" }
+kondor = { module = "com.ubertob.kondor:kondor-core", version = "3.1.2" }
 
 [bundles]
 http4k-server = [
     "http4k-core",
     "http4k-server-undertow",
-    "http4k-format-kondor"
+    "http4k-format-kondor",
 ]
 http4k-client = [
     "http4k-core",
     "http4k-client-apache",
     "http4k-client-websocket",
-    "http4k-format-kondor"
+    "http4k-format-kondor",
 ]
 json = [
-    "http4k-format-kondor"
+    "kondor",
 ]
