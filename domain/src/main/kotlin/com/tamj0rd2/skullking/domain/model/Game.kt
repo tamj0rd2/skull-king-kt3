@@ -18,7 +18,6 @@ value class GameId private constructor(
 
 class Game private constructor(
     val id: GameId,
-    history: List<GameEvent> = emptyList(),
 ) {
     private var initialized = false
 
@@ -43,7 +42,7 @@ class Game private constructor(
         const val MAXIMUM_PLAYER_COUNT = 6
 
         fun new() =
-            Game(GameId.random(), emptyList()).apply {
+            Game(GameId.random()).apply {
                 initialized = true
                 changes.add(GameCreated(id))
             }
