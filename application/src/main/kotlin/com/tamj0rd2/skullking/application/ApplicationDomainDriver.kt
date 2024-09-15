@@ -1,4 +1,4 @@
-package com.tamj0rd2.skullking
+package com.tamj0rd2.skullking.application
 
 import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.CreateNewGameCommand
 import com.tamj0rd2.skullking.application.port.input.JoinGameUseCase.JoinGameCommand

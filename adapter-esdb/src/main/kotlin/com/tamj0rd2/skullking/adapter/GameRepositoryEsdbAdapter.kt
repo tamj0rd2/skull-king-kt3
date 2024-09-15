@@ -23,7 +23,7 @@ import dev.forkhandles.result4k.recover
 import dev.forkhandles.result4k.resultFromCatching
 import kotlin.text.Charsets.UTF_8
 
-class GameEventsEsdbAdapter(
+class GameRepositoryEsdbAdapter(
     private val client: EventStoreDBClient =
         EventStoreDBClient.create(
             EventStoreDBConnectionString.parseOrThrow("esdb://localhost:2113?tls=false"),

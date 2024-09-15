@@ -1,6 +1,6 @@
-package com.tamj0rd2.skullking.port.input
+package com.tamj0rd2.skullking.application.port.input
 
-import com.tamj0rd2.skullking.ApplicationDriver
+import com.tamj0rd2.skullking.application.ApplicationDriver
 import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.CreateNewGameCommand
 import org.junit.jupiter.api.Test
 import strikt.api.expectCatching

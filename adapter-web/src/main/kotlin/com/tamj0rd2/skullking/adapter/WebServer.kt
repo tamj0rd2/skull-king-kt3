@@ -1,6 +1,6 @@
 package com.tamj0rd2.skullking.adapter
 
-import com.tamj0rd2.skullking.ApplicationDomainDriver
+import com.tamj0rd2.skullking.application.ApplicationDomainDriver
 import org.http4k.server.Http4kServer
 import org.http4k.server.Undertow
 import org.http4k.server.asServer
@@ -21,7 +21,7 @@ object WebServer {
 
     fun createApp(): ApplicationDomainDriver =
         ApplicationDomainDriver.create(
-            gameRepository = GameEventsEsdbAdapter(),
+            gameRepository = GameRepositoryEsdbAdapter(),
         )
 
     fun createServer(

@@ -1,6 +1,6 @@
 package com.tamj0rd2.skullking.adapter
 
-import com.tamj0rd2.skullking.ApplicationDomainDriver
+import com.tamj0rd2.skullking.application.ApplicationDomainDriver
 import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.CreateNewGameCommand
 import com.tamj0rd2.skullking.application.port.input.JoinGameUseCase.JoinGameCommand
 import com.tamj0rd2.skullking.application.port.input.ViewPlayerGameStateUseCase.ViewPlayerGameStateQuery

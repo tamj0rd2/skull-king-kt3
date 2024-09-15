@@ -1,12 +1,12 @@
 package com.tamj0rd2.skullking.application.service
 
-import com.tamj0rd2.skullking.ApplicationDomainDriver
-import com.tamj0rd2.skullking.ApplicationDriver
-import com.tamj0rd2.skullking.port.input.CreateNewGameUseCaseContract
-import com.tamj0rd2.skullking.port.output.GameEventsInMemoryAdapter
+import com.tamj0rd2.skullking.application.ApplicationDomainDriver
+import com.tamj0rd2.skullking.application.ApplicationDriver
+import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCaseContract
+import com.tamj0rd2.skullking.application.port.output.GameRepositoryInMemoryAdapter
 
 class CreateNewGameServiceTest : CreateNewGameUseCaseContract() {
-    private val gameRepository = GameEventsInMemoryAdapter()
+    private val gameRepository = GameRepositoryInMemoryAdapter()
 
     override fun newDriver(): ApplicationDriver =
         ApplicationDomainDriver.create(

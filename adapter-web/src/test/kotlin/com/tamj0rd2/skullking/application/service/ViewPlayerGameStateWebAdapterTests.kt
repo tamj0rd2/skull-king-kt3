@@ -1,11 +1,11 @@
 package com.tamj0rd2.skullking.application.service
 
-import com.tamj0rd2.skullking.ApplicationDomainDriver
-import com.tamj0rd2.skullking.ApplicationDriver
 import com.tamj0rd2.skullking.adapter.ApplicationWebDriver
 import com.tamj0rd2.skullking.adapter.WebServer
-import com.tamj0rd2.skullking.port.input.ViewPlayerGameStateUseCaseContract
-import com.tamj0rd2.skullking.port.output.GameEventsInMemoryAdapter
+import com.tamj0rd2.skullking.application.ApplicationDomainDriver
+import com.tamj0rd2.skullking.application.ApplicationDriver
+import com.tamj0rd2.skullking.application.port.input.ViewPlayerGameStateUseCaseContract
+import com.tamj0rd2.skullking.application.port.output.GameRepositoryInMemoryAdapter
 import org.http4k.core.Uri
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -16,7 +16,7 @@ class ViewPlayerGameStateWebAdapterTests : ViewPlayerGameStateUseCaseContract() 
     private val server =
         WebServer.createServer(
             ApplicationDomainDriver.create(
-                gameRepository = GameEventsInMemoryAdapter(),
+                gameRepository = GameRepositoryInMemoryAdapter(),
             ),
         )
 

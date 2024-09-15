@@ -1,11 +1,10 @@
-package com.tamj0rd2.skullking.port.output
+package com.tamj0rd2.skullking.application.port.output
 
-import com.tamj0rd2.skullking.application.port.output.GameRepository
 import com.tamj0rd2.skullking.domain.model.Game
 import com.tamj0rd2.skullking.domain.model.GameEvent
 import com.tamj0rd2.skullking.domain.model.GameId
 
-class GameEventsInMemoryAdapter : GameRepository {
+class GameRepositoryInMemoryAdapter : GameRepository {
     private val savedEvents = mutableMapOf<GameId, List<GameEvent>>()
 
     override fun load(gameId: GameId): Game = Game.from(findGameEvents(gameId))
