@@ -25,6 +25,11 @@ class GameTest {
     }
 
     @Example
+    fun `a game cannot be built from an empty history`() {
+        expectThrows<IllegalStateException> { Game.from(emptyList()) }
+    }
+
+    @Example
     fun `joining a full game is not possible`() {
         val game = Game.new()
         repeat(MAXIMUM_PLAYER_COUNT) { game.addPlayer(PlayerId.random()) }
@@ -55,6 +60,6 @@ class GameTest {
             }
 
         val eventsContainingMultipleGames = eventsForThisGame.take(1) + (eventsForThisGame.drop(1) + eventsForOtherGames).shuffled()
-        expectThrows<IllegalStateException> { Game(thisGameId, eventsContainingMultipleGames) }
+        expectThrows<IllegalStateException> { Game.from(eventsContainingMultipleGames) }
     }
 }

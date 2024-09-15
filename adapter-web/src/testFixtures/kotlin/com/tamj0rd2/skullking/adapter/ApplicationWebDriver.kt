@@ -1,7 +1,8 @@
 package com.tamj0rd2.skullking.adapter
 
 import com.tamj0rd2.skullking.ApplicationDriver
-import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase
+import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.CreateNewGameCommand
+import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.CreateNewGameOutput
 import com.tamj0rd2.skullking.application.port.input.JoinGameUseCase.JoinGameCommand
 import com.tamj0rd2.skullking.application.port.input.JoinGameUseCase.JoinGameOutput
 import com.tamj0rd2.skullking.application.port.input.ViewPlayerGameStateUseCase.ViewPlayerGameStateOutput
@@ -19,8 +20,10 @@ class ApplicationWebDriver(
     private val ws by lazy { WebsocketClient.blocking(uri = baseUri, timeout = Duration.ofSeconds(5)) }
     private var playerId = PlayerId.ZERO
 
-    override fun invoke(command: CreateNewGameUseCase.CreateNewGameCommand): CreateNewGameUseCase.CreateNewGameOutput {
-        TODO("Not yet implemented")
+    override fun invoke(command: CreateNewGameCommand): CreateNewGameOutput {
+        ws.send(wsLens(CreateNewGameMessage))
+        val response = ws.responses().firstOfKind<GameCreatedMessage>()
+        return CreateNewGameOutput(response.gameId)
     }
 
     override fun invoke(command: JoinGameCommand): JoinGameOutput {

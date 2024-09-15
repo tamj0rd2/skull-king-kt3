@@ -16,6 +16,12 @@ import org.http4k.websocket.WsMessage
 
 sealed interface Message
 
+data object CreateNewGameMessage : Message
+
+data class GameCreatedMessage(
+    val gameId: GameId,
+) : Message
+
 data class JoinAcknowledgedMessage(
     val playerId: PlayerId,
 ) : Message
@@ -43,6 +49,8 @@ private object JMessage : JSealed<Message>() {
     override val subConverters: Map<String, ObjectNodeConverter<out Message>>
         get() =
             mapOf(
+                "game-created" to JGameCreatedMessage,
+                "create-game" to JSingleton(CreateNewGameMessage),
                 "join-acknowledged" to JAcknowledged,
                 "get-game-state" to JSingleton(GetGameStateMessage),
                 "game-state" to JGameState,
@@ -51,6 +59,8 @@ private object JMessage : JSealed<Message>() {
 
     override fun extractTypeName(obj: Message): String =
         when (obj) {
+            is GameCreatedMessage -> "game-created"
+            is CreateNewGameMessage -> "create-game"
             is JoinAcknowledgedMessage -> "join-acknowledged"
             is GetGameStateMessage -> "get-game-state"
             is GameStateMessage -> "game-state"
@@ -66,6 +76,15 @@ private object JPlayerId : JStringRepresentable<PlayerId>() {
 private object JGameId : JStringRepresentable<GameId>() {
     override val cons: (String) -> GameId = GameId.Companion::parse
     override val render: (GameId) -> String = GameId.Companion::show
+}
+
+private object JGameCreatedMessage : JAny<GameCreatedMessage>() {
+    private val gameId by str(JGameId, GameCreatedMessage::gameId)
+
+    override fun JsonNodeObject.deserializeOrThrow() =
+        GameCreatedMessage(
+            gameId = +gameId,
+        )
 }
 
 private object JAcknowledged : JAny<JoinAcknowledgedMessage>() {

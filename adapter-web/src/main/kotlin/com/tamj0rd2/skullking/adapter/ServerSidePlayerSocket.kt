@@ -1,6 +1,7 @@
 package com.tamj0rd2.skullking.adapter
 
 import com.tamj0rd2.skullking.ApplicationDomainDriver
+import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.CreateNewGameCommand
 import com.tamj0rd2.skullking.application.port.input.JoinGameUseCase.JoinGameCommand
 import com.tamj0rd2.skullking.application.port.input.ViewPlayerGameStateUseCase.ViewPlayerGameStateQuery
 import com.tamj0rd2.skullking.domain.model.GameId
@@ -26,9 +27,15 @@ internal class ServerSidePlayerSocket(
                 this.playerId = playerId
             }
 
+            is CreateNewGameMessage -> respondToCreateGameRequest()
             is GetGameStateMessage -> respondToGameStateRequest()
             else -> TODO("server received $message but has no handler")
         }
+    }
+
+    private fun respondToCreateGameRequest() {
+        val output = app(CreateNewGameCommand)
+        ws.send(wsLens(GameCreatedMessage(output.gameId)))
     }
 
     private fun respondToJoinRequest(message: JoinGameMessage): Pair<GameId, PlayerId> {

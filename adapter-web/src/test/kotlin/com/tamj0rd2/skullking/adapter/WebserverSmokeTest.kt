@@ -1,8 +1,7 @@
 package com.tamj0rd2.skullking.adapter
 
+import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.CreateNewGameCommand
 import com.tamj0rd2.skullking.application.port.input.JoinGameUseCase.JoinGameCommand
-import com.tamj0rd2.skullking.domain.model.GameId
-import dev.forkhandles.values.random
 import org.http4k.core.Uri
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
@@ -17,7 +16,7 @@ class WebserverSmokeTest {
         val player1 = ApplicationWebDriver(baseUri)
         val player2 = ApplicationWebDriver(baseUri)
 
-        val gameId = GameId.random()
+        val gameId = player1(CreateNewGameCommand).gameId
         player1(JoinGameCommand(gameId)).playerId
         player2(JoinGameCommand(gameId)).playerId
 

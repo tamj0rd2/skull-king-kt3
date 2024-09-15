@@ -29,7 +29,7 @@ class GameEventsEsdbAdapter(
             EventStoreDBConnectionString.parseOrThrow("esdb://localhost:2113?tls=false"),
         ),
 ) : GameRepository {
-    override fun load(gameId: GameId): Game = Game(gameId, findGameEvents(gameId))
+    override fun load(gameId: GameId): Game = Game.from(findGameEvents(gameId))
 
     override fun save(game: Game) {
         saveGameEvents(game.changes)

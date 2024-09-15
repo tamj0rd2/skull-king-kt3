@@ -16,7 +16,7 @@ value class GameId private constructor(
     companion object : UUIDValueFactory<GameId>(::GameId)
 }
 
-class Game(
+class Game private constructor(
     val id: GameId,
     history: List<GameEvent> = emptyList(),
 ) {
@@ -27,16 +27,6 @@ class Game(
 
     val players: List<PlayerId>
         field = mutableListOf<PlayerId>()
-
-    init {
-        if (history.isNotEmpty()) {
-            initialiseFromHistory(history)
-        } else {
-            initialiseNewGame()
-        }
-
-        check(initialized) { "Game not correctly initialized" }
-    }
 
     fun addPlayer(playerId: PlayerId): Result4k<Unit, AddPlayerErrorCode> {
         if (players.size >= MAXIMUM_PLAYER_COUNT) return GameIsFull.asFailure()
@@ -49,28 +39,31 @@ class Game(
         if (initialized) changes.add(event)
     }
 
-    private fun initialiseFromHistory(history: List<GameEvent>) {
-        check(history.all { it.gameId == id }) { "GameId mismatch" }
-
-        history.forEach { event ->
-            when (event) {
-                is PlayerJoined -> addPlayer(event.playerId)
-                is GameCreated -> Unit.asSuccess()
-            }.orThrow()
-        }
-
-        initialized = true
-    }
-
-    private fun initialiseNewGame() {
-        initialized = true
-        changes.add(GameCreated(id))
-    }
-
     companion object {
         const val MAXIMUM_PLAYER_COUNT = 6
 
-        fun new() = Game(GameId.random(), emptyList())
+        fun new() =
+            Game(GameId.random(), emptyList()).apply {
+                initialized = true
+                changes.add(GameCreated(id))
+            }
+
+        fun from(history: List<GameEvent>): Game {
+            check(history.isNotEmpty()) { "Provided history was empty. Create a new game instead." }
+
+            val gameId = history.first().gameId
+
+            return Game(gameId).apply {
+                check(history.all<GameEvent> { it.gameId == this.id }) { "GameId mismatch" }
+                history.forEach<GameEvent> { event ->
+                    when (event) {
+                        is PlayerJoined -> addPlayer(event.playerId)
+                        is GameCreated -> Unit.asSuccess()
+                    }.orThrow()
+                }
+                initialized = true
+            }
+        }
     }
 }
 
