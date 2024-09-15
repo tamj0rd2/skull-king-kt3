@@ -16,7 +16,6 @@ value class GameId private constructor(
     companion object : UUIDValueFactory<GameId>(::GameId)
 }
 
-@Suppress("CONTEXT_RECEIVERS_DEPRECATED") // When contextParameters are available, I'll migrate.
 class Game(
     val id: GameId,
     history: List<GameEvent> = emptyList(),

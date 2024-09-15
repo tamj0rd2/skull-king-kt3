@@ -43,7 +43,6 @@ tasks.named<Test>("test") {
 
 tasks.withType(KotlinCompile::class).all {
     compilerOptions {
-        freeCompilerArgs.add("-Xcontext-receivers")
         freeCompilerArgs.add("-Xnullability-annotations=@org.jspecify.annotations:strict")
         freeCompilerArgs.add("-Xemit-jvm-type-annotations")
         freeCompilerArgs.add("-XXLanguage:+ExplicitBackingFields")
