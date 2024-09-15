@@ -4,8 +4,11 @@ import com.eventstore.dbclient.EventDataBuilder
 import com.eventstore.dbclient.EventStoreDBClient
 import com.eventstore.dbclient.EventStoreDBConnectionString
 import com.eventstore.dbclient.ReadStreamOptions
+import com.eventstore.dbclient.ResolvedEvent
+import com.eventstore.dbclient.StreamNotFoundException
 import com.tamj0rd2.skullking.application.port.output.GameRepository
 import com.tamj0rd2.skullking.domain.model.Game
+import com.tamj0rd2.skullking.domain.model.GameCreated
 import com.tamj0rd2.skullking.domain.model.GameEvent
 import com.tamj0rd2.skullking.domain.model.GameId
 import com.tamj0rd2.skullking.domain.model.PlayerId
@@ -16,6 +19,8 @@ import com.ubertob.kondor.json.JStringRepresentable
 import com.ubertob.kondor.json.ObjectNodeConverter
 import com.ubertob.kondor.json.jsonnode.JsonNodeObject
 import com.ubertob.kondor.json.str
+import dev.forkhandles.result4k.recover
+import dev.forkhandles.result4k.resultFromCatching
 import kotlin.text.Charsets.UTF_8
 
 class GameEventsEsdbAdapter(
@@ -31,9 +36,12 @@ class GameEventsEsdbAdapter(
     }
 
     override fun findGameEvents(gameId: GameId): List<GameEvent> {
-        val options = ReadStreamOptions.get().forwards()
-        val result = client.readStream("game-events", options).get()
-        return result.events
+        val events =
+            resultFromCatching<StreamNotFoundException, List<ResolvedEvent>> {
+                client.readStream("game-events", ReadStreamOptions.get().forwards()).get().events
+            }.recover { emptyList() }
+
+        return events
             .asSequence()
             .map { it.event.eventData }
             .map { it.toString(UTF_8) }
@@ -58,6 +66,7 @@ class GameEventsEsdbAdapter(
         private object JGameEvent : JSealed<GameEvent>() {
             private val config =
                 listOf(
+                    Triple(GameCreated::class, "game-created", JGameCreated),
                     Triple(PlayerJoined::class, "player-joined", JPlayerJoined),
                 )
 
@@ -67,11 +76,20 @@ class GameEventsEsdbAdapter(
             override fun extractTypeName(obj: GameEvent): String = config.single { (clazz, _, _) -> clazz == obj::class }.second
         }
 
+        private object JGameCreated : JAny<GameCreated>() {
+            private val gameId by str(JGameId, GameCreated::gameId)
+
+            override fun JsonNodeObject.deserializeOrThrow() =
+                GameCreated(
+                    gameId = +gameId,
+                )
+        }
+
         private object JPlayerJoined : JAny<PlayerJoined>() {
             private val playerId by str(JPlayerId, PlayerJoined::playerId)
             private val gameId by str(JGameId, PlayerJoined::gameId)
 
-            override fun JsonNodeObject.deserializeOrThrow(): PlayerJoined =
+            override fun JsonNodeObject.deserializeOrThrow() =
                 PlayerJoined(
                     playerId = +playerId,
                     gameId = +gameId,

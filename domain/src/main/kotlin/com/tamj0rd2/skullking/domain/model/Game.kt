@@ -30,15 +30,13 @@ class Game(
         field = mutableListOf<PlayerId>()
 
     init {
-        // TODO: Throw a typed exception here. Or maybe even turn this into a factory somehow?
-        check(history.all { it.gameId == id }) { "GameId mismatch" }
-
-        history.forEach { event ->
-            when (event) {
-                is PlayerJoined -> addPlayer(event.playerId)
-            }.orThrow()
+        if (history.isNotEmpty()) {
+            initialiseFromHistory(history)
+        } else {
+            initialiseNewGame()
         }
-        initialized = true
+
+        check(initialized) { "Game not correctly initialized" }
     }
 
     fun addPlayer(playerId: PlayerId): Result4k<Unit, AddPlayerErrorCode> {
@@ -50,6 +48,24 @@ class Game(
 
     private fun recordEvent(event: GameEvent) {
         if (initialized) changes.add(event)
+    }
+
+    private fun initialiseFromHistory(history: List<GameEvent>) {
+        check(history.all { it.gameId == id }) { "GameId mismatch" }
+
+        history.forEach { event ->
+            when (event) {
+                is PlayerJoined -> addPlayer(event.playerId)
+                is GameCreated -> Unit.asSuccess()
+            }.orThrow()
+        }
+
+        initialized = true
+    }
+
+    private fun initialiseNewGame() {
+        initialized = true
+        changes.add(GameCreated(id))
     }
 
     companion object {

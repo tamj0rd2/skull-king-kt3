@@ -1,10 +1,9 @@
 package com.tamj0rd2.skullking.port.output
 
 import com.tamj0rd2.skullking.application.port.output.GameRepository
+import com.tamj0rd2.skullking.domain.model.Game
 import com.tamj0rd2.skullking.domain.model.Game.Companion.MAXIMUM_PLAYER_COUNT
-import com.tamj0rd2.skullking.domain.model.GameId
 import com.tamj0rd2.skullking.domain.model.PlayerId
-import com.tamj0rd2.skullking.domain.model.PlayerJoined
 import dev.forkhandles.values.random
 import net.jqwik.api.ForAll
 import net.jqwik.api.Property
@@ -19,20 +18,21 @@ abstract class GameRepositoryContract {
     fun `all previously saved changes for a game can be retrieved`(
         @ForAll @IntRange(min = 0, max = MAXIMUM_PLAYER_COUNT) timesToSave: Int,
     ) {
-        val gameId = GameId.random()
+        val game = Game.new()
 
-        val allChangesMadeAcrossSaves =
+        val playersAddedAcrossSaves =
             buildList {
                 repeat(timesToSave) {
-                    val loadedGame = gameRepository.load(gameId)
-                    loadedGame.addPlayer(PlayerId.random())
+                    val loadedGame = gameRepository.load(game.id)
+                    PlayerId.random().also { playerId ->
+                        add(playerId)
+                        loadedGame.addPlayer(playerId)
+                    }
                     gameRepository.save(loadedGame)
-                    @Suppress("UNCHECKED_CAST")
-                    addAll(loadedGame.changes as List<PlayerJoined>)
                 }
             }
 
-        val loadedGameAfterAllSaves = gameRepository.load(gameId)
-        expectThat(loadedGameAfterAllSaves.players).isEqualTo(allChangesMadeAcrossSaves.map { it.playerId })
+        val loadedGameAfterAllSaves = gameRepository.load(game.id)
+        expectThat(loadedGameAfterAllSaves.players).isEqualTo(playersAddedAcrossSaves)
     }
 }

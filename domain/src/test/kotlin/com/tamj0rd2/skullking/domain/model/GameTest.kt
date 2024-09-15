@@ -12,8 +12,18 @@ import strikt.api.expect
 import strikt.api.expectThrows
 import strikt.assertions.hasSize
 import strikt.assertions.isA
+import strikt.assertions.isEqualTo
 
 class GameTest {
+    @Example
+    fun `when a new game is created, a GameCreated event is added to its changes`() {
+        val game = Game.new()
+        expect {
+            that(game.changes).hasSize(1)
+            that(game.changes.first()).isA<GameCreated>().get { gameId }.isEqualTo(game.id)
+        }
+    }
+
     @Example
     fun `joining a full game is not possible`() {
         val game = Game.new()
