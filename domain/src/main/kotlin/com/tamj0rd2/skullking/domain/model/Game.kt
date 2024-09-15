@@ -1,8 +1,8 @@
 package com.tamj0rd2.skullking.domain.model
 
-import dev.forkhandles.result4k.Failure
+import com.tamj0rd2.extensions.asFailure
+import com.tamj0rd2.extensions.asSuccess
 import dev.forkhandles.result4k.Result4k
-import dev.forkhandles.result4k.Success
 import dev.forkhandles.result4k.orThrow
 import dev.forkhandles.values.UUIDValueFactory
 import dev.forkhandles.values.Value
@@ -42,10 +42,10 @@ class Game(
     }
 
     fun addPlayer(playerId: PlayerId): Result4k<Unit, AddPlayerErrorCode> {
-        if (players.size >= MAXIMUM_PLAYER_COUNT) return Failure(GameIsFull)
+        if (players.size >= MAXIMUM_PLAYER_COUNT) return GameIsFull.asFailure()
         players.add(playerId)
         recordEvent(PlayerJoined(id, playerId))
-        return Success(Unit)
+        return Unit.asSuccess()
     }
 
     private fun recordEvent(event: GameEvent) {

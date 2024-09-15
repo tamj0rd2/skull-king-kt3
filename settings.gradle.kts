@@ -12,8 +12,9 @@ plugins {
 
 rootProject.name = "skull-king"
 include(
-    "adapter-esdb",
-    "adapter-web",
-    "application",
-    "domain",
+    ":adapter-esdb",
+    ":adapter-web",
+    ":application",
+    ":domain",
+    ":lib:forkhandles-extensions",
 )
