@@ -4,5 +4,6 @@ plugins {
 
 dependencies {
     api(libs.values4k)
-    api(project(":domain"))
+    implementation(project(":domain"))
+    testFixturesImplementation(project(":domain"))
 }
