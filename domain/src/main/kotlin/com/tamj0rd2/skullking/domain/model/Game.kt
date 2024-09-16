@@ -7,7 +7,7 @@ import dev.forkhandles.result4k.orThrow
 import dev.forkhandles.values.UUIDValueFactory
 import dev.forkhandles.values.Value
 import dev.forkhandles.values.random
-import java.util.*
+import java.util.UUID
 
 @JvmInline
 value class GameId private constructor(
@@ -21,21 +21,21 @@ class Game private constructor(
 ) {
     private var initialized = false
 
-    val changes: List<GameEvent>
-        field = mutableListOf<GameEvent>()
+    private val _changes = mutableListOf<GameEvent>()
+    val changes: List<GameEvent> get() = _changes.toList()
 
-    val players: List<PlayerId>
-        field = mutableListOf<PlayerId>()
+    private val _players = mutableListOf<PlayerId>()
+    val players: List<PlayerId> get() = _players
 
     fun addPlayer(playerId: PlayerId): Result4k<Unit, AddPlayerErrorCode> {
         if (players.size >= MAXIMUM_PLAYER_COUNT) return GameIsFull.asFailure()
-        players.add(playerId)
+        _players.add(playerId)
         recordEvent(PlayerJoined(id, playerId))
         return Unit.asSuccess()
     }
 
     private fun recordEvent(event: GameEvent) {
-        if (initialized) changes.add(event)
+        if (initialized) _changes.add(event)
     }
 
     companion object {
@@ -44,7 +44,7 @@ class Game private constructor(
         fun new() =
             Game(GameId.random()).apply {
                 initialized = true
-                changes.add(GameCreated(id))
+                _changes.add(GameCreated(id))
             }
 
         fun from(history: List<GameEvent>): Game {
