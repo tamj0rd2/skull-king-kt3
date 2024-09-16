@@ -10,7 +10,7 @@ class GameRepositoryInMemoryAdapter : GameRepository {
     override fun load(gameId: GameId): Game = Game.from(findGameEvents(gameId))
 
     override fun save(game: Game) {
-        saveGameEvents(game.changes)
+        saveGameEvents(game.updates)
     }
 
     override fun findGameEvents(gameId: GameId): List<GameEvent> = savedEvents.getOrDefault(gameId, emptyList())

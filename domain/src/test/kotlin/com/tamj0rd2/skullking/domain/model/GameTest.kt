@@ -20,8 +20,8 @@ class GameTest {
     fun `when a new game is created, a GameCreated event is added to its changes`() {
         val game = Game.new()
         expect {
-            that(game.changes).hasSize(1)
-            that(game.changes.first()).isA<GameCreated>().get { gameId }.isEqualTo(game.id)
+            that(game.updates).hasSize(1)
+            that(game.updates.first()).isA<GameCreated>().get { gameId }.isEqualTo(game.id)
         }
     }
 
@@ -40,7 +40,7 @@ class GameTest {
             )
 
         expect {
-            that(game.changes).isEmpty()
+            that(game.updates).isEmpty()
             that(game.players).isEqualTo(listOf(player1, player2))
         }
     }

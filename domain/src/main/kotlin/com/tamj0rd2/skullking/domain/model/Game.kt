@@ -38,13 +38,13 @@ class Game {
     private constructor() {
         id = GameId.random()
         initialized = true
-        _changes.add(GameCreated(id))
+        _updates.add(GameCreated(id))
     }
 
     val id: GameId
 
-    private val _changes = mutableListOf<GameEvent>()
-    val changes: List<GameEvent> get() = _changes.toList()
+    private val _updates = mutableListOf<GameEvent>()
+    val updates: List<GameEvent> get() = _updates.toList()
 
     private val _players = mutableListOf<PlayerId>()
     val players: List<PlayerId> get() = _players
@@ -57,7 +57,7 @@ class Game {
     }
 
     private fun recordEvent(event: GameEvent) {
-        if (initialized) _changes.add(event)
+        if (initialized) _updates.add(event)
     }
 
     companion object {
