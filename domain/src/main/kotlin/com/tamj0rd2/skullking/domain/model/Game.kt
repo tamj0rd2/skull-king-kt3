@@ -17,13 +17,9 @@ value class GameId private constructor(
 }
 
 class Game {
-    private var initialized = false
-
     private constructor(history: List<GameEvent>) {
-        check(history.isNotEmpty()) { "Provided history was empty. Create a new game instead." }
-
-        id = history.first().gameId
-        check(history.all { it.gameId == this.id }) { "GameId mismatch" }
+        gameActivityLog = GameActivityLog.forExistingGame(history)
+        id = gameActivityLog.gameId
 
         history.forEach { event ->
             when (event) {
@@ -32,19 +28,19 @@ class Game {
             }.orThrow()
         }
 
-        initialized = true
+        gameActivityLog.startRecordingUpdates()
     }
 
     private constructor() {
         id = GameId.random()
-        initialized = true
-        _updates.add(GameCreated(id))
+        gameActivityLog = GameActivityLog.forNewGame()
+        gameActivityLog.record(GameCreated(id))
     }
 
     val id: GameId
 
-    private val _updates = mutableListOf<GameEvent>()
-    val updates: List<GameEvent> get() = _updates.toList()
+    private val gameActivityLog: GameActivityLog
+    val updates get() = gameActivityLog.updates
 
     private val _players = mutableListOf<PlayerId>()
     val players: List<PlayerId> get() = _players
@@ -52,12 +48,8 @@ class Game {
     fun addPlayer(playerId: PlayerId): Result4k<Unit, AddPlayerErrorCode> {
         if (players.size >= MAXIMUM_PLAYER_COUNT) return GameIsFull.asFailure()
         _players.add(playerId)
-        recordEvent(PlayerJoined(id, playerId))
+        gameActivityLog.record(PlayerJoined(id, playerId))
         return Unit.asSuccess()
-    }
-
-    private fun recordEvent(event: GameEvent) {
-        if (initialized) _updates.add(event)
     }
 
     companion object {
