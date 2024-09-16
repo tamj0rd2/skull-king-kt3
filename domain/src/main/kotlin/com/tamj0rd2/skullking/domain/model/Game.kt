@@ -16,10 +16,32 @@ value class GameId private constructor(
     companion object : UUIDValueFactory<GameId>(::GameId)
 }
 
-class Game private constructor(
-    val id: GameId,
-) {
+class Game {
     private var initialized = false
+
+    private constructor(history: List<GameEvent>) {
+        check(history.isNotEmpty()) { "Provided history was empty. Create a new game instead." }
+
+        id = history.first().gameId
+        check(history.all { it.gameId == this.id }) { "GameId mismatch" }
+
+        history.forEach { event ->
+            when (event) {
+                is PlayerJoined -> addPlayer(event.playerId)
+                is GameCreated -> Unit.asSuccess()
+            }.orThrow()
+        }
+
+        initialized = true
+    }
+
+    private constructor() {
+        id = GameId.random()
+        initialized = true
+        _changes.add(GameCreated(id))
+    }
+
+    val id: GameId
 
     private val _changes = mutableListOf<GameEvent>()
     val changes: List<GameEvent> get() = _changes.toList()
@@ -41,28 +63,9 @@ class Game private constructor(
     companion object {
         const val MAXIMUM_PLAYER_COUNT = 6
 
-        fun new() =
-            Game(GameId.random()).apply {
-                initialized = true
-                _changes.add(GameCreated(id))
-            }
+        fun new() = Game()
 
-        fun from(history: List<GameEvent>): Game {
-            check(history.isNotEmpty()) { "Provided history was empty. Create a new game instead." }
-
-            val gameId = history.first().gameId
-
-            return Game(gameId).apply {
-                check(history.all { it.gameId == this.id }) { "GameId mismatch" }
-                history.forEach { event ->
-                    when (event) {
-                        is PlayerJoined -> addPlayer(event.playerId)
-                        is GameCreated -> Unit.asSuccess()
-                    }.orThrow()
-                }
-                initialized = true
-            }
-        }
+        fun from(history: List<GameEvent>) = Game(history)
     }
 }
 

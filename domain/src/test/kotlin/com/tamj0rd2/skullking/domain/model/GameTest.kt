@@ -12,6 +12,7 @@ import strikt.api.expect
 import strikt.api.expectThrows
 import strikt.assertions.hasSize
 import strikt.assertions.isA
+import strikt.assertions.isEmpty
 import strikt.assertions.isEqualTo
 
 class GameTest {
@@ -21,6 +22,26 @@ class GameTest {
         expect {
             that(game.changes).hasSize(1)
             that(game.changes.first()).isA<GameCreated>().get { gameId }.isEqualTo(game.id)
+        }
+    }
+
+    @Example
+    fun `a game can be created from a history of events`() {
+        val gameId = GameId.random()
+        val player1 = PlayerId.random()
+        val player2 = PlayerId.random()
+        val game =
+            Game.from(
+                listOf(
+                    GameCreated(gameId),
+                    PlayerJoined(gameId, player1),
+                    PlayerJoined(gameId, player2),
+                ),
+            )
+
+        expect {
+            that(game.changes).isEmpty()
+            that(game.players).isEqualTo(listOf(player1, player2))
         }
     }
 
@@ -42,21 +63,21 @@ class GameTest {
 
     @Property
     fun `a game cannot be built from events that affect multiple different games`(
-        @ForAll @IntRange(min = 1, max = MAXIMUM_PLAYER_COUNT) eventsForThisGame: Int,
-        @ForAll @IntRange(min = 1, max = MAXIMUM_PLAYER_COUNT) eventsForOtherGames: Int,
+        @ForAll @IntRange(min = 1, max = MAXIMUM_PLAYER_COUNT) eventCountForThisGame: Int,
+        @ForAll @IntRange(min = 1, max = MAXIMUM_PLAYER_COUNT) eventCountForPreviousGames: Int,
     ) {
-        Assume.that(eventsForThisGame + eventsForOtherGames <= MAXIMUM_PLAYER_COUNT)
+        Assume.that(eventCountForThisGame + eventCountForPreviousGames <= MAXIMUM_PLAYER_COUNT)
 
         val thisGameId = GameId.random()
 
         val eventsForThisGame =
             buildList {
-                repeat(eventsForThisGame) { add(PlayerJoined(thisGameId, PlayerId.random())) }
+                repeat(eventCountForThisGame) { add(PlayerJoined(thisGameId, PlayerId.random())) }
             }
 
         val eventsForOtherGames =
             buildList {
-                repeat(eventsForOtherGames) { add(PlayerJoined(GameId.random(), PlayerId.random())) }
+                repeat(eventCountForPreviousGames) { add(PlayerJoined(GameId.random(), PlayerId.random())) }
             }
 
         val eventsContainingMultipleGames = eventsForThisGame.take(1) + (eventsForThisGame.drop(1) + eventsForOtherGames).shuffled()
