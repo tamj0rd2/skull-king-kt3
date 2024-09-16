@@ -53,8 +53,8 @@ class Game private constructor(
             val gameId = history.first().gameId
 
             return Game(gameId).apply {
-                check(history.all<GameEvent> { it.gameId == this.id }) { "GameId mismatch" }
-                history.forEach<GameEvent> { event ->
+                check(history.all { it.gameId == this.id }) { "GameId mismatch" }
+                history.forEach { event ->
                     when (event) {
                         is PlayerJoined -> addPlayer(event.playerId)
                         is GameCreated -> Unit.asSuccess()
