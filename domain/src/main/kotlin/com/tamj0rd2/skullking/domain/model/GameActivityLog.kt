@@ -7,7 +7,7 @@ internal class GameActivityLog private constructor() {
         val gameId = history.first().gameId
         check(history.all { it.gameId == gameId }) { "GameId mismatch" }
 
-        this.history = history
+        this.history = history.toList()
     }
 
     lateinit var history: List<GameEvent>

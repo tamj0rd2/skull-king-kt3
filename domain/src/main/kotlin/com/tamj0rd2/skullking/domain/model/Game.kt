@@ -40,6 +40,7 @@ class Game {
     val id: GameId
 
     private val gameActivityLog: GameActivityLog
+    val history get() = gameActivityLog.history
     val updates get() = gameActivityLog.updates
 
     private val _players = mutableListOf<PlayerId>()
@@ -66,6 +67,9 @@ sealed class GameErrorCode : RuntimeException()
 sealed class AddPlayerErrorCode : GameErrorCode()
 
 data object GameIsFull : AddPlayerErrorCode() {
-    @Suppress("unused")
     private fun readResolve(): Any = GameIsFull
+}
+
+data object PlayerHasAlreadyJoined : AddPlayerErrorCode() {
+    private fun readResolve(): Any = PlayerHasAlreadyJoined
 }
