@@ -78,7 +78,10 @@ class GameTest {
         Assume.that(!initialPlayers.contains(playerWhoWantsToJoin))
 
         expectThat(game.addPlayer(playerWhoWantsToJoin)).isA<Failure<GameIsFull>>()
-        expectThat(game).stateHasNotDeviatedFrom(initialPlayers, events)
+        expectThat(game).run {
+            get { players }.isEqualTo(initialPlayers)
+            get { history }.isEqualTo(events)
+        }
     }
 
     @Property
@@ -87,13 +90,18 @@ class GameTest {
         @ForAll playerWhoWantsToJoin: PlayerId,
     ) {
         val game = Game.from(events)
-        val initialPlayers = game.players
-        Assume.that(initialPlayers.size <= MAXIMUM_PLAYER_COUNT - 2)
-        Assume.that(!initialPlayers.contains(playerWhoWantsToJoin))
+        Assume.that(game.players.size <= MAXIMUM_PLAYER_COUNT - 2)
+        Assume.that(!game.players.contains(playerWhoWantsToJoin))
 
         expectThat(game.addPlayer(playerWhoWantsToJoin)).describedAs("joining the first time").wasSuccessful()
+        val playersBeforeSecondJoin = game.players
+        val updatesBeforeSecondJoin = game.updates
+
         expectThat(game.addPlayer(playerWhoWantsToJoin)).describedAs("trying to join again").isA<Failure<PlayerHasAlreadyJoined>>()
-        expectThat(game).stateHasNotDeviatedFrom(initialPlayers, events)
+        expectThat(game) {
+            get { players }.isEqualTo(playersBeforeSecondJoin)
+            get { updates }.isEqualTo(updatesBeforeSecondJoin)
+        }
     }
 
     @Disabled
@@ -123,14 +131,6 @@ class GameTest {
                 listOf(GameCreated(gameId = gameId)) + playerIds.map { playerId -> PlayerJoined(gameId = gameId, playerId = playerId) }
             }
         }
-}
-
-private fun Assertion.Builder<Game>.stateHasNotDeviatedFrom(
-    initialPlayers: List<PlayerId>,
-    initialHistory: List<GameEvent>,
-) = run {
-    get { players }.isEqualTo(initialPlayers)
-    get { history }.isEqualTo(initialHistory)
 }
 
 private fun <T, E> Assertion.Builder<Result4k<T, E>>.wasSuccessful() = run { isA<Success<*>>() }
