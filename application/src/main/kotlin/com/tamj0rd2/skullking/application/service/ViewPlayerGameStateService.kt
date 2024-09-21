@@ -12,7 +12,7 @@ class ViewPlayerGameStateService(
         val game = gameRepository.load(query.gameId)
 
         return ViewPlayerGameStateOutput(
-            players = game.players,
+            players = game.state.players,
         )
     }
 }

@@ -72,14 +72,14 @@ class GameTest {
         @ForAll playerWhoWantsToJoin: PlayerId,
     ) {
         val game = Game.from(events)
-        val initialPlayers = game.players
+        val initialPlayers = game.state.players
 
         Assume.that(initialPlayers.size == MAXIMUM_PLAYER_COUNT)
         Assume.that(!initialPlayers.contains(playerWhoWantsToJoin))
 
         expectThat(game.addPlayer(playerWhoWantsToJoin)).isA<Failure<GameIsFull>>()
         expectThat(game).run {
-            get { players }.isEqualTo(initialPlayers)
+            get { state.players }.isEqualTo(initialPlayers)
             get { history }.isEqualTo(events)
         }
     }
@@ -90,16 +90,16 @@ class GameTest {
         @ForAll playerWhoWantsToJoin: PlayerId,
     ) {
         val game = Game.from(events)
-        Assume.that(game.players.size <= MAXIMUM_PLAYER_COUNT - 2)
-        Assume.that(!game.players.contains(playerWhoWantsToJoin))
+        Assume.that(game.state.players.size <= MAXIMUM_PLAYER_COUNT - 2)
+        Assume.that(!game.state.players.contains(playerWhoWantsToJoin))
 
         expectThat(game.addPlayer(playerWhoWantsToJoin)).describedAs("joining the first time").wasSuccessful()
-        val playersBeforeSecondJoin = game.players
+        val playersBeforeSecondJoin = game.state.players
         val updatesBeforeSecondJoin = game.updates
 
         expectThat(game.addPlayer(playerWhoWantsToJoin)).describedAs("trying to join again").isA<Failure<PlayerHasAlreadyJoined>>()
         expectThat(game) {
-            get { players }.isEqualTo(playersBeforeSecondJoin)
+            get { state.players }.isEqualTo(playersBeforeSecondJoin)
             get { updates }.isEqualTo(updatesBeforeSecondJoin)
         }
     }

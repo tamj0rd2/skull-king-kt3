@@ -43,8 +43,11 @@ tasks.named<Test>("test") {
 
 tasks.withType(KotlinCompile::class).all {
     compilerOptions {
-        freeCompilerArgs.add("-Xnullability-annotations=@org.jspecify.annotations:strict")
-        freeCompilerArgs.add("-Xemit-jvm-type-annotations")
+        freeCompilerArgs.addAll(
+            "-Xnullability-annotations=@org.jspecify.annotations:strict",
+            "-Xemit-jvm-type-annotations",
+            "-Xconsistent-data-class-copy-visibility",
+        )
         javaParameters = true
     }
 }

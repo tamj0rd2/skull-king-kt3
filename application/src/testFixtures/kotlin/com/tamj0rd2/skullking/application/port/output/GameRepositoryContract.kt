@@ -36,7 +36,7 @@ abstract class GameRepositoryContract {
             }
 
         val loadedGameAfterAllSaves = gameRepository.load(game.id)
-        expectThat(loadedGameAfterAllSaves.players).isEqualTo(playersAddedAcrossSaves)
+        expectThat(loadedGameAfterAllSaves.state.players).isEqualTo(playersAddedAcrossSaves)
     }
 
     @Example

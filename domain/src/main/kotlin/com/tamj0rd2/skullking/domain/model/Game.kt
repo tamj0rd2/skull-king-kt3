@@ -1,7 +1,7 @@
 package com.tamj0rd2.skullking.domain.model
 
-import com.tamj0rd2.extensions.asFailure
 import com.tamj0rd2.extensions.asSuccess
+import com.tamj0rd2.extensions.filterOrThrow
 import dev.forkhandles.result4k.Result4k
 import dev.forkhandles.result4k.map
 import dev.forkhandles.result4k.orThrow
@@ -18,6 +18,13 @@ value class GameId private constructor(
 }
 
 class Game {
+    private constructor() {
+        id = GameId.random()
+        history = emptyList()
+        recordUpdates = true
+        appendEvent(GameCreated(id))
+    }
+
     private constructor(providedHistory: List<GameEvent>) {
         check(providedHistory.isNotEmpty()) { "Provided history was empty. Create a new game instead." }
 
@@ -34,33 +41,25 @@ class Game {
         recordUpdates = true
     }
 
-    private constructor() {
-        id = GameId.random()
-        history = emptyList()
-        recordUpdates = true
-        appendEvent(GameCreated(id))
-    }
-
     val id: GameId
+    var state = GameState.new()
+        private set
+
     val history: List<GameEvent>
     private val _updates = mutableListOf<GameEvent>()
     val updates: List<GameEvent> get() = _updates.toList()
 
-    private val state = GameState()
-    val players: List<PlayerId> get() = state.players.toList()
-
-    fun addPlayer(playerId: PlayerId): Result4k<Unit, AddPlayerErrorCode> {
-        val event = PlayerJoined(id, playerId)
-        return state.apply(event).map { appendEvent(event) }
-    }
-
-    private fun appendEvent(event: GameEvent) {
-        state.apply(event)
-
-        if (recordUpdates) _updates += event
-    }
+    fun addPlayer(playerId: PlayerId): Result4k<Unit, AddPlayerErrorCode> =
+        appendEvent(PlayerJoined(id, playerId))
+            .filterOrThrow<Unit, GameErrorCode, AddPlayerErrorCode>()
 
     private var recordUpdates = false
+
+    private fun appendEvent(event: GameEvent): Result4k<Unit, GameErrorCode> =
+        state.apply(event).map { nextState ->
+            state = nextState
+            if (recordUpdates) _updates += event
+        }
 
     companion object {
         const val MAXIMUM_PLAYER_COUNT = 6
@@ -68,25 +67,6 @@ class Game {
         fun new() = Game()
 
         fun from(history: List<GameEvent>) = Game(history)
-    }
-
-    private class GameState {
-        private val _players = mutableListOf<PlayerId>()
-        val players: List<PlayerId> get() = _players.toList()
-
-        fun apply(event: PlayerJoined): Result4k<Unit, AddPlayerErrorCode> {
-            if (players.size >= MAXIMUM_PLAYER_COUNT) return GameIsFull.asFailure()
-            if (players.contains(event.playerId)) return PlayerHasAlreadyJoined.asFailure()
-
-            _players.add(event.playerId)
-            return Unit.asSuccess()
-        }
-
-        fun apply(event: GameEvent): Result4k<Unit, AddPlayerErrorCode> =
-            when (event) {
-                is GameCreated -> Unit.asSuccess()
-                is PlayerJoined -> apply(event)
-            }
     }
 }
 
