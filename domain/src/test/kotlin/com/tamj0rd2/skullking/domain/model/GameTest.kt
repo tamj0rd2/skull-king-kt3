@@ -1,10 +1,9 @@
 package com.tamj0rd2.skullking.domain.model
 
 import com.tamj0rd2.skullking.domain.GameArbs.gameIdArb
-import com.tamj0rd2.skullking.domain.GameEventArbs.playerJoinedArb
+import com.tamj0rd2.skullking.domain.PlayerArbs.playerIdsArb
 import com.tamj0rd2.skullking.domain.SkullKingArbs
 import com.tamj0rd2.skullking.domain.model.Game.Companion.MAXIMUM_PLAYER_COUNT
-import com.tamj0rd2.skullking.domain.withGameId
 import dev.forkhandles.result4k.Failure
 import dev.forkhandles.result4k.Result4k
 import dev.forkhandles.result4k.Success
@@ -74,6 +73,7 @@ class GameTest {
     ) {
         val game = Game.from(events)
         val initialPlayers = game.players
+
         Assume.that(initialPlayers.size == MAXIMUM_PLAYER_COUNT)
         Assume.that(!initialPlayers.contains(playerWhoWantsToJoin))
 
@@ -82,14 +82,13 @@ class GameTest {
     }
 
     @Property
-    @Disabled
-    fun `the same player cannot join a game twice`(
-        @ForAll("aNotFullGame") events: List<GameEvent>,
+    fun `a player cannot join the same game twice`(
+        @ForAll("aGameWithSpaceToJoin") events: List<GameEvent>,
         @ForAll playerWhoWantsToJoin: PlayerId,
     ) {
         val game = Game.from(events)
         val initialPlayers = game.players
-        Assume.that(initialPlayers.size == MAXIMUM_PLAYER_COUNT - 2)
+        Assume.that(initialPlayers.size <= MAXIMUM_PLAYER_COUNT - 2)
         Assume.that(!initialPlayers.contains(playerWhoWantsToJoin))
 
         expectThat(game.addPlayer(playerWhoWantsToJoin)).describedAs("joining the first time").wasSuccessful()
@@ -107,25 +106,21 @@ class GameTest {
     fun aFullGame() =
         combine {
             val gameId by gameIdArb()
-            val playerJoinedEvents by playerJoinedArb().list().ofSize(MAXIMUM_PLAYER_COUNT)
+            val playerIds by playerIdsArb().ofSize(MAXIMUM_PLAYER_COUNT)
 
             combineAs {
-                listOf(
-                    GameCreated(gameId = gameId),
-                ) + playerJoinedEvents.map { it.withGameId(gameId) }
+                listOf(GameCreated(gameId = gameId)) + playerIds.map { playerId -> PlayerJoined(gameId = gameId, playerId = playerId) }
             }
         }
 
     @Provide
-    fun aGameWithSpace() =
+    fun aGameWithSpaceToJoin() =
         combine {
             val gameId by gameIdArb()
-            val playerJoinedEvents by playerJoinedArb().list().ofMaxSize(MAXIMUM_PLAYER_COUNT - 1)
+            val playerIds by playerIdsArb().ofMaxSize(MAXIMUM_PLAYER_COUNT - 1)
 
             combineAs {
-                listOf(
-                    GameCreated(gameId = gameId),
-                ) + playerJoinedEvents.map { it.withGameId(gameId) }
+                listOf(GameCreated(gameId = gameId)) + playerIds.map { playerId -> PlayerJoined(gameId = gameId, playerId = playerId) }
             }
         }
 }

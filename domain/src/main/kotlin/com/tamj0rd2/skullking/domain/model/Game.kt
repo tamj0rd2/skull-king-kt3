@@ -48,6 +48,8 @@ class Game {
 
     fun addPlayer(playerId: PlayerId): Result4k<Unit, AddPlayerErrorCode> {
         if (players.size >= MAXIMUM_PLAYER_COUNT) return GameIsFull.asFailure()
+        if (players.contains(playerId)) return PlayerHasAlreadyJoined.asFailure()
+
         _players.add(playerId)
         gameActivityLog.record(PlayerJoined(id, playerId))
         return Unit.asSuccess()
