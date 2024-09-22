@@ -1,5 +1,6 @@
 package com.tamj0rd2.skullking.adapter
 
+import com.eventstore.dbclient.EventData
 import com.eventstore.dbclient.EventDataBuilder
 import com.eventstore.dbclient.EventStoreDBClient
 import com.eventstore.dbclient.EventStoreDBConnectionString
@@ -29,37 +30,32 @@ class GameRepositoryEsdbAdapter(
             EventStoreDBConnectionString.parseOrThrow("esdb://localhost:2113?tls=false"),
         ),
 ) : GameRepository {
-    override fun load(gameId: GameId): Game = Game.from(findGameEvents(gameId))
-
-    override fun save(game: Game) {
-        saveGameEvents(game.updates)
-    }
-
-    override fun findGameEvents(gameId: GameId): List<GameEvent> {
+    override fun load(gameId: GameId): Game {
         val events =
             resultFromCatching<StreamNotFoundException, List<ResolvedEvent>> {
                 client.readStream(STREAM_PREFIX, ReadStreamOptions.get().forwards()).get().events
             }.recover { emptyList() }
+                .asSequence()
+                .map { it.event.eventData }
+                .map { it.toString(UTF_8) }
+                .map { JGameEvent.fromJson(it).orThrow() }
+                .filter { it.gameId == gameId }
+                .toList()
 
-        return events
-            .asSequence()
-            .map { it.event.eventData }
-            .map { it.toString(UTF_8) }
-            .map { JGameEvent.fromJson(it).orThrow() }
-            .filter { it.gameId == gameId }
-            .toList()
+        return Game.from(events)
     }
 
-    override fun saveGameEvents(events: List<GameEvent>) {
+    override fun save(game: Game) {
         val eventData =
-            events.map {
+            game.updates.map {
                 EventDataBuilder
                     .json(
                         JGameEvent.extractTypeName(it),
                         JGameEvent.toJson(it).toByteArray(UTF_8),
                     ).build()
             }
-        client.appendToStream(STREAM_PREFIX, *eventData.toTypedArray()).get()
+
+        client.appendToStream(STREAM_PREFIX, *eventData.toTypedArray<EventData?>()).get()
     }
 
     companion object {
