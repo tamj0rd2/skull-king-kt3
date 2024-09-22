@@ -10,9 +10,6 @@ class GameRepositoryInMemoryAdapter : GameRepository {
     override fun load(gameId: GameId): Game = Game.from(savedEvents.getOrDefault(gameId, emptyList()))
 
     override fun save(game: Game) {
-        game.updates.forEach {
-            val updatedEvents = savedEvents.getOrDefault(it.gameId, emptyList()) + it
-            savedEvents[it.gameId] = updatedEvents
-        }
+        savedEvents[game.id] = game.events
     }
 }

@@ -1,9 +1,10 @@
 package com.tamj0rd2.skullking.adapter
 
-import com.eventstore.dbclient.EventData
+import com.eventstore.dbclient.AppendToStreamOptions
 import com.eventstore.dbclient.EventDataBuilder
 import com.eventstore.dbclient.EventStoreDBClient
 import com.eventstore.dbclient.EventStoreDBConnectionString
+import com.eventstore.dbclient.ExpectedRevision
 import com.eventstore.dbclient.ReadStreamOptions
 import com.eventstore.dbclient.ResolvedEvent
 import com.eventstore.dbclient.StreamNotFoundException
@@ -14,6 +15,7 @@ import com.tamj0rd2.skullking.domain.model.GameEvent
 import com.tamj0rd2.skullking.domain.model.GameId
 import com.tamj0rd2.skullking.domain.model.PlayerId
 import com.tamj0rd2.skullking.domain.model.PlayerJoined
+import com.tamj0rd2.skullking.domain.model.Version
 import com.ubertob.kondor.json.JAny
 import com.ubertob.kondor.json.JSealed
 import com.ubertob.kondor.json.JStringRepresentable
@@ -44,7 +46,7 @@ class GameRepositoryEsdbAdapter(
 
     override fun save(game: Game) {
         val eventData =
-            game.updates.map {
+            game.newEvents.map {
                 EventDataBuilder
                     .json(
                         JGameEvent.extractTypeName(it),
@@ -52,7 +54,12 @@ class GameRepositoryEsdbAdapter(
                     ).build()
             }
 
-        client.appendToStream(game.id.asStreamName(), *eventData.toTypedArray<EventData?>()).get()
+        client
+            .appendToStream(
+                game.id.asStreamName(),
+                AppendToStreamOptions.get().expectedRevision(game.expectedRevision),
+                eventData.iterator(),
+            ).get()
     }
 
     private fun readEvents(streamName: String): List<ResolvedEvent> =
@@ -70,6 +77,14 @@ class GameRepositoryEsdbAdapter(
         private const val STREAM_PREFIX = "game-events"
 
         private fun GameId.asStreamName() = "$STREAM_PREFIX-${GameId.show(this)}"
+
+        private val Game.expectedRevision
+            get() =
+                if (loadedVersion == Version.NONE) {
+                    ExpectedRevision.noStream()
+                } else {
+                    ExpectedRevision.expectedRevision(loadedVersion.value.toLong())
+                }
 
         private object JGameEvent : JSealed<GameEvent>() {
             private val config =

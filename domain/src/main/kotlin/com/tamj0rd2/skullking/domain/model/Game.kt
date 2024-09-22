@@ -1,12 +1,13 @@
 package com.tamj0rd2.skullking.domain.model
 
-import com.tamj0rd2.extensions.asSuccess
 import com.tamj0rd2.extensions.filterOrThrow
 import dev.forkhandles.result4k.Result4k
 import dev.forkhandles.result4k.map
 import dev.forkhandles.result4k.orThrow
+import dev.forkhandles.values.IntValueFactory
 import dev.forkhandles.values.UUIDValueFactory
 import dev.forkhandles.values.Value
+import dev.forkhandles.values.minValue
 import dev.forkhandles.values.random
 import java.util.UUID
 
@@ -19,48 +20,49 @@ value class GameId private constructor(
     }
 }
 
+@JvmInline
+value class Version private constructor(
+    override val value: Int,
+) : Value<Int> {
+    companion object : IntValueFactory<Version>(::Version, 0.minValue) {
+        val NONE = Version(-1)
+    }
+}
+
 class Game {
     private constructor() {
         id = GameId.random()
-        history = emptyList()
-        recordUpdates = true
         appendEvent(GameCreated(id))
+        loadedVersion = Version.NONE
     }
 
-    private constructor(providedHistory: List<GameEvent>) {
-        check(providedHistory.isNotEmpty()) { "Provided history was empty. Create a new game instead." }
+    private constructor(history: List<GameEvent>) {
+        check(history.isNotEmpty()) { "Provided history was empty. Create a new game instead." }
 
-        id = providedHistory.first().gameId
-        check(providedHistory.all { it.gameId == id }) { "GameId mismatch" }
-
-        history = providedHistory.toList()
-        history.forEach { event ->
-            when (event) {
-                is PlayerJoined -> addPlayer(event.playerId)
-                is GameCreated -> Unit.asSuccess()
-            }.orThrow()
-        }
-        recordUpdates = true
+        id = history.first().gameId
+        check(history.all { it.gameId == id }) { "GameId mismatch" }
+        history.forEach { appendEvent(it).orThrow() }
+        loadedVersion = Version.of(history.size - 1)
     }
 
     val id: GameId
     var state = GameState.new()
         private set
 
-    val history: List<GameEvent>
-    private val _updates = mutableListOf<GameEvent>()
-    val updates: List<GameEvent> get() = _updates.toList()
+    private val _events = mutableListOf<GameEvent>()
+    val events: List<GameEvent> get() = _events.toList()
+
+    val loadedVersion: Version
+    val newEvents get() = _events.drop(loadedVersion.value + 1)
 
     fun addPlayer(playerId: PlayerId): Result4k<Unit, AddPlayerErrorCode> =
         appendEvent(PlayerJoined(id, playerId))
             .filterOrThrow<Unit, GameErrorCode, AddPlayerErrorCode>()
 
-    private var recordUpdates = false
-
     private fun appendEvent(event: GameEvent): Result4k<Unit, GameErrorCode> =
         state.apply(event).map { nextState ->
             state = nextState
-            if (recordUpdates) _updates += event
+            _events += event
         }
 
     companion object {

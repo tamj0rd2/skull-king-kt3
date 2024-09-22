@@ -21,7 +21,6 @@ import strikt.api.expectThat
 import strikt.api.expectThrows
 import strikt.assertions.hasSize
 import strikt.assertions.isA
-import strikt.assertions.isEmpty
 import strikt.assertions.isEqualTo
 import strikt.assertions.isSuccess
 
@@ -31,8 +30,8 @@ class GameTest {
     fun `when a new game is created, a GameCreated event is added to its changes`() {
         val game = Game.new()
         expect {
-            that(game.updates).hasSize(1)
-            that(game.updates.first()).isA<GameCreated>().get { gameId }.isEqualTo(game.id)
+            that(game.events).hasSize(1)
+            that(game.events.first()).isA<GameCreated>().get { gameId }.isEqualTo(game.id)
         }
     }
 
@@ -43,8 +42,7 @@ class GameTest {
         Assume.that(events.isNotEmpty())
 
         expectCatching { Game.from(events) }.isSuccess().and {
-            get { history }.hasSize(events.size).isEqualTo(events)
-            get { updates }.isEmpty()
+            get { this.events }.hasSize(events.size).isEqualTo(events)
         }
     }
 
@@ -80,7 +78,7 @@ class GameTest {
         expectThat(game.addPlayer(playerWhoWantsToJoin)).isA<Failure<GameIsFull>>()
         expectThat(game).run {
             get { state.players }.isEqualTo(initialPlayers)
-            get { history }.isEqualTo(events)
+            get { this.events }.isEqualTo(events)
         }
     }
 
@@ -95,12 +93,12 @@ class GameTest {
 
         expectThat(game.addPlayer(playerWhoWantsToJoin)).describedAs("joining the first time").wasSuccessful()
         val playersBeforeSecondJoin = game.state.players
-        val updatesBeforeSecondJoin = game.updates
+        val updatesBeforeSecondJoin = game.events
 
         expectThat(game.addPlayer(playerWhoWantsToJoin)).describedAs("trying to join again").isA<Failure<PlayerHasAlreadyJoined>>()
         expectThat(game) {
             get { state.players }.isEqualTo(playersBeforeSecondJoin)
-            get { updates }.isEqualTo(updatesBeforeSecondJoin)
+            get { this.events }.isEqualTo(updatesBeforeSecondJoin)
         }
     }
 
