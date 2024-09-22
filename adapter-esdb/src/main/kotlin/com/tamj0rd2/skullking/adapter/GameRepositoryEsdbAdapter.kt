@@ -20,8 +20,7 @@ import com.ubertob.kondor.json.JStringRepresentable
 import com.ubertob.kondor.json.ObjectNodeConverter
 import com.ubertob.kondor.json.jsonnode.JsonNodeObject
 import com.ubertob.kondor.json.str
-import dev.forkhandles.result4k.recover
-import dev.forkhandles.result4k.resultFromCatching
+import java.util.concurrent.ExecutionException
 import kotlin.text.Charsets.UTF_8
 
 class GameRepositoryEsdbAdapter(
@@ -32,9 +31,7 @@ class GameRepositoryEsdbAdapter(
 ) : GameRepository {
     override fun load(gameId: GameId): Game {
         val events =
-            resultFromCatching<StreamNotFoundException, List<ResolvedEvent>> {
-                client.readStream(STREAM_PREFIX, ReadStreamOptions.get().forwards()).get().events
-            }.recover { emptyList() }
+            readEvents(gameId.asStreamName())
                 .asSequence()
                 .map { it.event.eventData }
                 .map { it.toString(UTF_8) }
@@ -55,11 +52,24 @@ class GameRepositoryEsdbAdapter(
                     ).build()
             }
 
-        client.appendToStream(STREAM_PREFIX, *eventData.toTypedArray<EventData?>()).get()
+        client.appendToStream(game.id.asStreamName(), *eventData.toTypedArray<EventData?>()).get()
     }
+
+    private fun readEvents(streamName: String): List<ResolvedEvent> =
+        try {
+            client.readStream(streamName, ReadStreamOptions.get().forwards()).get().events
+        } catch (e: ExecutionException) {
+            if (e.cause is StreamNotFoundException) {
+                emptyList()
+            } else {
+                throw e
+            }
+        }
 
     companion object {
         private const val STREAM_PREFIX = "game-events"
+
+        private fun GameId.asStreamName() = "$STREAM_PREFIX-${GameId.show(this)}"
 
         private object JGameEvent : JSealed<GameEvent>() {
             private val config =
