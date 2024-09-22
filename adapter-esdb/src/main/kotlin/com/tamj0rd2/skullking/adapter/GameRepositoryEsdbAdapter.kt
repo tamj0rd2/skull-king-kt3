@@ -38,7 +38,7 @@ class GameRepositoryEsdbAdapter(
     override fun findGameEvents(gameId: GameId): List<GameEvent> {
         val events =
             resultFromCatching<StreamNotFoundException, List<ResolvedEvent>> {
-                client.readStream("game-events", ReadStreamOptions.get().forwards()).get().events
+                client.readStream(STREAM_PREFIX, ReadStreamOptions.get().forwards()).get().events
             }.recover { emptyList() }
 
         return events
@@ -59,10 +59,12 @@ class GameRepositoryEsdbAdapter(
                         JGameEvent.toJson(it).toByteArray(UTF_8),
                     ).build()
             }
-        client.appendToStream("game-events", *eventData.toTypedArray()).get()
+        client.appendToStream(STREAM_PREFIX, *eventData.toTypedArray()).get()
     }
 
     companion object {
+        private const val STREAM_PREFIX = "game-events"
+
         private object JGameEvent : JSealed<GameEvent>() {
             private val config =
                 listOf(
