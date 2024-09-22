@@ -6,3 +6,8 @@ setup:
 @PHONY: format
 format:
 	@ktlint -F -l error >/dev/null 2>&1 || true
+
+@PHONY:
+start-docker:
+	@docker-compose down
+	@docker-compose up -d
