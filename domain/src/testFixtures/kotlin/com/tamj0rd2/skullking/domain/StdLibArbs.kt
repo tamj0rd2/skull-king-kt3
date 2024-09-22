@@ -9,7 +9,7 @@ import java.util.UUID
 @Suppress("unused")
 internal object StdLibArbs : DomainContextBase() {
     @Provide
-    fun uuid(): Arbitrary<UUID> =
+    fun uuidArb(): Arbitrary<UUID> =
         Arbitraries
             .longs()
             .tuple2()

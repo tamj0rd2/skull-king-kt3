@@ -13,10 +13,10 @@ internal class ServerSidePlayerSocket(
     private val ws: Websocket,
     private val app: ApplicationDomainDriver,
 ) {
-    var gameId = GameId.Companion.ZERO
-        get() = field.takeIf { it != GameId.Companion.ZERO } ?: error("gameId not set")
+    private var gameId = GameId.NONE
+        get() = field.takeIf { it != GameId.NONE } ?: error("gameId not set")
 
-    var playerId = PlayerId.Companion.ZERO
+    private var playerId = PlayerId.Companion.ZERO
         get() = field.takeIf { it != PlayerId.Companion.ZERO } ?: error("playerId not set")
 
     fun handle(message: Message) {
