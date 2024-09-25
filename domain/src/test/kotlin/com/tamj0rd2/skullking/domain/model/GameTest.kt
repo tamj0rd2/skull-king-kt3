@@ -1,134 +1,127 @@
 package com.tamj0rd2.skullking.domain.model
 
-import com.tamj0rd2.skullking.domain.GameArbs.gameIdArb
-import com.tamj0rd2.skullking.domain.PlayerArbs.playerIdsArb
-import com.tamj0rd2.skullking.domain.SkullKingArbs
+import com.tamj0rd2.skullking.domain.GameArbs.gameArb
+import com.tamj0rd2.skullking.domain.GameArbs.gameEventsArb
+import com.tamj0rd2.skullking.domain.GameArbs.playerIdArb
+import com.tamj0rd2.skullking.domain.GameArbs.validGameEventsArb
 import com.tamj0rd2.skullking.domain.model.Game.Companion.MAXIMUM_PLAYER_COUNT
+import com.tamj0rd2.skullking.domain.propertyTest
+import com.tamj0rd2.skullking.domain.wasSuccessful
 import dev.forkhandles.result4k.Failure
-import dev.forkhandles.result4k.Result4k
-import dev.forkhandles.result4k.Success
-import net.jqwik.api.Assume
-import net.jqwik.api.Disabled
-import net.jqwik.api.Example
-import net.jqwik.api.ForAll
-import net.jqwik.api.Property
-import net.jqwik.api.Provide
-import net.jqwik.kotlin.api.combine
-import strikt.api.Assertion
-import strikt.api.expect
+import io.kotest.property.arbitrary.filter
+import io.kotest.property.assume
+import io.kotest.property.checkAll
+import org.junit.jupiter.api.Disabled
+import org.junit.jupiter.api.Test
 import strikt.api.expectCatching
 import strikt.api.expectThat
 import strikt.api.expectThrows
+import strikt.assertions.first
 import strikt.assertions.hasSize
 import strikt.assertions.isA
 import strikt.assertions.isEqualTo
+import strikt.assertions.isFailure
 import strikt.assertions.isSuccess
 
-@SkullKingArbs
 class GameTest {
-    @Example
+    @Test
     fun `when a new game is created, a GameCreated event is added to its changes`() {
         val game = Game.new()
-        expect {
-            that(game.events).hasSize(1)
-            that(game.events.first()).isA<GameCreated>().get { gameId }.isEqualTo(game.id)
+        expectThat(game.events) {
+            hasSize(1)
+            first().isA<GameCreated>().get { gameId }.isEqualTo(game.id)
         }
     }
 
-    @Property
-    fun `a game can be created from a history of events`(
-        @ForAll events: List<GameEvent>,
-    ) {
-        Assume.that(events.isNotEmpty())
-
-        expectCatching { Game.from(events) }.isSuccess().and {
-            get { this.events }.hasSize(events.size).isEqualTo(events)
+    @Test
+    fun `a game's history can only ever have 1 game created event`() =
+        propertyTest {
+            checkAll(gameEventsArb) { events ->
+                assume(events.count { it is GameCreated } > 1)
+                expectCatching { Game.from(events) }.isFailure()
+            }
         }
-    }
 
-    @Example
+    @Test
+    fun `a game can be created from a history of events`() =
+        propertyTest {
+            checkAll(validGameEventsArb) { events ->
+                assume(events.isNotEmpty())
+
+                expectCatching { Game.from(events) }.isSuccess().and {
+                    get { this.events }.hasSize(events.size).isEqualTo(events)
+                }
+            }
+        }
+
+    @Test
     fun `a game cannot be built from an empty history`() {
         expectThrows<IllegalStateException> { Game.from(emptyList()) }
     }
 
-    @Property
-    fun `a game cannot be built from events that affect multiple different games`(
-        @ForAll eventsForThisGame: List<GameEvent>,
-        @ForAll eventsForADifferentGame: List<GameEvent>,
-    ) {
-        Assume.that(eventsForThisGame.isNotEmpty())
-        Assume.that(eventsForADifferentGame.isNotEmpty())
-        Assume.that(eventsForADifferentGame.any { it.gameId != eventsForThisGame.first().gameId })
+    @Test
+    fun `a game cannot be built from events that affect multiple different games`() =
+        propertyTest {
+            checkAll(
+                validGameEventsArb,
+                validGameEventsArb,
+            ) { eventsForThisGame, eventsForADifferentGame ->
+                assume(eventsForThisGame.isNotEmpty())
+                assume(eventsForADifferentGame.isNotEmpty())
+                assume(eventsForADifferentGame.any { it.gameId != eventsForThisGame.first().gameId })
 
-        val eventsContainingMultipleGames = eventsForThisGame.take(1) + (eventsForThisGame.drop(1) + eventsForADifferentGame).shuffled()
-        expectThrows<IllegalStateException> { Game.from(eventsContainingMultipleGames) }
-    }
-
-    @Property
-    fun `joining a full game is not possible`(
-        @ForAll("aFullGame") events: List<GameEvent>,
-        @ForAll playerWhoWantsToJoin: PlayerId,
-    ) {
-        val game = Game.from(events)
-        val initialPlayers = game.state.players
-
-        Assume.that(initialPlayers.size == MAXIMUM_PLAYER_COUNT)
-        Assume.that(!initialPlayers.contains(playerWhoWantsToJoin))
-
-        expectThat(game.addPlayer(playerWhoWantsToJoin)).isA<Failure<GameIsFull>>()
-        expectThat(game).run {
-            get { state.players }.isEqualTo(initialPlayers)
-            get { this.events }.isEqualTo(events)
+                val eventsContainingMultipleGames =
+                    eventsForThisGame.take(1) + (eventsForThisGame.drop(1) + eventsForADifferentGame).shuffled()
+                expectThrows<IllegalStateException> { Game.from(eventsContainingMultipleGames) }
+            }
         }
-    }
 
-    @Property
-    fun `a player cannot join the same game twice`(
-        @ForAll("aGameWithSpaceToJoin") events: List<GameEvent>,
-        @ForAll playerWhoWantsToJoin: PlayerId,
-    ) {
-        val game = Game.from(events)
-        Assume.that(game.state.players.size <= MAXIMUM_PLAYER_COUNT - 2)
-        Assume.that(!game.state.players.contains(playerWhoWantsToJoin))
+    @Test
+    fun `joining a full game is not possible`() =
+        propertyTest {
+            checkAll(
+                gameArb.filter { it.state.players.size == MAXIMUM_PLAYER_COUNT },
+                playerIdArb,
+            ) { game, playerWhoWantsToJoin ->
+                val initialPlayers = game.state.players
+                val initialEvents = game.events
 
-        expectThat(game.addPlayer(playerWhoWantsToJoin)).describedAs("joining the first time").wasSuccessful()
-        val playersBeforeSecondJoin = game.state.players
-        val updatesBeforeSecondJoin = game.events
+                assume(initialPlayers.size == MAXIMUM_PLAYER_COUNT)
+                assume(!initialPlayers.contains(playerWhoWantsToJoin))
 
-        expectThat(game.addPlayer(playerWhoWantsToJoin)).describedAs("trying to join again").isA<Failure<PlayerHasAlreadyJoined>>()
-        expectThat(game) {
-            get { state.players }.isEqualTo(playersBeforeSecondJoin)
-            get { this.events }.isEqualTo(updatesBeforeSecondJoin)
+                expectThat(game.addPlayer(playerWhoWantsToJoin)).isA<Failure<GameIsFull>>()
+                expectThat(game).run {
+                    get { state.players }.isEqualTo(initialPlayers)
+                    get { events }.isEqualTo(initialEvents)
+                }
+            }
         }
-    }
 
+    @Test
+    fun `a player cannot join the same game twice`() =
+        propertyTest {
+            checkAll(
+                gameArb.filter { it.state.players.size < MAXIMUM_PLAYER_COUNT - 2 },
+                playerIdArb,
+            ) { game, playerWhoWantsToJoin ->
+                assume(game.state.players.size <= MAXIMUM_PLAYER_COUNT - 2)
+                assume(!game.state.players.contains(playerWhoWantsToJoin))
+
+                expectThat(game.addPlayer(playerWhoWantsToJoin)).describedAs("joining the first time").wasSuccessful()
+                val playersBeforeSecondJoin = game.state.players
+                val eventsBeforeSecondJoin = game.events
+
+                expectThat(game.addPlayer(playerWhoWantsToJoin)).describedAs("trying to join again").isA<Failure<PlayerHasAlreadyJoined>>()
+                expectThat(game) {
+                    get { state.players }.isEqualTo(playersBeforeSecondJoin)
+                    get { events }.isEqualTo(eventsBeforeSecondJoin)
+                }
+            }
+        }
+
+    @Test
     @Disabled
-    @Property
     fun `joining a game that has started is not possible`() {
         TODO()
     }
-
-    @Provide
-    fun aFullGame() =
-        combine {
-            val gameId by gameIdArb()
-            val playerIds by playerIdsArb().ofSize(MAXIMUM_PLAYER_COUNT)
-
-            combineAs {
-                listOf(GameCreated(gameId = gameId)) + playerIds.map { playerId -> PlayerJoined(gameId = gameId, playerId = playerId) }
-            }
-        }
-
-    @Provide
-    fun aGameWithSpaceToJoin() =
-        combine {
-            val gameId by gameIdArb()
-            val playerIds by playerIdsArb().ofMaxSize(MAXIMUM_PLAYER_COUNT - 1)
-
-            combineAs {
-                listOf(GameCreated(gameId = gameId)) + playerIds.map { playerId -> PlayerJoined(gameId = gameId, playerId = playerId) }
-            }
-        }
 }
-
-private fun <T, E> Assertion.Builder<Result4k<T, E>>.wasSuccessful() = run { isA<Success<*>>() }

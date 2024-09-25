@@ -19,11 +19,16 @@ repositories {
 }
 
 dependencies {
+    components {
+        withModule<KillKotestAssertionsWithFire>("io.kotest:kotest-assertions-shared")
+        withModule<KillKotestAssertionsWithFire>("io.kotest:kotest-assertions-core")
+    }
+
     implementation(platform(libs.http4k.bom))
     implementation(libs.result4k)
     testFixturesApi(libs.strikt.core)
     testFixturesApi(libs.junit.jupiter)
-    testFixturesApi(libs.jqwik.kotlin)
+    testFixturesApi(libs.kotest.property)
     testRuntimeOnly(libs.junit.platform.launcher)
     compileOnly("org.jetbrains:annotations:23.0.0")
 }
@@ -49,5 +54,15 @@ tasks.withType(KotlinCompile::class).all {
             "-Xconsistent-data-class-copy-visibility",
         )
         javaParameters = true
+    }
+}
+
+abstract class KillKotestAssertionsWithFire : ComponentMetadataRule {
+    override fun execute(context: ComponentMetadataContext) {
+        context.details.withVariant("jvmApiElements-published") {
+            withDependencies {
+                removeAll { it.group == "io.kotest" && it.module.name.contains("assertions") }
+            }
+        }
     }
 }

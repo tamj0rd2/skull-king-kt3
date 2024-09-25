@@ -5,6 +5,7 @@
 forkhandles = "2.20.0.0"
 kotlin-gradle-plugin = "2.0.20"
 http4k = "5.30.0.0"
+kotest = "5.9.1"
 
 [libraries]
 http4k-bom = { module = "org.http4k:http4k-bom", version.ref = "http4k" }
@@ -13,14 +14,14 @@ http4k-client-websocket = { module = "org.http4k:http4k-client-websocket", versi
 http4k-core = { module = "org.http4k:http4k-core", version.ref = "http4k" }
 http4k-format-kondor = { module = "org.http4k:http4k-format-kondor-json", version.ref = "http4k" }
 http4k-server-undertow = { module = "org.http4k:http4k-server-undertow", version.ref = "http4k" }
-jqwik-kotlin = { module = "net.jqwik:jqwik-kotlin", version = "1.9.0" }
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version = "5.10.3" }
 junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher", version = "1.10.3" }
+kondor = { module = "com.ubertob.kondor:kondor-core", version = "3.1.2" }
+kotest-property = { module = "io.kotest:kotest-property", version.ref = "kotest" }
 kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin-gradle-plugin" }
+result4k = { module = "dev.forkhandles:result4k", version.ref = "forkhandles" }
 strikt-core = { module = "io.strikt:strikt-core", version = "0.34.0" }
 values4k = { module = "dev.forkhandles:values4k", version.ref = "forkhandles" }
-result4k = { module = "dev.forkhandles:result4k", version.ref = "forkhandles" }
-kondor = { module = "com.ubertob.kondor:kondor-core", version = "3.1.2" }
 
 [bundles]
 http4k-server = [

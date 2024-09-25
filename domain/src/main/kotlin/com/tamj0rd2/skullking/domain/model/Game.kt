@@ -30,6 +30,8 @@ value class Version private constructor(
 }
 
 class Game {
+    override fun toString(): String = "${super.toString()}\n${state.pretty()}"
+
     private constructor() {
         id = GameId.random()
         appendEvent(GameCreated(id))
@@ -41,6 +43,7 @@ class Game {
 
         id = history.first().gameId
         check(history.all { it.gameId == id }) { "GameId mismatch" }
+        check(history.count { it is GameCreated } == 1) { "There was more than 1 game created event" }
         history.forEach { appendEvent(it).orThrow() }
         loadedVersion = Version.of(history.size - 1)
     }

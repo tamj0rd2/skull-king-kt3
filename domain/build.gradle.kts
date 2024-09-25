@@ -7,3 +7,9 @@ dependencies {
     api(libs.result4k)
     api(project(":lib:forkhandles-extensions"))
 }
+
+tasks {
+    test {
+        System.setProperty("kotest.proptest.output.shrink-steps", "false")
+    }
+}

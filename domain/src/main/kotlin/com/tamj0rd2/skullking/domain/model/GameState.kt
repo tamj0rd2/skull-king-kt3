@@ -7,7 +7,7 @@ import dev.forkhandles.result4k.Result4k
 data class GameState private constructor(
     val players: List<PlayerId>,
 ) {
-    internal fun apply(event: PlayerJoined): Result4k<GameState, AddPlayerErrorCode> {
+    private fun apply(event: PlayerJoined): Result4k<GameState, AddPlayerErrorCode> {
         if (players.size >= Game.MAXIMUM_PLAYER_COUNT) return GameIsFull.asFailure()
         if (players.contains(event.playerId)) return PlayerHasAlreadyJoined.asFailure()
         return copy(players = players + event.playerId).asSuccess()
