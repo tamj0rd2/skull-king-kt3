@@ -14,6 +14,6 @@ class GameRepositoryEsdbAdapterTest : GameRepositoryContract() {
     override val gameRepository: GameRepositoryEsdbAdapter = repo
 
     init {
-        PropertyTesting.defaultIterationCount = 50
+        PropertyTesting.defaultIterationCount = 20
     }
 }

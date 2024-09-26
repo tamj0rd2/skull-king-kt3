@@ -22,9 +22,9 @@ abstract class GameRepositoryContract {
                 val gameModifiedInMemoryOnly = Game.new().also(gameRepository::save)
                 val gameId = gameModifiedInMemoryOnly.id
 
-                actions.forEach { it.mutate(gameModifiedInMemoryOnly) }
+                actions.forEach { action -> action.mutate(gameModifiedInMemoryOnly) }
                 actions.forEach { action ->
-                    val modifiedGame = action.mutate(gameRepository.load(gameId))
+                    val modifiedGame = gameRepository.load(gameId).apply(action::mutate)
                     gameRepository.save(modifiedGame)
                 }
 
@@ -32,8 +32,8 @@ abstract class GameRepositoryContract {
                 expectThat(gameThatWasSavedAndLoaded.events).isEqualTo(gameModifiedInMemoryOnly.events)
                 expectThat(gameThatWasSavedAndLoaded.state).isEqualTo(gameModifiedInMemoryOnly.state)
                 expectThat(gameThatWasSavedAndLoaded.id).isEqualTo(gameModifiedInMemoryOnly.id)
-                expectThat(gameModifiedInMemoryOnly.loadedVersion).isEqualTo(Version.NONE)
                 expectThat(gameThatWasSavedAndLoaded.loadedVersion).isEqualTo(Version.of(actions.size))
+                expectThat(gameModifiedInMemoryOnly.loadedVersion).isEqualTo(Version.NONE)
             }
         }
 

@@ -12,6 +12,7 @@ import io.kotest.property.arbitrary.filter
 import io.kotest.property.assume
 import io.kotest.property.checkAll
 import org.junit.jupiter.api.Disabled
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import strikt.api.expectCatching
 import strikt.api.expectThat
@@ -32,49 +33,6 @@ class GameTest {
             first().isA<GameCreated>().get { gameId }.isEqualTo(game.id)
         }
     }
-
-    @Test
-    fun `a game's history can only ever have 1 game created event`() =
-        propertyTest {
-            checkAll(gameEventsArb) { events ->
-                assume(events.count { it is GameCreated } > 1)
-                expectCatching { Game.from(events) }.isFailure()
-            }
-        }
-
-    @Test
-    fun `a game can be created from a history of events`() =
-        propertyTest {
-            checkAll(validGameEventsArb) { events ->
-                assume(events.isNotEmpty())
-
-                expectCatching { Game.from(events) }.isSuccess().and {
-                    get { this.events }.hasSize(events.size).isEqualTo(events)
-                }
-            }
-        }
-
-    @Test
-    fun `a game cannot be built from an empty history`() {
-        expectThrows<IllegalStateException> { Game.from(emptyList()) }
-    }
-
-    @Test
-    fun `a game cannot be built from events that affect multiple different games`() =
-        propertyTest {
-            checkAll(
-                validGameEventsArb,
-                validGameEventsArb,
-            ) { eventsForThisGame, eventsForADifferentGame ->
-                assume(eventsForThisGame.isNotEmpty())
-                assume(eventsForADifferentGame.isNotEmpty())
-                assume(eventsForADifferentGame.any { it.gameId != eventsForThisGame.first().gameId })
-
-                val eventsContainingMultipleGames =
-                    eventsForThisGame.take(1) + (eventsForThisGame.drop(1) + eventsForADifferentGame).shuffled()
-                expectThrows<IllegalStateException> { Game.from(eventsContainingMultipleGames) }
-            }
-        }
 
     @Test
     fun `joining a full game is not possible`() =
@@ -118,6 +76,52 @@ class GameTest {
                 }
             }
         }
+
+    @Nested
+    inner class RestoringAGameFromEvents {
+        @Test
+        fun `a game can be created from a history of events`() =
+            propertyTest {
+                checkAll(validGameEventsArb) { events ->
+                    assume(events.isNotEmpty())
+
+                    expectCatching { Game.from(events) }.isSuccess().and {
+                        get { this.events }.hasSize(events.size).isEqualTo(events)
+                    }
+                }
+            }
+
+        @Test
+        fun `a game cannot be built from an empty history`() {
+            expectThrows<IllegalStateException> { Game.from(emptyList()) }
+        }
+
+        @Test
+        fun `a game's history can only ever have 1 game created event`() =
+            propertyTest {
+                checkAll(gameEventsArb) { events ->
+                    assume(events.count { it is GameCreated } > 1)
+                    expectCatching { Game.from(events) }.isFailure()
+                }
+            }
+
+        @Test
+        fun `a game cannot be built from events that affect multiple different games`() =
+            propertyTest {
+                checkAll(
+                    validGameEventsArb,
+                    validGameEventsArb,
+                ) { eventsForThisGame, eventsForADifferentGame ->
+                    assume(eventsForThisGame.isNotEmpty())
+                    assume(eventsForADifferentGame.isNotEmpty())
+                    assume(eventsForADifferentGame.any { it.gameId != eventsForThisGame.first().gameId })
+
+                    val eventsContainingMultipleGames =
+                        eventsForThisGame.take(1) + (eventsForThisGame.drop(1) + eventsForADifferentGame).shuffled()
+                    expectThrows<IllegalStateException> { Game.from(eventsContainingMultipleGames) }
+                }
+            }
+    }
 
     @Test
     @Disabled

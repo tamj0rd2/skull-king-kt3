@@ -3,7 +3,7 @@ package com.tamj0rd2.skullking.domain
 import com.tamj0rd2.skullking.domain.model.Game
 import com.tamj0rd2.skullking.domain.model.Game.Companion.MAXIMUM_PLAYER_COUNT
 import com.tamj0rd2.skullking.domain.model.GameCreated
-import com.tamj0rd2.skullking.domain.model.GameEvent
+import com.tamj0rd2.skullking.domain.model.GameErrorCode
 import com.tamj0rd2.skullking.domain.model.GameId
 import com.tamj0rd2.skullking.domain.model.PlayerId
 import com.tamj0rd2.skullking.domain.model.PlayerJoined
@@ -14,7 +14,6 @@ import io.kotest.common.runBlocking
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.arbitrary
 import io.kotest.property.arbitrary.choice
-import io.kotest.property.arbitrary.filterNot
 import io.kotest.property.arbitrary.flatMap
 import io.kotest.property.arbitrary.list
 import io.kotest.property.arbitrary.map
@@ -23,24 +22,24 @@ import io.kotest.property.arbitrary.uuid
 import strikt.api.Assertion
 import strikt.assertions.isA
 
+// NOTE: these arbs need to be kept up to date, as/when I add more actions and events.
 object GameArbs {
-    val gameIdArb = Arb.uuid(allowNilValue = false).map { GameId.of(it) }
+    private val gameIdArb = Arb.uuid(allowNilValue = false).map { GameId.of(it) }
     val playerIdArb = Arb.uuid().map { PlayerId.of(it) }
 
-    fun gameCreatedArb(gameId: GameId) = arbitrary { GameCreated(gameId) }
+    private fun gameCreatedArb(gameId: GameId) = arbitrary { GameCreated(gameId) }
 
-    fun playerJoinedArb(gameId: GameId) = playerIdArb.map { playerId -> PlayerJoined(gameId, playerId) }
+    private fun playerJoinedArb(gameId: GameId) = playerIdArb.map { playerId -> PlayerJoined(gameId, playerId) }
 
-    val gameEventArb =
-        gameIdArb.flatMap { gameId ->
-            Arb.choice(
-                gameCreatedArb(gameId),
-                playerJoinedArb(gameId),
-            )
-        }
-
-    // TODO: modify this as I create more events.
-    val gameEventsArb = Arb.list(gameEventArb)
+    val gameEventsArb =
+        Arb.list(
+            gameIdArb.flatMap { gameId ->
+                Arb.choice(
+                    gameCreatedArb(gameId),
+                    playerJoinedArb(gameId),
+                )
+            },
+        )
 
     val validGameEventsArb =
         arbitrary {
@@ -52,27 +51,25 @@ object GameArbs {
             }
         }
 
-    val validGameActionsArb =
-        validGameEventsArb.map { events ->
-            events.drop(1).map { event ->
-                val description =
-                    when (event) {
-                        is GameCreated -> "Game created"
-                        is PlayerJoined -> "Player ${PlayerId.show(event.playerId)} joined"
-                    }
+    private val playerJoinedActionArb =
+        arbitrary {
+            val playerId = playerIdArb.bind()
+            GameAction("add player $playerId") { addPlayer(playerId) }
+        }
 
-                GameAction(description) {
-                    appendEvent(event.withGameId(id)).orThrow()
-                    this
-                }
+    val validGameActionsArb =
+        arbitrary {
+            buildList {
+                addAll(Arb.set(playerJoinedActionArb, 0..MAXIMUM_PLAYER_COUNT).bind())
             }
         }
 
     val gameArb =
-        validGameEventsArb
-            .map { history -> runCatching { Game.from(history) }.getOrNull() }
-            .filterNot { it == null }
-            .map { requireNotNull(it) }
+        arbitrary {
+            Game.new().also { game ->
+                validGameActionsArb.bind().forEach { it.mutate(game) }
+            }
+        }
 }
 
 fun propertyTest(block: suspend () -> Unit) = runBlocking(block)
@@ -81,13 +78,16 @@ fun <T, E> Assertion.Builder<Result4k<T, E>>.wasSuccessful() = run { isA<Success
 
 data class GameAction(
     private val description: String,
-    val mutate: Game.() -> Game,
+    private val mutation: Game.() -> Result4k<Unit, GameErrorCode>,
 ) {
     override fun toString(): String = description
-}
 
-private fun GameEvent.withGameId(gameId: GameId) =
-    when (this) {
-        is GameCreated -> copy(gameId = gameId)
-        is PlayerJoined -> copy(gameId = gameId)
+    fun mutate(game: Game) = mutation(game).orThrow()
+
+    override fun equals(other: Any?): Boolean {
+        if (other !is GameAction) return false
+        return this.description == other.description
     }
+
+    override fun hashCode(): Int = description.hashCode()
+}

@@ -63,7 +63,7 @@ class Game {
         appendEvent(PlayerJoined(id, playerId))
             .filterOrThrow<Unit, GameErrorCode, AddPlayerErrorCode>()
 
-    internal fun appendEvent(event: GameEvent): Result4k<Unit, GameErrorCode> =
+    private fun appendEvent(event: GameEvent): Result4k<Unit, GameErrorCode> =
         state.apply(event).map { nextState ->
             state = nextState
             _events += event
