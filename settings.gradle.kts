@@ -17,4 +17,5 @@ include(
     ":application",
     ":domain",
     ":lib:forkhandles-extensions",
+    ":lib:utils",
 )

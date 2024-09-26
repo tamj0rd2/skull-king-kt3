@@ -1,6 +1,5 @@
-package com.tamj0rd2.skullking.domain.model
+package com.tamj0rd2.utils
 
-// TODO: this definitely doesn't belong in the domain.
 fun Any.pretty() =
     toString().let { toString ->
         var indentLevel = 0
