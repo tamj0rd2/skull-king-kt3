@@ -1,11 +1,9 @@
 package com.tamj0rd2.skullking.application.port.output
 
-import com.tamj0rd2.skullking.domain.GameArbs.validGameEventsArb
+import com.tamj0rd2.skullking.domain.GameArbs.validGameActionsArb
 import com.tamj0rd2.skullking.domain.model.Game
-import com.tamj0rd2.skullking.domain.model.GameCreated
-import com.tamj0rd2.skullking.domain.model.GameEvent
 import com.tamj0rd2.skullking.domain.model.GameId
-import com.tamj0rd2.skullking.domain.model.PlayerJoined
+import com.tamj0rd2.skullking.domain.model.Version
 import com.tamj0rd2.skullking.domain.propertyTest
 import dev.forkhandles.values.random
 import io.kotest.property.checkAll
@@ -18,24 +16,24 @@ abstract class GameRepositoryContract {
     protected abstract val gameRepository: GameRepository
 
     @Test
-    fun `all previously saved events for a game can be loaded`() =
+    fun `modifying, saving and loading a game multiple times results in the same state as just modifying the game in memory`() =
         propertyTest {
-            checkAll(validGameEventsArb) { events ->
-                val gameId = Game.new().also(gameRepository::save).id
+            checkAll(validGameActionsArb) { actions ->
+                val gameModifiedInMemoryOnly = Game.new().also(gameRepository::save)
+                val gameId = gameModifiedInMemoryOnly.id
 
-                // TODO: this is really bad
-                val eventsAdaptedForThisGame = events.map { it.withGameId(gameId) }
-                eventsAdaptedForThisGame.drop(1).forEach { event ->
-                    val game = gameRepository.load(gameId)
-                    when (event) {
-                        is GameCreated -> error("shouldn't replay this one")
-                        is PlayerJoined -> game.addPlayer(event.playerId)
-                    }
-                    gameRepository.save(game)
+                actions.forEach { it.mutate(gameModifiedInMemoryOnly) }
+                actions.forEach { action ->
+                    val modifiedGame = action.mutate(gameRepository.load(gameId))
+                    gameRepository.save(modifiedGame)
                 }
 
-                val loadedGameAfterAllSaves = gameRepository.load(gameId)
-                expectThat(loadedGameAfterAllSaves.events).isEqualTo(eventsAdaptedForThisGame)
+                val gameThatWasSavedAndLoaded = gameRepository.load(gameId)
+                expectThat(gameThatWasSavedAndLoaded.events).isEqualTo(gameModifiedInMemoryOnly.events)
+                expectThat(gameThatWasSavedAndLoaded.state).isEqualTo(gameModifiedInMemoryOnly.state)
+                expectThat(gameThatWasSavedAndLoaded.id).isEqualTo(gameModifiedInMemoryOnly.id)
+                expectThat(gameModifiedInMemoryOnly.loadedVersion).isEqualTo(Version.NONE)
+                expectThat(gameThatWasSavedAndLoaded.loadedVersion).isEqualTo(Version.of(actions.size))
             }
         }
 
@@ -44,9 +42,3 @@ abstract class GameRepositoryContract {
         expectThrows<IllegalStateException> { gameRepository.load(GameId.random()) }
     }
 }
-
-private fun GameEvent.withGameId(gameId: GameId) =
-    when (this) {
-        is GameCreated -> copy(gameId = gameId)
-        is PlayerJoined -> copy(gameId = gameId)
-    }
