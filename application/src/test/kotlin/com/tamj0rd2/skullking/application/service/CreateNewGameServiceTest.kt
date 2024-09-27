@@ -9,7 +9,7 @@ class CreateNewGameServiceTest : CreateNewGameUseCaseContract() {
     private val gameRepository = GameRepositoryInMemoryAdapter()
 
     override fun newDriver(): ApplicationDriver =
-        ApplicationDomainDriver.create(
+        ApplicationDomainDriver(
             gameRepository = gameRepository,
         )
 }

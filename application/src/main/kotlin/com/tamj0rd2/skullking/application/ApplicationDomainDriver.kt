@@ -13,18 +13,19 @@ class ApplicationDomainDriver private constructor(
     private val joinGameService: JoinGameService,
     private val viewPlayerGameStateService: ViewPlayerGameStateService,
 ) : ApplicationDriver {
+    constructor(
+        gameRepository: GameRepository,
+    ) : this(
+        createNewGameService = CreateNewGameService(gameRepository),
+        joinGameService = JoinGameService(gameRepository),
+        viewPlayerGameStateService = ViewPlayerGameStateService(gameRepository),
+    )
+
     override fun invoke(command: CreateNewGameCommand) = createNewGameService.invoke(command)
 
     override fun invoke(command: JoinGameCommand) = joinGameService.invoke(command)
 
     override fun invoke(query: ViewPlayerGameStateQuery) = viewPlayerGameStateService.invoke(query)
 
-    companion object {
-        fun create(gameRepository: GameRepository): ApplicationDomainDriver =
-            ApplicationDomainDriver(
-                createNewGameService = CreateNewGameService(gameRepository),
-                joinGameService = JoinGameService(gameRepository),
-                viewPlayerGameStateService = ViewPlayerGameStateService(gameRepository),
-            )
-    }
+    companion object
 }

@@ -7,7 +7,7 @@ import com.tamj0rd2.skullking.application.port.output.GameRepositoryInMemoryAdap
 
 class ViewPlayerGameStateServiceTest : ViewPlayerGameStateUseCaseContract() {
     private val driver =
-        ApplicationDomainDriver.create(
+        ApplicationDomainDriver(
             gameRepository = GameRepositoryInMemoryAdapter(),
         )
 

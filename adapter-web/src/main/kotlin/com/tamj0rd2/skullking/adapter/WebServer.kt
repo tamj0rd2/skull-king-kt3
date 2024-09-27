@@ -20,7 +20,7 @@ object WebServer {
     fun start(port: Int = getUnusedPort()) = createServer(application = createApp(), port = port).start()
 
     fun createApp(): ApplicationDomainDriver =
-        ApplicationDomainDriver.create(
+        ApplicationDomainDriver(
             gameRepository = GameRepositoryEsdbAdapter(),
         )
 
