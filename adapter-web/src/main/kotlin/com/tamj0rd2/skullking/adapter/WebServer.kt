@@ -4,7 +4,7 @@ import com.tamj0rd2.skullking.application.ApplicationDomainDriver
 import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.CreateNewGameCommand
 import com.tamj0rd2.skullking.application.port.input.JoinGameUseCase.JoinGameCommand
 import com.tamj0rd2.skullking.application.port.output.GameUpdateListener
-import com.tamj0rd2.skullking.application.service.GameUpdateNotifierInMemoryAdapter
+import com.tamj0rd2.skullking.application.port.output.GameUpdateNotifierInMemoryAdapter
 import com.tamj0rd2.skullking.domain.model.GameId
 import com.tamj0rd2.skullking.domain.model.GameUpdate
 import org.http4k.core.Method

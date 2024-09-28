@@ -3,8 +3,8 @@ package com.tamj0rd2.skullking.application
 import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.CreateNewGameCommand
 import com.tamj0rd2.skullking.application.port.input.JoinGameUseCase.JoinGameCommand
 import com.tamj0rd2.skullking.application.port.output.GameRepository
+import com.tamj0rd2.skullking.application.port.output.GameUpdateNotifier
 import com.tamj0rd2.skullking.application.service.CreateNewGameService
-import com.tamj0rd2.skullking.application.service.GameUpdateNotifier
 import com.tamj0rd2.skullking.application.service.JoinGameService
 
 class ApplicationDomainDriver private constructor(
