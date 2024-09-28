@@ -23,8 +23,6 @@ class JoinGameService(
 
         gameUpdateNotifier.broadcast(GameUpdate.PlayerJoined(playerId))
         gameUpdateNotifier.subscribe(
-            gameId = game.id,
-            playerId = playerId,
             listener = command.gameUpdateListener,
         )
 
