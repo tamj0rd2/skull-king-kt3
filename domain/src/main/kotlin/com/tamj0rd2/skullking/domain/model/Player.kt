@@ -10,7 +10,3 @@ value class PlayerId private constructor(
 ) : Value<UUID> {
     companion object : UUIDValueFactory<PlayerId>(::PlayerId)
 }
-
-data class Player(
-    val id: PlayerId,
-)
