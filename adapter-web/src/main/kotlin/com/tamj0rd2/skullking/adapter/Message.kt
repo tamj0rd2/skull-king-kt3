@@ -1,6 +1,5 @@
 package com.tamj0rd2.skullking.adapter
 
-import com.tamj0rd2.skullking.adapter.JGameUpdateMessage.gameUpdate
 import com.tamj0rd2.skullking.domain.model.GameId
 import com.tamj0rd2.skullking.domain.model.GameUpdate
 import com.tamj0rd2.skullking.domain.model.GameUpdate.PlayerJoined
@@ -31,10 +30,6 @@ data class JoinAcknowledgedMessage(
     val playerId: PlayerId,
 ) : Message
 
-data class JoinGameMessage(
-    val gameId: GameId,
-) : Message
-
 data class GameUpdateMessage(
     val gameUpdate: GameUpdate,
 ) : Message
@@ -61,7 +56,6 @@ private object JMessage : JSealed<Message>() {
                 "game-created" to JGameCreatedMessage,
                 "create-game" to JSingleton(CreateNewGameMessage),
                 "join-acknowledged" to JAcknowledged,
-                "join-game" to JJoinGameMessage,
                 "game-update" to JGameUpdateMessage,
             )
 
@@ -70,7 +64,6 @@ private object JMessage : JSealed<Message>() {
             is GameCreatedMessage -> "game-created"
             is CreateNewGameMessage -> "create-game"
             is JoinAcknowledgedMessage -> "join-acknowledged"
-            is JoinGameMessage -> "join-game"
             is GameUpdateMessage -> "game-update"
         }
 }
@@ -100,15 +93,6 @@ private object JAcknowledged : JAny<JoinAcknowledgedMessage>() {
     override fun JsonNodeObject.deserializeOrThrow() =
         JoinAcknowledgedMessage(
             playerId = +playerId,
-        )
-}
-
-private object JJoinGameMessage : JAny<JoinGameMessage>() {
-    private val gameId by str(JGameId, JoinGameMessage::gameId)
-
-    override fun JsonNodeObject.deserializeOrThrow() =
-        JoinGameMessage(
-            gameId = +gameId,
         )
 }
 

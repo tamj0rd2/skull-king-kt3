@@ -26,16 +26,18 @@ import org.http4k.routing.bind as bindHttp
 import org.http4k.routing.ws.bind as bindWs
 
 object WebServer {
-    const val DEFAULT_PORT = 9000
+    private const val DEFAULT_PORT = 9000
 
     @JvmStatic
-    fun main(args: Array<String>) {
+    fun main(
+        @Suppress("unused") args: Array<String>,
+    ) {
         start(DEFAULT_PORT)
     }
 
     fun start(port: Int = getUnusedPort()) = createServer(application = createApp(), port = port).start()
 
-    fun createApp(): ApplicationDomainDriver =
+    private fun createApp(): ApplicationDomainDriver =
         ApplicationDomainDriver(
             gameRepository = GameRepositoryEsdbAdapter(),
             // TODO: swap this out maybe?
@@ -65,6 +67,10 @@ object WebServer {
 
                     // TODO: this code needs organising.
                     WsResponse { ws ->
+                        ws.onMessage { println("server: received ${it.body}") }
+                        ws.onError { println("server: error: $it") }
+                        ws.onClose { println("server: client is disconnecting") }
+
                         val listenerForThisPlayer =
                             object : GameUpdateListener {
                                 override fun send(updates: List<GameUpdate>) {
@@ -75,16 +81,7 @@ object WebServer {
                             }
 
                         val playerId = application(JoinGameCommand(gameId, listenerForThisPlayer)).playerId
-
                         ws.send(wsLens(JoinAcknowledgedMessage(playerId)))
-
-                        val playerSocket = ServerSidePlayerSocket(ws, application)
-                        ws.onMessage {
-                            println("server: received ${it.body}")
-                            playerSocket.handle(wsLens(it))
-                        }
-                        ws.onError { println("server: error: $it") }
-                        ws.onClose { println("server: client is disconnecting") }
                     }
                 },
             )

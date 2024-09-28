@@ -16,9 +16,7 @@ import java.util.UUID
 value class GameId private constructor(
     override val value: UUID,
 ) : Value<UUID> {
-    companion object : UUIDValueFactory<GameId>(::GameId, validation = { it != UUID(0, 0) }) {
-        val NONE = GameId(UUID(0, 0))
-    }
+    companion object : UUIDValueFactory<GameId>(::GameId, validation = { it != UUID(0, 0) })
 }
 
 @JvmInline
@@ -82,10 +80,6 @@ sealed class GameErrorCode : RuntimeException()
 
 sealed class AddPlayerErrorCode : GameErrorCode()
 
-data object GameIsFull : AddPlayerErrorCode() {
-    private fun readResolve(): Any = GameIsFull
-}
+class GameIsFull : AddPlayerErrorCode()
 
-data object PlayerHasAlreadyJoined : AddPlayerErrorCode() {
-    private fun readResolve(): Any = PlayerHasAlreadyJoined
-}
+class PlayerHasAlreadyJoined : AddPlayerErrorCode()

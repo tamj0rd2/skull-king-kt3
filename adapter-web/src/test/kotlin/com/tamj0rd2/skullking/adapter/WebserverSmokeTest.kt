@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Timeout
 
 @Timeout(5)
 class WebserverSmokeTest {
+    // TODO: this should test Main instead. Figure out how to do it.
     private val server = WebServer.start()
     private val baseUri = Uri.of("ws://localhost:${server.port()}")
 
