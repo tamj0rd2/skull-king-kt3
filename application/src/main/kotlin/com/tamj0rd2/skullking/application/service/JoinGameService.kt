@@ -13,11 +13,11 @@ class JoinGameService(
 ) : JoinGameUseCase {
     override fun invoke(command: JoinGameCommand): JoinGameOutput {
         val playerId = PlayerId.random()
-        with(gameRepository) {
-            val game = load(command.gameId)
-            game.addPlayer(playerId).orThrow()
-            save(game)
-        }
+
+        val game = gameRepository.load(command.gameId)
+        game.addPlayer(playerId).orThrow()
+        gameRepository.save(game)
+
         return JoinGameOutput(playerId)
     }
 }
