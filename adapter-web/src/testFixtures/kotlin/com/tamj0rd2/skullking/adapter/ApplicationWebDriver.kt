@@ -5,36 +5,73 @@ import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.Create
 import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.CreateNewGameOutput
 import com.tamj0rd2.skullking.application.port.input.JoinGameUseCase.JoinGameCommand
 import com.tamj0rd2.skullking.application.port.input.JoinGameUseCase.JoinGameOutput
+import com.tamj0rd2.skullking.domain.model.GameId
 import com.tamj0rd2.skullking.domain.model.PlayerId
 import dev.forkhandles.values.ZERO
+import org.http4k.client.ApacheClient
 import org.http4k.client.WebsocketClient
-import org.http4k.core.Uri
-import org.http4k.websocket.WsClient
+import org.http4k.core.*
+import org.http4k.filter.ClientFilters.SetBaseUriFrom
+import org.http4k.strikt.status
+import org.http4k.websocket.Websocket
+import strikt.api.expectThat
+import strikt.assertions.isEqualTo
 import java.time.Duration
+import java.util.concurrent.CountDownLatch
 
 class ApplicationWebDriver(
     private val baseUri: Uri,
 ) : ApplicationDriver {
-    private val ws by lazy { WebsocketClient.blocking(uri = baseUri, timeout = Duration.ofSeconds(5)) }
+    private val httpClient = SetBaseUriFrom(baseUri.scheme("http")).then(ApacheClient())
+    private lateinit var ws: Websocket
     private var playerId = PlayerId.ZERO
+    private val allReceivedMessages = mutableListOf<Message>()
 
-    override fun invoke(command: CreateNewGameCommand): CreateNewGameOutput {
-        ws.send(wsLens(CreateNewGameMessage))
-        val response = ws.responses().firstOfKind<GameCreatedMessage>()
-        return CreateNewGameOutput(response.gameId)
-    }
+    // TODO: creating a game should cause you to automatically join that game.
+    override fun invoke(command: CreateNewGameCommand): CreateNewGameOutput =
+        httpClient(Request(Method.POST, "/game")).use {
+            expectThat(it).status.isEqualTo(Status.CREATED)
+            val response = httpLens(it) as GameCreatedMessage
+            CreateNewGameOutput(response.gameId)
+        }
 
     override fun invoke(command: JoinGameCommand): JoinGameOutput {
-        ws.send(wsLens(JoinGameMessage(command.gameId)))
-        val response = ws.responses().firstOfKind<JoinAcknowledgedMessage>()
-        playerId = response.playerId
+        ws = connectToWs(command.gameId)
+        ws.waitForJoinAcknowledgement()
+        check(playerId != PlayerId.ZERO) { "the player id has not been set" }
         return JoinGameOutput(playerId)
     }
 
-    private fun WsClient.responses() =
-        received()
-            .map(wsLens)
-            .onEach { println("client: received $it") }
-}
+    private fun Websocket.waitForJoinAcknowledgement() {
+        val latch = CountDownLatch(1)
 
-private inline fun <reified T : Message> Sequence<Message>.firstOfKind(): T = filterIsInstance<T>().first()
+        onMessage {
+            if (playerId != PlayerId.ZERO) return@onMessage
+
+            val message = wsLens(it)
+            if (message is JoinAcknowledgedMessage) {
+                playerId = message.playerId
+                latch.countDown()
+            }
+        }
+
+        latch.await()
+    }
+
+    private fun connectToWs(gameId: GameId): Websocket {
+        val ws =
+            WebsocketClient.nonBlocking(
+                uri = baseUri.scheme("ws").path("/game/${GameId.show(gameId)}"),
+                timeout = Duration.ofSeconds(1),
+                onConnect = { println("client connected: $it") },
+            )
+        ws.onClose { println("client closed: $it") }
+        ws.onError { println("client error: $it") }
+        ws.onMessage {
+            val message = wsLens(it)
+            allReceivedMessages.add(message)
+            println("client received: $message")
+        }
+        return ws
+    }
+}

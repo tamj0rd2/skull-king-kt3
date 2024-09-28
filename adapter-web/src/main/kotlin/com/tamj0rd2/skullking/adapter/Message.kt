@@ -8,7 +8,11 @@ import com.ubertob.kondor.json.JStringRepresentable
 import com.ubertob.kondor.json.ObjectNodeConverter
 import com.ubertob.kondor.json.jsonnode.JsonNodeObject
 import com.ubertob.kondor.json.str
+import org.http4k.asString
+import org.http4k.core.ContentType.Companion.APPLICATION_JSON
 import org.http4k.lens.BiDiWsMessageLens
+import org.http4k.lens.ContentNegotiation
+import org.http4k.lens.httpBodyRoot
 import org.http4k.websocket.WsMessage
 
 sealed interface Message
@@ -27,12 +31,18 @@ data class JoinGameMessage(
     val gameId: GameId,
 ) : Message
 
-internal val wsLens
-    get() =
-        BiDiWsMessageLens(
-            get = { wsMessage -> JMessage.fromJson(wsMessage.bodyString()).orThrow() },
-            setLens = { message, _ -> WsMessage(JMessage.toJson(message)) },
-        )
+internal val wsLens =
+    BiDiWsMessageLens(
+        get = { wsMessage -> JMessage.fromJson(wsMessage.bodyString()).orThrow() },
+        setLens = { message, _ -> WsMessage(JMessage.toJson(message)) },
+    )
+
+internal val httpLens =
+    httpBodyRoot(emptyList(), APPLICATION_JSON, ContentNegotiation.None)
+        .map(
+            nextIn = { JMessage.fromJson(it.payload.asString()).orThrow() },
+            nextOut = { org.http4k.core.Body(JMessage.toJson(it)) },
+        ).toLens()
 
 private object JMessage : JSealed<Message>() {
     override val discriminatorFieldName: String = "type"

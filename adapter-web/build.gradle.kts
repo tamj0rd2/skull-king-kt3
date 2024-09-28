@@ -11,4 +11,5 @@ dependencies {
     testFixturesImplementation(testFixtures(project(":application")))
     testFixturesImplementation(testFixtures(project(":domain")))
     testFixturesApi(libs.bundles.http4k.client)
+    testFixturesApi(libs.http4k.strikt)
 }

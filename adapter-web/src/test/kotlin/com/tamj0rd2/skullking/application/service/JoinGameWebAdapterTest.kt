@@ -23,7 +23,7 @@ class JoinGameWebAdapterTest : JoinGameGameUseCaseContract() {
         )
 
     override fun newPlayerRole() =
-        PlayerRole(ApplicationWebDriver(Uri.of("ws://localhost:${server.port()}")))
+        PlayerRole(ApplicationWebDriver(Uri.of("//localhost:${server.port()}")))
             .also { eventListeners.register(it) }
 
     @BeforeEach
