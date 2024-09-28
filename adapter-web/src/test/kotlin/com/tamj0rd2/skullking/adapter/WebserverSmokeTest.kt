@@ -1,7 +1,6 @@
 package com.tamj0rd2.skullking.adapter
 
-import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.CreateNewGameCommand
-import com.tamj0rd2.skullking.application.port.input.JoinGameUseCase.JoinGameCommand
+import com.tamj0rd2.skullking.application.port.input.roles.PlayerRole
 import org.http4k.core.Uri
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
@@ -13,12 +12,12 @@ class WebserverSmokeTest {
 
     @Test
     fun `can start a 2 player game`() {
-        val player1 = ApplicationWebDriver(baseUri)
-        val player2 = ApplicationWebDriver(baseUri)
+        val player1 = PlayerRole(ApplicationWebDriver(baseUri))
+        val player2 = PlayerRole(ApplicationWebDriver(baseUri))
 
-        val gameId = player1(CreateNewGameCommand).gameId
-        player1(JoinGameCommand(gameId)).playerId
-        player2(JoinGameCommand(gameId)).playerId
+        val gameId = player1.createsAGame()
+        player1.joinsAGame(gameId)
+        player2.joinsAGame(gameId)
 
         // TODO: continue from here when I implement starting the game
     }

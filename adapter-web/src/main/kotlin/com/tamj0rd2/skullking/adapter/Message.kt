@@ -1,12 +1,16 @@
 package com.tamj0rd2.skullking.adapter
 
+import com.tamj0rd2.skullking.adapter.JGameUpdateMessage.gameUpdate
 import com.tamj0rd2.skullking.domain.model.GameId
+import com.tamj0rd2.skullking.domain.model.GameUpdate
+import com.tamj0rd2.skullking.domain.model.GameUpdate.PlayerJoined
 import com.tamj0rd2.skullking.domain.model.PlayerId
 import com.ubertob.kondor.json.JAny
 import com.ubertob.kondor.json.JSealed
 import com.ubertob.kondor.json.JStringRepresentable
 import com.ubertob.kondor.json.ObjectNodeConverter
 import com.ubertob.kondor.json.jsonnode.JsonNodeObject
+import com.ubertob.kondor.json.obj
 import com.ubertob.kondor.json.str
 import org.http4k.asString
 import org.http4k.core.ContentType.Companion.APPLICATION_JSON
@@ -29,6 +33,10 @@ data class JoinAcknowledgedMessage(
 
 data class JoinGameMessage(
     val gameId: GameId,
+) : Message
+
+data class GameUpdateMessage(
+    val gameUpdate: GameUpdate,
 ) : Message
 
 internal val wsLens =
@@ -54,6 +62,7 @@ private object JMessage : JSealed<Message>() {
                 "create-game" to JSingleton(CreateNewGameMessage),
                 "join-acknowledged" to JAcknowledged,
                 "join-game" to JJoinGameMessage,
+                "game-update" to JGameUpdateMessage,
             )
 
     override fun extractTypeName(obj: Message): String =
@@ -62,6 +71,7 @@ private object JMessage : JSealed<Message>() {
             is CreateNewGameMessage -> "create-game"
             is JoinAcknowledgedMessage -> "join-acknowledged"
             is JoinGameMessage -> "join-game"
+            is GameUpdateMessage -> "game-update"
         }
 }
 
@@ -100,6 +110,33 @@ private object JJoinGameMessage : JAny<JoinGameMessage>() {
         JoinGameMessage(
             gameId = +gameId,
         )
+}
+
+private object JGameUpdateMessage : JAny<GameUpdateMessage>() {
+    private val gameUpdate by obj(JGameUpdate, GameUpdateMessage::gameUpdate)
+
+    override fun JsonNodeObject.deserializeOrThrow() = GameUpdateMessage(gameUpdate = +gameUpdate)
+}
+
+private object JGameUpdate : JSealed<GameUpdate>() {
+    override val discriminatorFieldName: String = "type"
+
+    override val subConverters: Map<String, ObjectNodeConverter<out GameUpdate>>
+        get() =
+            mapOf(
+                "player-joined" to JPlayerJoined,
+            )
+
+    override fun extractTypeName(obj: GameUpdate): String =
+        when (obj) {
+            is PlayerJoined -> "player-joined"
+        }
+}
+
+private object JPlayerJoined : JAny<PlayerJoined>() {
+    private val playerId by str(JPlayerId, PlayerJoined::playerId)
+
+    override fun JsonNodeObject.deserializeOrThrow() = PlayerJoined(playerId = +playerId)
 }
 
 private class JSingleton<T : Any>(

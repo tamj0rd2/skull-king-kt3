@@ -4,6 +4,7 @@ import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.Create
 import com.tamj0rd2.skullking.application.port.input.JoinGameUseCase.JoinGameCommand
 import com.tamj0rd2.skullking.application.port.output.GameRepository
 import com.tamj0rd2.skullking.application.service.CreateNewGameService
+import com.tamj0rd2.skullking.application.service.GameUpdateNotifier
 import com.tamj0rd2.skullking.application.service.JoinGameService
 
 class ApplicationDomainDriver private constructor(
@@ -12,9 +13,10 @@ class ApplicationDomainDriver private constructor(
 ) : ApplicationDriver {
     constructor(
         gameRepository: GameRepository,
+        gameUpdateNotifier: GameUpdateNotifier,
     ) : this(
         createNewGameService = CreateNewGameService(gameRepository),
-        joinGameService = JoinGameService(gameRepository),
+        joinGameService = JoinGameService(gameRepository, gameUpdateNotifier),
     )
 
     override fun invoke(command: CreateNewGameCommand) = createNewGameService.invoke(command)

@@ -5,6 +5,7 @@ import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.Create
 import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.CreateNewGameOutput
 import com.tamj0rd2.skullking.application.port.input.JoinGameUseCase.JoinGameCommand
 import com.tamj0rd2.skullking.application.port.input.JoinGameUseCase.JoinGameOutput
+import com.tamj0rd2.skullking.application.port.output.GameUpdateListener
 import com.tamj0rd2.skullking.domain.model.GameId
 import com.tamj0rd2.skullking.domain.model.PlayerId
 import dev.forkhandles.values.ZERO
@@ -25,6 +26,7 @@ class ApplicationWebDriver(
     private val httpClient = SetBaseUriFrom(baseUri.scheme("http")).then(ApacheClient())
     private lateinit var ws: Websocket
     private var playerId = PlayerId.ZERO
+    private lateinit var gameUpdateListener: GameUpdateListener
     private val allReceivedMessages = mutableListOf<Message>()
 
     // TODO: creating a game should cause you to automatically join that game.
@@ -36,8 +38,17 @@ class ApplicationWebDriver(
         }
 
     override fun invoke(command: JoinGameCommand): JoinGameOutput {
+        gameUpdateListener = command.gameUpdateListener
         ws = connectToWs(command.gameId)
         ws.waitForJoinAcknowledgement()
+        ws.onMessage {
+            val message = wsLens(it)
+            if (message is GameUpdateMessage) {
+                println("received a game update message!")
+                command.gameUpdateListener.send(message.gameUpdate)
+            }
+        }
+
         check(playerId != PlayerId.ZERO) { "the player id has not been set" }
         return JoinGameOutput(playerId)
     }
@@ -63,7 +74,7 @@ class ApplicationWebDriver(
             WebsocketClient.nonBlocking(
                 uri = baseUri.scheme("ws").path("/game/${GameId.show(gameId)}"),
                 timeout = Duration.ofSeconds(1),
-                onConnect = { println("client connected: $it") },
+                onConnect = { println("client connected") },
             )
         ws.onClose { println("client closed: $it") }
         ws.onError { println("client error: $it") }

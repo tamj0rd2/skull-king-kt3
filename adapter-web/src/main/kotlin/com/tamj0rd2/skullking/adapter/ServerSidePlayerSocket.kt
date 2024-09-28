@@ -3,7 +3,9 @@ package com.tamj0rd2.skullking.adapter
 import com.tamj0rd2.skullking.application.ApplicationDomainDriver
 import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.CreateNewGameCommand
 import com.tamj0rd2.skullking.application.port.input.JoinGameUseCase.JoinGameCommand
+import com.tamj0rd2.skullking.application.port.output.GameUpdateListener
 import com.tamj0rd2.skullking.domain.model.GameId
+import com.tamj0rd2.skullking.domain.model.GameUpdate
 import com.tamj0rd2.skullking.domain.model.PlayerId
 import dev.forkhandles.values.ZERO
 import org.http4k.websocket.Websocket
@@ -11,7 +13,7 @@ import org.http4k.websocket.Websocket
 internal class ServerSidePlayerSocket(
     private val ws: Websocket,
     private val app: ApplicationDomainDriver,
-) {
+) : GameUpdateListener {
     private var gameId = GameId.NONE
         get() = field.takeIf { it != GameId.NONE } ?: error("gameId not set")
 
@@ -37,8 +39,19 @@ internal class ServerSidePlayerSocket(
     }
 
     private fun respondToJoinRequest(message: JoinGameMessage): Pair<GameId, PlayerId> {
-        val playerId = app(JoinGameCommand(message.gameId)).playerId
+        val command =
+            JoinGameCommand(
+                gameId = message.gameId,
+                gameUpdateListener = this,
+            )
+        val playerId = app(command).playerId
         ws.send(wsLens(JoinAcknowledgedMessage(playerId)))
         return message.gameId to playerId
+    }
+
+    override fun send(updates: List<GameUpdate>) {
+        updates.forEach { update ->
+            ws.send(wsLens(GameUpdateMessage(update)))
+        }
     }
 }

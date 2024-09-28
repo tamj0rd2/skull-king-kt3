@@ -9,7 +9,8 @@ import com.tamj0rd2.skullking.domain.model.GameUpdate
 import com.tamj0rd2.skullking.domain.model.PlayerId
 import dev.forkhandles.values.ZERO
 import strikt.api.expectThat
-import strikt.assertions.contains
+import strikt.assertions.isEqualTo
+import java.time.Instant
 
 class PlayerRole(
     private val driver: ApplicationDriver,
@@ -21,14 +22,33 @@ class PlayerRole(
 
     fun createsAGame(): GameId = driver(CreateNewGameCommand).gameId
 
-    fun joinsAGame(gameId: GameId): PlayerId = driver(JoinGameCommand(gameId)).playerId.also { id = it }
-
-    fun received(expectedNotification: GameUpdate) {
-        // TODO: this can break really easily. What if the same event is in the list multiple times?
-        expectThat(receivedEvents).contains(expectedNotification)
+    fun joinsAGame(gameId: GameId): PlayerId {
+        val command = JoinGameCommand(gameId = gameId, gameUpdateListener = this)
+        return driver(command).playerId.also { id = it }
     }
 
-    override fun notify(updates: List<GameUpdate>) {
+    fun received(expectedNotification: GameUpdate): Unit =
+        eventually {
+            // TODO: this assertion is obviously going to break very quickly.
+            expectThat(receivedEvents.toList()).isEqualTo(listOf(expectedNotification))
+        }
+
+    override fun send(updates: List<GameUpdate>) {
         receivedEvents += updates
     }
+}
+
+private fun <T> eventually(block: () -> T): T {
+    val stopAt = Instant.now().plusMillis(200)
+    var lastError: AssertionError?
+    do {
+        try {
+            return block()
+        } catch (e: AssertionError) {
+            println(e)
+            lastError = e
+        }
+    } while (stopAt > Instant.now())
+
+    throw checkNotNull(lastError)
 }
