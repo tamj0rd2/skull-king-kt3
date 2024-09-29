@@ -2,7 +2,6 @@ package com.tamj0rd2.skullking.adapter
 
 import com.tamj0rd2.skullking.application.ApplicationDomainDriver
 import com.tamj0rd2.skullking.application.port.output.GameUpdateNotifierInMemoryAdapter
-import com.tamj0rd2.skullking.domain.model.GameUpdate
 import org.http4k.contract.contract
 import org.http4k.core.Request
 import org.http4k.routing.websockets
@@ -10,7 +9,6 @@ import org.http4k.server.Http4kServer
 import org.http4k.server.PolyHandler
 import org.http4k.server.Undertow
 import org.http4k.server.asServer
-import org.http4k.websocket.WsMessage
 import org.http4k.websocket.WsResponse
 import java.net.ServerSocket
 import org.http4k.routing.ws.bind as bindWs
@@ -72,6 +70,4 @@ object WebServer {
         socket.close()
         return port
     }
-
-    private fun GameUpdate.toMessage(): WsMessage = wsLens(GameUpdateMessage(this))
 }
