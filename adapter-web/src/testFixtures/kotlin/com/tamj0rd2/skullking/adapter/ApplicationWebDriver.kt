@@ -11,7 +11,9 @@ import com.tamj0rd2.skullking.domain.model.PlayerId
 import dev.forkhandles.values.ZERO
 import org.http4k.client.ApacheClient
 import org.http4k.client.WebsocketClient
-import org.http4k.core.*
+import org.http4k.core.Status
+import org.http4k.core.Uri
+import org.http4k.core.then
 import org.http4k.filter.ClientFilters.SetBaseUriFrom
 import org.http4k.strikt.status
 import org.http4k.websocket.Websocket
@@ -29,9 +31,8 @@ class ApplicationWebDriver(
     private lateinit var gameUpdateListener: GameUpdateListener
     private val allReceivedMessages = mutableListOf<Message>()
 
-    // TODO: creating a game should cause you to automatically join that game.
     override fun invoke(command: CreateNewGameCommand): CreateNewGameOutput =
-        httpClient(Request(Method.POST, "/game")).use {
+        httpClient(CreateGameController.newRequest()).use {
             expectThat(it).status.isEqualTo(Status.CREATED)
             val response = httpLens(it) as GameCreatedMessage
             CreateNewGameOutput(response.gameId)

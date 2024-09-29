@@ -1,19 +1,14 @@
 package com.tamj0rd2.skullking.adapter
 
 import com.tamj0rd2.skullking.application.ApplicationDomainDriver
-import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.CreateNewGameCommand
 import com.tamj0rd2.skullking.application.port.input.JoinGameUseCase.JoinGameCommand
 import com.tamj0rd2.skullking.application.port.output.GameUpdateListener
 import com.tamj0rd2.skullking.application.port.output.GameUpdateNotifierInMemoryAdapter
 import com.tamj0rd2.skullking.domain.model.GameId
 import com.tamj0rd2.skullking.domain.model.GameUpdate
-import org.http4k.core.Method
+import org.http4k.contract.contract
 import org.http4k.core.Request
-import org.http4k.core.Response
-import org.http4k.core.Status
-import org.http4k.core.with
 import org.http4k.lens.Path
-import org.http4k.routing.routes
 import org.http4k.routing.websockets
 import org.http4k.server.Http4kServer
 import org.http4k.server.PolyHandler
@@ -22,7 +17,6 @@ import org.http4k.server.asServer
 import org.http4k.websocket.WsMessage
 import org.http4k.websocket.WsResponse
 import java.net.ServerSocket
-import org.http4k.routing.bind as bindHttp
 import org.http4k.routing.ws.bind as bindWs
 
 object WebServer {
@@ -49,14 +43,9 @@ object WebServer {
         port: Int = getUnusedPort(),
     ): Http4kServer {
         val http =
-            routes(
-                // TODO: define this using http4k contract
-                "/game" bindHttp Method.POST to {
-                    val output = application(CreateNewGameCommand)
-                    val message = GameCreatedMessage(output.gameId)
-                    Response(Status.CREATED).with(httpLens of message)
-                },
-            )
+            contract {
+                routes += CreateGameController(application).route
+            }
 
         val gameIdLens = Path.of("gameId")
 

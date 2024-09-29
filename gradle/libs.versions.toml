@@ -11,6 +11,7 @@ kotest = "5.9.1"
 http4k-bom = { module = "org.http4k:http4k-bom", version.ref = "http4k" }
 http4k-client-apache = { module = "org.http4k:http4k-client-apache", version.ref = "http4k" }
 http4k-client-websocket = { module = "org.http4k:http4k-client-websocket", version.ref = "http4k" }
+http4k-contract = { module = "org.http4k:http4k-contract", version.ref = "http4k" }
 http4k-core = { module = "org.http4k:http4k-core", version.ref = "http4k" }
 http4k-format-kondor = { module = "org.http4k:http4k-format-kondor-json", version.ref = "http4k" }
 http4k-server-undertow = { module = "org.http4k:http4k-server-undertow", version.ref = "http4k" }
@@ -29,6 +30,7 @@ http4k-server = [
     "http4k-core",
     "http4k-server-undertow",
     "http4k-format-kondor",
+    "http4k-contract",
 ]
 http4k-client = [
     "http4k-core",
