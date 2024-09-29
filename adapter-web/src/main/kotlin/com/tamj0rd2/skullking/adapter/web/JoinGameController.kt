@@ -6,8 +6,6 @@ import com.tamj0rd2.skullking.application.port.output.GameUpdateListener
 import com.tamj0rd2.skullking.domain.model.GameId
 import com.tamj0rd2.skullking.domain.model.GameUpdate
 import com.tamj0rd2.skullking.domain.model.PlayerId
-import org.http4k.core.Request
-import org.http4k.lens.Path
 import org.http4k.websocket.Websocket
 import org.http4k.websocket.WsMessage
 
@@ -15,12 +13,12 @@ class JoinGameController(
     private val joinGameUseCase: JoinGameUseCase,
 ) {
     fun joinGame(
-        request: Request,
         ws: Websocket,
+        gameId: GameId,
     ): PlayerId {
         val command =
             JoinGameCommand(
-                gameId = request.gameId,
+                gameId = gameId,
                 gameUpdateListener = newGameUpdateListener(ws),
             )
 
@@ -37,9 +35,6 @@ class JoinGameController(
         }
 
     companion object {
-        private val gameIdLens = Path.of("gameId")
-        private val Request.gameId get() = GameId.parse(gameIdLens(this))
-
         private fun GameUpdate.toMessage(): WsMessage = wsLens(GameUpdateMessage(this))
     }
 }

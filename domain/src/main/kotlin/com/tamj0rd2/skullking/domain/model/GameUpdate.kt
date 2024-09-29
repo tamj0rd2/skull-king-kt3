@@ -4,4 +4,6 @@ sealed interface GameUpdate {
     data class PlayerJoined(
         val playerId: PlayerId,
     ) : GameUpdate
+
+    data object GameStarted : GameUpdate
 }

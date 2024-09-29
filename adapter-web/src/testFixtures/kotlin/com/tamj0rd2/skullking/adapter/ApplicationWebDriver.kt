@@ -1,13 +1,13 @@
 package com.tamj0rd2.skullking.adapter
 
 import com.tamj0rd2.skullking.adapter.web.*
-import com.tamj0rd2.skullking.adapter.web.httpLens
-import com.tamj0rd2.skullking.adapter.web.wsLens
 import com.tamj0rd2.skullking.application.ApplicationDriver
 import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.CreateNewGameCommand
 import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.CreateNewGameOutput
 import com.tamj0rd2.skullking.application.port.input.JoinGameUseCase.JoinGameCommand
 import com.tamj0rd2.skullking.application.port.input.JoinGameUseCase.JoinGameOutput
+import com.tamj0rd2.skullking.application.port.input.StartGameUseCase.StartGameCommand
+import com.tamj0rd2.skullking.application.port.input.StartGameUseCase.StartGameOutput
 import com.tamj0rd2.skullking.application.port.output.GameUpdateListener
 import com.tamj0rd2.skullking.domain.model.GameId
 import com.tamj0rd2.skullking.domain.model.PlayerId
@@ -57,6 +57,11 @@ class ApplicationWebDriver(
         return JoinGameOutput(playerId)
     }
 
+    override fun invoke(command: StartGameCommand): StartGameOutput {
+        ws.send(wsLens(StartGameMessage))
+        return StartGameOutput
+    }
+
     private fun Websocket.waitForJoinAcknowledgement() {
         val latch = CountDownLatch(1)
 
@@ -74,19 +79,26 @@ class ApplicationWebDriver(
     }
 
     private fun connectToWs(gameId: GameId): Websocket {
+        val clientId = newClientId()
         val ws =
             WebsocketClient.nonBlocking(
                 uri = baseUri.scheme("ws").path("/game/${GameId.show(gameId)}"),
                 timeout = Duration.ofSeconds(1),
-                onConnect = { println("client connected") },
+                onConnect = { println("client $clientId connected") },
             )
-        ws.onClose { println("client closed: $it") }
-        ws.onError { println("client error: $it") }
+        ws.onClose { println("client $clientId closed: $it") }
+        ws.onError { println("client $clientId error: $it") }
         ws.onMessage {
             val message = wsLens(it)
             allReceivedMessages.add(message)
-            println("client received: $message")
+            println("client $clientId received: $message")
         }
         return ws
+    }
+
+    companion object {
+        private var clientCount = 0
+
+        private fun newClientId(): Int = ++clientCount
     }
 }

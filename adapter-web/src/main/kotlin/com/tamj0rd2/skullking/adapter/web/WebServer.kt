@@ -3,13 +3,17 @@ package com.tamj0rd2.skullking.adapter.web
 import com.tamj0rd2.skullking.adapter.GameRepositoryEsdbAdapter
 import com.tamj0rd2.skullking.application.ApplicationDomainDriver
 import com.tamj0rd2.skullking.application.port.output.GameUpdateNotifierInMemoryAdapter
+import com.tamj0rd2.skullking.domain.model.GameId
+import com.tamj0rd2.skullking.domain.model.PlayerId
 import org.http4k.contract.contract
 import org.http4k.core.Request
+import org.http4k.lens.Path
 import org.http4k.routing.websockets
 import org.http4k.server.Http4kServer
 import org.http4k.server.PolyHandler
 import org.http4k.server.Undertow
 import org.http4k.server.asServer
+import org.http4k.websocket.Websocket
 import org.http4k.websocket.WsResponse
 import java.net.ServerSocket
 import org.http4k.routing.ws.bind as bindWs
@@ -39,6 +43,7 @@ object WebServer {
     ): Http4kServer {
         val createGameController = CreateGameController(application)
         val joinGameController = JoinGameController(application)
+        val startGameController = StartGameController(application)
 
         val http =
             contract {
@@ -48,12 +53,31 @@ object WebServer {
         val ws =
             websockets(
                 "/game/{gameId}" bindWs { req: Request ->
-                    WsResponse { ws ->
-                        ws.onMessage { println("server: received ${it.body}") }
-                        ws.onError { println("server: error: $it") }
-                        ws.onClose { println("server: client is disconnecting") }
+                    // TODO: send the client ID (or session id?) in the header when connecting to ws.
+                    val clientId = newClientId()
+                    val gameId = GameId.parse(gameIdLens(req))
 
-                        joinGameController.joinGame(req, ws)
+                    WsResponse { ws ->
+                        ws.onError { println("server: client $clientId: error - $it") }
+                        ws.onClose { println("server: client $clientId: disconnecting") }
+
+                        val playerId = joinGameController.joinGame(ws, gameId)
+                        val session = PlayerSession(ws = ws, gameId = gameId, playerId = playerId)
+
+                        ws.onMessage {
+                            val message = wsLens(it)
+                            println("server: client $clientId: received $message")
+
+                            when (message) {
+                                is StartGameMessage -> startGameController(session)
+                                // TODO: these will never be received by the server. it doesn't make sense for them to share a type with the above.
+                                is GameCreatedMessage,
+                                is GameUpdateMessage,
+                                is CreateNewGameMessage,
+                                is JoinAcknowledgedMessage,
+                                -> error("this message should never be received by the server")
+                            }
+                        }
                     }
                 },
             )
@@ -70,4 +94,16 @@ object WebServer {
         socket.close()
         return port
     }
+
+    private var clientCount = 0
+
+    private fun newClientId(): Int = ++clientCount
+
+    private val gameIdLens = Path.of("gameId")
 }
+
+data class PlayerSession(
+    val ws: Websocket,
+    val gameId: GameId,
+    val playerId: PlayerId,
+)

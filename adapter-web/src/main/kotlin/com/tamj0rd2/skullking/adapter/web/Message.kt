@@ -2,6 +2,7 @@ package com.tamj0rd2.skullking.adapter.web
 
 import com.tamj0rd2.skullking.domain.model.GameId
 import com.tamj0rd2.skullking.domain.model.GameUpdate
+import com.tamj0rd2.skullking.domain.model.GameUpdate.GameStarted
 import com.tamj0rd2.skullking.domain.model.GameUpdate.PlayerJoined
 import com.tamj0rd2.skullking.domain.model.PlayerId
 import com.ubertob.kondor.json.JAny
@@ -34,6 +35,8 @@ data class GameUpdateMessage(
     val gameUpdate: GameUpdate,
 ) : Message
 
+data object StartGameMessage : Message
+
 internal val wsLens =
     BiDiWsMessageLens(
         get = { wsMessage -> JMessage.fromJson(wsMessage.bodyString()).orThrow() },
@@ -55,6 +58,7 @@ private object JMessage : JSealed<Message>() {
             mapOf(
                 "game-created" to JGameCreatedMessage,
                 "create-game" to JSingleton(CreateNewGameMessage),
+                "start-game" to JSingleton(StartGameMessage),
                 "join-acknowledged" to JAcknowledged,
                 "game-update" to JGameUpdateMessage,
             )
@@ -65,6 +69,7 @@ private object JMessage : JSealed<Message>() {
             is CreateNewGameMessage -> "create-game"
             is JoinAcknowledgedMessage -> "join-acknowledged"
             is GameUpdateMessage -> "game-update"
+            is StartGameMessage -> "start-game"
         }
 }
 
@@ -109,11 +114,13 @@ private object JGameUpdate : JSealed<GameUpdate>() {
         get() =
             mapOf(
                 "player-joined" to JPlayerJoined,
+                "game-started" to JSingleton(GameStarted),
             )
 
     override fun extractTypeName(obj: GameUpdate): String =
         when (obj) {
             is PlayerJoined -> "player-joined"
+            is GameStarted -> "game-started"
         }
 }
 
