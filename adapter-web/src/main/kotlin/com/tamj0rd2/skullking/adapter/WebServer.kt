@@ -1,14 +1,10 @@
 package com.tamj0rd2.skullking.adapter
 
 import com.tamj0rd2.skullking.application.ApplicationDomainDriver
-import com.tamj0rd2.skullking.application.port.input.JoinGameUseCase.JoinGameCommand
-import com.tamj0rd2.skullking.application.port.output.GameUpdateListener
 import com.tamj0rd2.skullking.application.port.output.GameUpdateNotifierInMemoryAdapter
-import com.tamj0rd2.skullking.domain.model.GameId
 import com.tamj0rd2.skullking.domain.model.GameUpdate
 import org.http4k.contract.contract
 import org.http4k.core.Request
-import org.http4k.lens.Path
 import org.http4k.routing.websockets
 import org.http4k.server.Http4kServer
 import org.http4k.server.PolyHandler
@@ -42,35 +38,24 @@ object WebServer {
         application: ApplicationDomainDriver,
         port: Int = getUnusedPort(),
     ): Http4kServer {
+        val createGameController = CreateGameController(application)
+        val joinGameController = JoinGameController(application)
+
         val http =
             contract {
-                routes += CreateGameController(application).route
+                routes += createGameController.route
             }
-
-        val gameIdLens = Path.of("gameId")
 
         val ws =
             websockets(
                 "/game/{gameId}" bindWs { req: Request ->
-                    val gameId = GameId.parse(gameIdLens(req))
-
                     // TODO: this code needs organising.
                     WsResponse { ws ->
                         ws.onMessage { println("server: received ${it.body}") }
                         ws.onError { println("server: error: $it") }
                         ws.onClose { println("server: client is disconnecting") }
 
-                        val listenerForThisPlayer =
-                            object : GameUpdateListener {
-                                override fun send(updates: List<GameUpdate>) {
-                                    updates
-                                        .map { it.toMessage() }
-                                        .forEach { ws.send(it) }
-                                }
-                            }
-
-                        val playerId = application(JoinGameCommand(gameId, listenerForThisPlayer)).playerId
-                        ws.send(wsLens(JoinAcknowledgedMessage(playerId)))
+                        joinGameController.joinGame(req, ws)
                     }
                 },
             )

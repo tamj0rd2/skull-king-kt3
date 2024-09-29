@@ -45,7 +45,6 @@ private fun <T> eventually(block: () -> T): T {
         try {
             return block()
         } catch (e: AssertionError) {
-            println(e)
             lastError = e
         }
     } while (stopAt > Instant.now())
