@@ -1,5 +1,8 @@
 package com.tamj0rd2.skullking.adapter
 
+import com.tamj0rd2.skullking.adapter.web.*
+import com.tamj0rd2.skullking.adapter.web.httpLens
+import com.tamj0rd2.skullking.adapter.web.wsLens
 import com.tamj0rd2.skullking.application.ApplicationDriver
 import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.CreateNewGameCommand
 import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.CreateNewGameOutput

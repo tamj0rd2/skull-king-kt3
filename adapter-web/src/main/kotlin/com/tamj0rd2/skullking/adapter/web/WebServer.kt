@@ -1,5 +1,6 @@
-package com.tamj0rd2.skullking.adapter
+package com.tamj0rd2.skullking.adapter.web
 
+import com.tamj0rd2.skullking.adapter.GameRepositoryEsdbAdapter
 import com.tamj0rd2.skullking.application.ApplicationDomainDriver
 import com.tamj0rd2.skullking.application.port.output.GameUpdateNotifierInMemoryAdapter
 import org.http4k.contract.contract
@@ -47,7 +48,6 @@ object WebServer {
         val ws =
             websockets(
                 "/game/{gameId}" bindWs { req: Request ->
-                    // TODO: this code needs organising.
                     WsResponse { ws ->
                         ws.onMessage { println("server: received ${it.body}") }
                         ws.onError { println("server: error: $it") }
