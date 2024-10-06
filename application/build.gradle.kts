@@ -7,4 +7,5 @@ dependencies {
     implementation(project(":domain"))
     testFixturesImplementation(project(":domain"))
     testFixturesImplementation(testFixtures(project(":domain")))
+    testImplementation("com.lemonappdev:konsist:0.16.1")
 }
