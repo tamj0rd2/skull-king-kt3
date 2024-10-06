@@ -3,13 +3,15 @@ package com.tamj0rd2.skullking.application.port.input
 import com.tamj0rd2.skullking.domain.model.GameUpdate
 import org.junit.jupiter.api.Test
 
-abstract class StartGameUseCaseContract : GameUseCaseContract {
+abstract class StartGameUseCaseContract {
+    protected abstract val scenario: TestScenario
+
     @Test
     fun `when the minimum number of players required for a game have joined, the game can be started`() {
         // TODO: turn this into a property test
 
-        val player1 = newPlayerRole()
-        val player2 = newPlayerRole()
+        val player1 = scenario.newPlayer()
+        val player2 = scenario.newPlayer()
 
         val gameId = player1.createsAGame()
         player1.joinsAGame(gameId)

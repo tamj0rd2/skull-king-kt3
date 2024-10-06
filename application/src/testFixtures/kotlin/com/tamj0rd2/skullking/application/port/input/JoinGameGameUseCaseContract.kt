@@ -7,10 +7,12 @@ import org.junit.jupiter.api.Test
 import strikt.api.expectThat
 import strikt.assertions.isNotEqualTo
 
-abstract class JoinGameGameUseCaseContract : GameUseCaseContract {
+abstract class JoinGameGameUseCaseContract {
+    protected abstract val scenario: TestScenario
+
     @Test
     fun `can join a game`() {
-        val player = newPlayerRole()
+        val player = scenario.newPlayer()
         val gameId = player.createsAGame()
         val playerId = player.joinsAGame(gameId)
         expectThat(playerId).isNotEqualTo(PlayerId.ZERO)
@@ -18,8 +20,8 @@ abstract class JoinGameGameUseCaseContract : GameUseCaseContract {
 
     @Test
     fun `given there is already a player in a game, when another player joins, the first player is notified`() {
-        val player1 = newPlayerRole()
-        val player2 = newPlayerRole()
+        val player1 = scenario.newPlayer()
+        val player2 = scenario.newPlayer()
 
         val gameId = player1.createsAGame()
         player1.joinsAGame(gameId)

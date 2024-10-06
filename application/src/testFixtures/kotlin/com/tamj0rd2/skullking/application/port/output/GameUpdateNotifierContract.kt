@@ -16,6 +16,7 @@ import strikt.assertions.isEqualTo
 abstract class GameUpdateNotifierContract {
     protected abstract val sut: GameUpdateNotifier
 
+    // TODO: weirdly, this test is occasionally timing out.
     @Test
     fun `notifications can be broadcast to all subscribed listeners`() =
         propertyTest {

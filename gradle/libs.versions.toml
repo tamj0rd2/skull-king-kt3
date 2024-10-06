@@ -17,6 +17,7 @@ http4k-format-kondor = { module = "org.http4k:http4k-format-kondor-json", versio
 http4k-server-undertow = { module = "org.http4k:http4k-server-undertow", version.ref = "http4k" }
 http4k-strikt = { module = "org.http4k:http4k-testing-strikt", version.ref = "http4k" }
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version = "5.10.3" }
+junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter", version = "5.11.2" }
 junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher", version = "1.10.3" }
 kondor = { module = "com.ubertob.kondor:kondor-core", version = "3.1.2" }
 kotest-property = { module = "io.kotest:kotest-property", version.ref = "kotest" }
@@ -40,4 +41,9 @@ http4k-client = [
 ]
 json = [
     "kondor",
+]
+junit = [
+    "junit-jupiter",
+    "junit-jupiter-engine",
+    "junit-platform-launcher",
 ]

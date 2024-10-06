@@ -27,9 +27,8 @@ dependencies {
     implementation(platform(libs.http4k.bom))
     implementation(libs.result4k)
     testFixturesApi(libs.strikt.core)
-    testFixturesApi(libs.junit.jupiter)
+    testFixturesApi(libs.bundles.junit)
     testFixturesApi(libs.kotest.property)
-    testRuntimeOnly(libs.junit.platform.launcher)
     compileOnly("org.jetbrains:annotations:23.0.0")
 }
 

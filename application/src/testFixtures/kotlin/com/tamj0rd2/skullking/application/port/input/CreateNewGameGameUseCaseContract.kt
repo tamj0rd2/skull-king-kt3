@@ -4,10 +4,12 @@ import org.junit.jupiter.api.Test
 import strikt.api.expectCatching
 import strikt.assertions.isSuccess
 
-abstract class CreateNewGameGameUseCaseContract : GameUseCaseContract {
+abstract class CreateNewGameGameUseCaseContract {
+    protected abstract val scenario: TestScenario
+
     @Test
     fun `can create a new game`() {
-        val player = newPlayerRole()
+        val player = scenario.newPlayer()
         expectCatching { player.createsAGame() }.isSuccess()
     }
 }
