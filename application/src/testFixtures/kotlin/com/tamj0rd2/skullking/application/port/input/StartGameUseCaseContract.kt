@@ -18,7 +18,6 @@ abstract class StartGameUseCaseContract : GameUseCaseContract {
 
         player2.received(GameUpdate.GameStarted)
         // TODO: what else does it mean for a game to be started? Probably:
-        //  - the game phase is STARTED rather than lobby
         //  - that round one has started
         //  - it's the bidding phase
         //  - each player has 1 card

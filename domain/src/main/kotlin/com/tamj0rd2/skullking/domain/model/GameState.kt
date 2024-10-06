@@ -2,10 +2,12 @@ package com.tamj0rd2.skullking.domain.model
 
 import com.tamj0rd2.extensions.asFailure
 import com.tamj0rd2.extensions.asSuccess
+import com.tamj0rd2.skullking.domain.model.StartGameErrorCode.TooFewPlayers
 import dev.forkhandles.result4k.Result4k
 
 data class GameState private constructor(
     val players: List<PlayerId>,
+    val playerHands: Map<PlayerId, List<Card>>,
 ) {
     private fun apply(event: PlayerJoined): Result4k<GameState, AddPlayerErrorCode> {
         if (players.size >= Game.MAXIMUM_PLAYER_COUNT) return GameIsFull().asFailure()
@@ -13,16 +15,25 @@ data class GameState private constructor(
         return copy(players = players + event.playerId).asSuccess()
     }
 
-    internal fun apply(event: GameEvent): Result4k<GameState, AddPlayerErrorCode> =
+    private fun apply(event: GameStarted): Result4k<GameState, StartGameErrorCode> {
+        if (players.size < Game.MINIMUM_PLAYER_COUNT) return TooFewPlayers().asFailure()
+        return copy(playerHands = players.associateWith { listOf(Card()) }).asSuccess()
+    }
+
+    internal fun apply(event: GameEvent): Result4k<GameState, GameErrorCode> =
         when (event) {
             is GameCreated -> this.asSuccess()
             is PlayerJoined -> apply(event)
+            is GameStarted -> apply(event)
         }
 
     companion object {
         internal fun new() =
             GameState(
                 players = emptyList(),
+                playerHands = emptyMap(),
             )
     }
 }
+
+class Card

@@ -63,6 +63,10 @@ class Game {
         appendEvent(PlayerJoined(id, playerId))
             .filterOrThrow<Unit, GameErrorCode, AddPlayerErrorCode>()
 
+    fun start(): Result4k<Unit, StartGameErrorCode> =
+        appendEvent(GameStarted(id))
+            .filterOrThrow<Unit, GameErrorCode, StartGameErrorCode>()
+
     private fun appendEvent(event: GameEvent): Result4k<Unit, GameErrorCode> =
         state.apply(event).map { nextState ->
             state = nextState
@@ -70,6 +74,7 @@ class Game {
         }
 
     companion object {
+        const val MINIMUM_PLAYER_COUNT = 2
         const val MAXIMUM_PLAYER_COUNT = 6
 
         fun new() = Game()
@@ -85,3 +90,7 @@ sealed class AddPlayerErrorCode : GameErrorCode()
 class GameIsFull : AddPlayerErrorCode()
 
 class PlayerHasAlreadyJoined : AddPlayerErrorCode()
+
+sealed class StartGameErrorCode : GameErrorCode() {
+    class TooFewPlayers : StartGameErrorCode()
+}

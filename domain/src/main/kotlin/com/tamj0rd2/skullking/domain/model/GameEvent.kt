@@ -12,3 +12,7 @@ data class PlayerJoined(
     override val gameId: GameId,
     val playerId: PlayerId,
 ) : GameEvent
+
+data class GameStarted(
+    override val gameId: GameId,
+) : GameEvent

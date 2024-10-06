@@ -5,10 +5,14 @@ import com.tamj0rd2.skullking.domain.GameArbs.gameEventsArb
 import com.tamj0rd2.skullking.domain.GameArbs.playerIdArb
 import com.tamj0rd2.skullking.domain.GameArbs.validGameEventsArb
 import com.tamj0rd2.skullking.domain.model.Game.Companion.MAXIMUM_PLAYER_COUNT
+import com.tamj0rd2.skullking.domain.model.Game.Companion.MINIMUM_PLAYER_COUNT
 import com.tamj0rd2.skullking.domain.propertyTest
 import com.tamj0rd2.skullking.domain.wasSuccessful
 import dev.forkhandles.result4k.Failure
+import dev.forkhandles.result4k.orThrow
+import dev.forkhandles.values.random
 import io.kotest.property.arbitrary.filter
+import io.kotest.property.arbitrary.next
 import io.kotest.property.assume
 import io.kotest.property.checkAll
 import org.junit.jupiter.api.Disabled
@@ -17,6 +21,8 @@ import org.junit.jupiter.api.Test
 import strikt.api.expectCatching
 import strikt.api.expectThat
 import strikt.api.expectThrows
+import strikt.assertions.all
+import strikt.assertions.containsExactly
 import strikt.assertions.first
 import strikt.assertions.hasSize
 import strikt.assertions.isA
@@ -76,6 +82,34 @@ class GameTest {
                 }
             }
         }
+
+    @Nested
+    inner class StartingAGame {
+        @Test
+        fun `when the game is started, each player is dealt 1 card`() {
+            val game = gameArb.filter { it.state.players.size >= MINIMUM_PLAYER_COUNT }.next()
+            val players = game.state.players
+
+            game.start().orThrow()
+
+            expectThat(game.state.playerHands.keys).containsExactly(players)
+            expectThat(game.state.playerHands.values).all { hasSize(1) }
+        }
+
+        @Test
+        fun `the game cannot be started with less than 2 players`() {
+            // TODO: make this a property test
+
+            val game = Game.new()
+            game.addPlayer(PlayerId.random()).orThrow()
+            expectThrows<StartGameErrorCode> { game.start().orThrow() }
+        }
+
+        // TODO: each player has 1 card
+        // TODO: starting the game starts the round 1 bidding phase
+        // TODO: only the player who created the game can start the game
+        // TODO: the game cannot be started when there are less than 2 players
+    }
 
     @Nested
     inner class RestoringAGameFromEvents {
