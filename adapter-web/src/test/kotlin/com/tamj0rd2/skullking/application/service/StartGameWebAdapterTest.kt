@@ -1,8 +1,8 @@
 package com.tamj0rd2.skullking.application.service
 
-import com.tamj0rd2.skullking.adapter.ApplicationWebDriver
+import com.tamj0rd2.skullking.adapter.SkullKingWebClient
 import com.tamj0rd2.skullking.adapter.web.WebServer
-import com.tamj0rd2.skullking.application.ApplicationDomainDriver
+import com.tamj0rd2.skullking.application.SkullKingApplication
 import com.tamj0rd2.skullking.application.port.input.StartGameUseCaseContract
 import com.tamj0rd2.skullking.application.port.input.roles.PlayerRole
 import com.tamj0rd2.skullking.application.usingTestDoublesByDefault
@@ -13,9 +13,9 @@ import org.junit.jupiter.api.Timeout
 
 @Timeout(2)
 class StartGameWebAdapterTest : StartGameUseCaseContract() {
-    private val server = WebServer.createServer(ApplicationDomainDriver.usingTestDoublesByDefault())
+    private val server = WebServer.createServer(SkullKingApplication.usingTestDoublesByDefault())
 
-    override fun newPlayerRole(): PlayerRole = PlayerRole(ApplicationWebDriver(Uri.of("ws://localhost:${server.port()}")))
+    override fun newPlayerRole(): PlayerRole = PlayerRole(SkullKingWebClient(Uri.of("ws://localhost:${server.port()}")))
 
     @BeforeEach
     fun startServer() {

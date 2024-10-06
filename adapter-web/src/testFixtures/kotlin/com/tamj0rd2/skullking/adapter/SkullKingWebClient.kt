@@ -1,11 +1,18 @@
 package com.tamj0rd2.skullking.adapter
 
-import com.tamj0rd2.skullking.adapter.web.*
-import com.tamj0rd2.skullking.application.ApplicationDriver
+import com.tamj0rd2.skullking.adapter.web.CreateGameController
+import com.tamj0rd2.skullking.adapter.web.GameCreatedMessage
+import com.tamj0rd2.skullking.adapter.web.GameUpdateMessage
+import com.tamj0rd2.skullking.adapter.web.JoinAcknowledgedMessage
+import com.tamj0rd2.skullking.adapter.web.Message
+import com.tamj0rd2.skullking.adapter.web.StartGameMessage
+import com.tamj0rd2.skullking.adapter.web.httpLens
+import com.tamj0rd2.skullking.adapter.web.wsLens
 import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.CreateNewGameCommand
 import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.CreateNewGameOutput
 import com.tamj0rd2.skullking.application.port.input.JoinGameUseCase.JoinGameCommand
 import com.tamj0rd2.skullking.application.port.input.JoinGameUseCase.JoinGameOutput
+import com.tamj0rd2.skullking.application.port.input.SkullKingUseCases
 import com.tamj0rd2.skullking.application.port.input.StartGameUseCase.StartGameCommand
 import com.tamj0rd2.skullking.application.port.input.StartGameUseCase.StartGameOutput
 import com.tamj0rd2.skullking.application.port.output.GameUpdateListener
@@ -25,9 +32,9 @@ import strikt.assertions.isEqualTo
 import java.time.Duration
 import java.util.concurrent.CountDownLatch
 
-class ApplicationWebDriver(
+class SkullKingWebClient(
     private val baseUri: Uri,
-) : ApplicationDriver {
+) : SkullKingUseCases {
     private val httpClient = SetBaseUriFrom(baseUri.scheme("http")).then(ApacheClient())
     private lateinit var ws: Websocket
     private var playerId = PlayerId.ZERO

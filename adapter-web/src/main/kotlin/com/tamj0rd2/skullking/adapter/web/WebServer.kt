@@ -1,7 +1,7 @@
 package com.tamj0rd2.skullking.adapter.web
 
 import com.tamj0rd2.skullking.adapter.GameRepositoryEsdbAdapter
-import com.tamj0rd2.skullking.application.ApplicationDomainDriver
+import com.tamj0rd2.skullking.application.SkullKingApplication
 import com.tamj0rd2.skullking.application.port.output.GameUpdateNotifierInMemoryAdapter
 import com.tamj0rd2.skullking.domain.model.GameId
 import com.tamj0rd2.skullking.domain.model.PlayerId
@@ -30,15 +30,15 @@ object WebServer {
 
     fun start(port: Int = getUnusedPort()) = createServer(application = createApp(), port = port).start()
 
-    private fun createApp(): ApplicationDomainDriver =
-        ApplicationDomainDriver(
+    private fun createApp(): SkullKingApplication =
+        SkullKingApplication(
             gameRepository = GameRepositoryEsdbAdapter(),
             // TODO: swap this out maybe?
             gameUpdateNotifier = GameUpdateNotifierInMemoryAdapter(),
         )
 
     fun createServer(
-        application: ApplicationDomainDriver,
+        application: SkullKingApplication,
         port: Int = getUnusedPort(),
     ): Http4kServer {
         val createGameController = CreateGameController(application)

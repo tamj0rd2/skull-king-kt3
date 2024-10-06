@@ -14,8 +14,8 @@ class WebserverSmokeTest {
 
     @Test
     fun `can start a 2 player game`() {
-        val player1 = PlayerRole(ApplicationWebDriver(baseUri))
-        val player2 = PlayerRole(ApplicationWebDriver(baseUri))
+        val player1 = PlayerRole(SkullKingWebClient(baseUri))
+        val player2 = PlayerRole(SkullKingWebClient(baseUri))
 
         val gameId = player1.createsAGame()
         player1.joinsAGame(gameId)

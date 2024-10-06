@@ -1,8 +1,8 @@
 package com.tamj0rd2.skullking.application.port.input.roles
 
-import com.tamj0rd2.skullking.application.ApplicationDriver
 import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.CreateNewGameCommand
 import com.tamj0rd2.skullking.application.port.input.JoinGameUseCase.JoinGameCommand
+import com.tamj0rd2.skullking.application.port.input.SkullKingUseCases
 import com.tamj0rd2.skullking.application.port.input.StartGameUseCase.StartGameCommand
 import com.tamj0rd2.skullking.application.port.output.GameUpdateListener
 import com.tamj0rd2.skullking.domain.model.GameId
@@ -14,7 +14,7 @@ import strikt.assertions.isEqualTo
 import java.time.Instant
 
 class PlayerRole(
-    private val driver: ApplicationDriver,
+    private val driver: SkullKingUseCases,
 ) : GameUpdateListener {
     var id = PlayerId.ZERO
         private set

@@ -5,9 +5,9 @@ import com.lemonappdev.konsist.api.architecture.KoArchitectureCreator.assertArch
 import com.lemonappdev.konsist.api.architecture.Layer
 import com.lemonappdev.konsist.api.ext.list.withNameEndingWith
 import com.lemonappdev.konsist.api.ext.list.withParentInterface
+import com.lemonappdev.konsist.api.ext.list.withoutNameEndingWith
 import com.lemonappdev.konsist.api.verify.assertNotEmpty
 import com.lemonappdev.konsist.api.verify.assertTrue
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 // TODO: put these in their own module so that I can choose when to run them.
@@ -38,13 +38,13 @@ class ArchitectureTest {
         scope.assertTrue { it.resideInPackage("com.tamj0rd2.skullking.application..") }
     }
 
-    @Disabled
     @Test
     fun `use case implementations live in the application layer`() {
         val scope =
             Konsist
                 .scopeFromProduction()
                 .classesAndInterfacesAndObjects()
+                .withoutNameEndingWith("Application", "UseCases")
                 .withParentInterface { it.hasNameEndingWith("UseCase") }
 
         scope.assertNotEmpty()
