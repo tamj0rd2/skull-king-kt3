@@ -2,7 +2,7 @@ package com.tamj0rd2.skullking.adapter.web
 
 import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase
 import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.CreateNewGameCommand
-import com.tamj0rd2.skullking.domain.model.GameId
+import com.tamj0rd2.skullking.domain.model.game.GameId
 import dev.forkhandles.values.random
 import org.http4k.contract.PreFlightExtraction
 import org.http4k.contract.meta

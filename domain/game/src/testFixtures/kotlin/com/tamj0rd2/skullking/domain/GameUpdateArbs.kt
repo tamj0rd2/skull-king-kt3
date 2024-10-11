@@ -1,7 +1,7 @@
 package com.tamj0rd2.skullking.domain
 
 import com.tamj0rd2.skullking.domain.GameArbs.playerIdArb
-import com.tamj0rd2.skullking.domain.model.GameUpdate
+import com.tamj0rd2.skullking.domain.model.game.GameUpdate
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.arbitrary
 import io.kotest.property.arbitrary.choice

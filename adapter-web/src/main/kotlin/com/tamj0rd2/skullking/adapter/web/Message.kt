@@ -1,10 +1,10 @@
 package com.tamj0rd2.skullking.adapter.web
 
-import com.tamj0rd2.skullking.domain.model.GameId
-import com.tamj0rd2.skullking.domain.model.GameUpdate
-import com.tamj0rd2.skullking.domain.model.GameUpdate.GameStarted
-import com.tamj0rd2.skullking.domain.model.GameUpdate.PlayerJoined
 import com.tamj0rd2.skullking.domain.model.PlayerId
+import com.tamj0rd2.skullking.domain.model.game.GameId
+import com.tamj0rd2.skullking.domain.model.game.GameUpdate
+import com.tamj0rd2.skullking.domain.model.game.GameUpdate.GameStarted
+import com.tamj0rd2.skullking.domain.model.game.GameUpdate.PlayerJoined
 import com.ubertob.kondor.json.JAny
 import com.ubertob.kondor.json.JSealed
 import com.ubertob.kondor.json.JStringRepresentable

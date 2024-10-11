@@ -4,7 +4,7 @@ import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase
 import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.CreateNewGameCommand
 import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.CreateNewGameOutput
 import com.tamj0rd2.skullking.application.port.output.GameRepository
-import com.tamj0rd2.skullking.domain.model.Game
+import com.tamj0rd2.skullking.domain.model.game.Game
 
 class CreateNewGameService(
     private val gameRepository: GameRepository,

@@ -5,8 +5,8 @@ import com.tamj0rd2.skullking.application.port.input.JoinGameUseCase.JoinGameCom
 import com.tamj0rd2.skullking.application.port.input.JoinGameUseCase.JoinGameOutput
 import com.tamj0rd2.skullking.application.port.output.GameRepository
 import com.tamj0rd2.skullking.application.port.output.GameUpdateNotifier
-import com.tamj0rd2.skullking.domain.model.GameUpdate
 import com.tamj0rd2.skullking.domain.model.PlayerId
+import com.tamj0rd2.skullking.domain.model.game.GameUpdate
 import dev.forkhandles.result4k.orThrow
 import dev.forkhandles.values.random
 

@@ -1,11 +1,12 @@
-package com.tamj0rd2.skullking.domain.model
+package com.tamj0rd2.skullking.domain.model.game
 
 import com.tamj0rd2.skullking.domain.GameArbs.gameArb
 import com.tamj0rd2.skullking.domain.GameArbs.gameEventsArb
 import com.tamj0rd2.skullking.domain.GameArbs.playerIdArb
 import com.tamj0rd2.skullking.domain.GameArbs.validGameEventsArb
-import com.tamj0rd2.skullking.domain.model.Game.Companion.MAXIMUM_PLAYER_COUNT
-import com.tamj0rd2.skullking.domain.model.Game.Companion.MINIMUM_PLAYER_COUNT
+import com.tamj0rd2.skullking.domain.model.PlayerId
+import com.tamj0rd2.skullking.domain.model.game.Game.Companion.MAXIMUM_PLAYER_COUNT
+import com.tamj0rd2.skullking.domain.model.game.Game.Companion.MINIMUM_PLAYER_COUNT
 import com.tamj0rd2.skullking.domain.propertyTest
 import com.tamj0rd2.skullking.domain.wasSuccessful
 import dev.forkhandles.result4k.Failure

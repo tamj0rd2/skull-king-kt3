@@ -1,12 +1,12 @@
 package com.tamj0rd2.skullking.domain
 
-import com.tamj0rd2.skullking.domain.model.Game
-import com.tamj0rd2.skullking.domain.model.Game.Companion.MAXIMUM_PLAYER_COUNT
-import com.tamj0rd2.skullking.domain.model.GameCreated
-import com.tamj0rd2.skullking.domain.model.GameErrorCode
-import com.tamj0rd2.skullking.domain.model.GameId
 import com.tamj0rd2.skullking.domain.model.PlayerId
-import com.tamj0rd2.skullking.domain.model.PlayerJoined
+import com.tamj0rd2.skullking.domain.model.game.Game
+import com.tamj0rd2.skullking.domain.model.game.Game.Companion.MAXIMUM_PLAYER_COUNT
+import com.tamj0rd2.skullking.domain.model.game.GameCreated
+import com.tamj0rd2.skullking.domain.model.game.GameErrorCode
+import com.tamj0rd2.skullking.domain.model.game.GameId
+import com.tamj0rd2.skullking.domain.model.game.PlayerJoined
 import dev.forkhandles.result4k.Result4k
 import dev.forkhandles.result4k.Success
 import dev.forkhandles.result4k.orThrow

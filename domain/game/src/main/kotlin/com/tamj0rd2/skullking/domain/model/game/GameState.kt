@@ -1,8 +1,9 @@
-package com.tamj0rd2.skullking.domain.model
+package com.tamj0rd2.skullking.domain.model.game
 
 import com.tamj0rd2.extensions.asFailure
 import com.tamj0rd2.extensions.asSuccess
-import com.tamj0rd2.skullking.domain.model.StartGameErrorCode.TooFewPlayers
+import com.tamj0rd2.skullking.domain.model.PlayerId
+import com.tamj0rd2.skullking.domain.model.game.StartGameErrorCode.TooFewPlayers
 import dev.forkhandles.result4k.Result4k
 
 data class GameState private constructor(

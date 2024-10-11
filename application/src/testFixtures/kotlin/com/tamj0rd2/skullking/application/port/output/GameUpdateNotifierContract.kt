@@ -1,8 +1,8 @@
 package com.tamj0rd2.skullking.application.port.output
 
 import com.tamj0rd2.skullking.domain.GameUpdateArbs.gameUpdateArb
-import com.tamj0rd2.skullking.domain.model.Game
-import com.tamj0rd2.skullking.domain.model.GameUpdate
+import com.tamj0rd2.skullking.domain.model.game.Game
+import com.tamj0rd2.skullking.domain.model.game.GameUpdate
 import com.tamj0rd2.skullking.domain.propertyTest
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.list

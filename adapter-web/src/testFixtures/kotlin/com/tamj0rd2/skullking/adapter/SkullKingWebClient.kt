@@ -16,8 +16,8 @@ import com.tamj0rd2.skullking.application.port.input.SkullKingUseCases
 import com.tamj0rd2.skullking.application.port.input.StartGameUseCase.StartGameCommand
 import com.tamj0rd2.skullking.application.port.input.StartGameUseCase.StartGameOutput
 import com.tamj0rd2.skullking.application.port.output.GameUpdateListener
-import com.tamj0rd2.skullking.domain.model.GameId
 import com.tamj0rd2.skullking.domain.model.PlayerId
+import com.tamj0rd2.skullking.domain.model.game.GameId
 import dev.forkhandles.values.ZERO
 import org.http4k.client.ApacheClient
 import org.http4k.client.WebsocketClient

@@ -3,8 +3,8 @@ package com.tamj0rd2.skullking.adapter.web
 import com.tamj0rd2.skullking.adapter.GameRepositoryEsdbAdapter
 import com.tamj0rd2.skullking.application.SkullKingApplication
 import com.tamj0rd2.skullking.application.port.output.GameUpdateNotifierInMemoryAdapter
-import com.tamj0rd2.skullking.domain.model.GameId
 import com.tamj0rd2.skullking.domain.model.PlayerId
+import com.tamj0rd2.skullking.domain.model.game.GameId
 import org.http4k.contract.contract
 import org.http4k.core.Request
 import org.http4k.lens.Path

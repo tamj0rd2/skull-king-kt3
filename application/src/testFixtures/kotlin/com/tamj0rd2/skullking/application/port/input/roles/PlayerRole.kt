@@ -5,9 +5,9 @@ import com.tamj0rd2.skullking.application.port.input.JoinGameUseCase.JoinGameCom
 import com.tamj0rd2.skullking.application.port.input.SkullKingUseCases
 import com.tamj0rd2.skullking.application.port.input.StartGameUseCase.StartGameCommand
 import com.tamj0rd2.skullking.application.port.output.GameUpdateListener
-import com.tamj0rd2.skullking.domain.model.GameId
-import com.tamj0rd2.skullking.domain.model.GameUpdate
 import com.tamj0rd2.skullking.domain.model.PlayerId
+import com.tamj0rd2.skullking.domain.model.game.GameId
+import com.tamj0rd2.skullking.domain.model.game.GameUpdate
 import dev.forkhandles.values.ZERO
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo

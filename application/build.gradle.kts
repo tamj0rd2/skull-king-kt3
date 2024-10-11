@@ -4,8 +4,8 @@ plugins {
 
 dependencies {
     api(libs.values4k)
-    implementation(project(":domain"))
-    testFixturesImplementation(project(":domain"))
-    testFixturesImplementation(testFixtures(project(":domain")))
+    implementation(project(":domain:game"))
+    testFixturesImplementation(project(":domain:game"))
+    testFixturesImplementation(testFixtures(project(":domain:game")))
     testImplementation("com.lemonappdev:konsist:0.16.1")
 }
