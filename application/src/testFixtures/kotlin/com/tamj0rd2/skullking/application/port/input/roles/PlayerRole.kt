@@ -8,11 +8,11 @@ import com.tamj0rd2.skullking.application.port.output.GameUpdateListener
 import com.tamj0rd2.skullking.domain.model.PlayerId
 import com.tamj0rd2.skullking.domain.model.game.GameId
 import com.tamj0rd2.skullking.domain.model.game.GameUpdate
+import com.tamj0rd2.testhelpers.eventually
 import dev.forkhandles.result4k.orThrow
 import dev.forkhandles.values.ZERO
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
-import java.time.Instant
 
 class PlayerRole(
     private val driver: SkullKingUseCases,
@@ -33,8 +33,7 @@ class PlayerRole(
     }
 
     fun startsTheGame() {
-        val command = StartGameCommand(gameId, id)
-        driver(command)
+        driver(StartGameCommand(gameId, id)).orThrow()
     }
 
     fun received(expectedNotification: GameUpdate): Unit =
@@ -46,18 +45,4 @@ class PlayerRole(
     override fun send(updates: List<GameUpdate>) {
         receivedEvents += updates
     }
-}
-
-private fun <T> eventually(block: () -> T): T {
-    val stopAt = Instant.now().plusMillis(200)
-    var lastError: AssertionError?
-    do {
-        try {
-            return block()
-        } catch (e: AssertionError) {
-            lastError = e
-        }
-    } while (stopAt > Instant.now())
-
-    throw checkNotNull(lastError)
 }

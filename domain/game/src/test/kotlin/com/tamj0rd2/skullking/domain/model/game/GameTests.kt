@@ -2,12 +2,10 @@ package com.tamj0rd2.skullking.domain.model.game
 
 import com.tamj0rd2.skullking.domain.GameArbs.gameActionsArb
 import com.tamj0rd2.skullking.domain.GameArbs.gameArb
-import com.tamj0rd2.skullking.domain.model.PlayerId
 import com.tamj0rd2.skullking.domain.model.game.Game.Companion.MAXIMUM_PLAYER_COUNT
 import com.tamj0rd2.skullking.domain.model.game.Game.Companion.MINIMUM_PLAYER_COUNT
 import com.tamj0rd2.skullking.domain.propertyTest
 import dev.forkhandles.result4k.orThrow
-import dev.forkhandles.values.random
 import io.kotest.property.arbitrary.filter
 import io.kotest.property.arbitrary.next
 import io.kotest.property.checkAll
@@ -17,7 +15,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import strikt.api.Assertion
 import strikt.api.expectThat
-import strikt.api.expectThrows
 import strikt.assertions.all
 import strikt.assertions.containsExactly
 import strikt.assertions.containsExactlyInAnyOrder
@@ -107,16 +104,6 @@ class GameTests {
 
             expectThat(game.state.playerHands.keys).containsExactly(players)
             expectThat(game.state.playerHands.values).all { hasSize(1) }
-        }
-
-        // TODO: delete once covered in use case
-        @Test
-        fun `the game cannot be started with less than 2 players`() {
-            // TODO: make this a property test
-
-            val game = Game.new()
-            game.addPlayer(PlayerId.random()).orThrow()
-            expectThrows<StartGameErrorCode> { game.start().orThrow() }
         }
     }
 }

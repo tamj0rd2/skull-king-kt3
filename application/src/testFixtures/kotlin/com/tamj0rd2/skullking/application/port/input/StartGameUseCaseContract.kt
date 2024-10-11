@@ -1,8 +1,10 @@
 package com.tamj0rd2.skullking.application.port.input
 
 import com.tamj0rd2.skullking.domain.model.game.GameUpdate
+import com.tamj0rd2.skullking.domain.model.game.StartGameErrorCode.TooFewPlayers
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
+import strikt.api.expectThrows
 
 abstract class StartGameUseCaseContract {
     protected abstract val scenario: TestScenario
@@ -24,7 +26,7 @@ abstract class StartGameUseCaseContract {
 
     @Test
     @Disabled
-    fun `starting the game starts the round 1 bidding phase`() {
+    fun `starting the game begins the round 1 bidding phase`() {
         TODO()
     }
 
@@ -41,8 +43,10 @@ abstract class StartGameUseCaseContract {
     }
 
     @Test
-    @Disabled
-    fun `the game cannot be started with less than 2 players`() {
-        TODO()
+    fun `a game cannot be started with less than 2 players`() {
+        val player1 = scenario.newPlayer()
+        val gameId = player1.createsAGame()
+        player1.joinsAGame(gameId)
+        expectThrows<TooFewPlayers> { player1.startsTheGame() }
     }
 }

@@ -24,7 +24,7 @@ class SkullKingApplication private constructor(
     ) : this(
         createNewGameUseCase = CreateNewGameService(gameRepository),
         joinGameUseCase = JoinGameService(gameRepository, gameUpdateNotifier),
-        startGameUseCase = StartGameService(gameUpdateNotifier),
+        startGameUseCase = StartGameService(gameRepository, gameUpdateNotifier),
     )
 
     companion object

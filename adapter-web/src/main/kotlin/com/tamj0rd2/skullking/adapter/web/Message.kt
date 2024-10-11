@@ -7,6 +7,7 @@ import com.tamj0rd2.skullking.domain.model.game.GameIsFull
 import com.tamj0rd2.skullking.domain.model.game.GameUpdate
 import com.tamj0rd2.skullking.domain.model.game.GameUpdate.GameStarted
 import com.tamj0rd2.skullking.domain.model.game.GameUpdate.PlayerJoined
+import com.tamj0rd2.skullking.domain.model.game.StartGameErrorCode.TooFewPlayers
 import com.ubertob.kondor.json.JAny
 import com.ubertob.kondor.json.JSealed
 import com.ubertob.kondor.json.JStringRepresentable
@@ -144,13 +145,15 @@ private object JErrorMessage : JAny<ErrorMessage>() {
     private fun errorMessageAsString(errorMessage: ErrorMessage): String =
         when (errorMessage.error) {
             is GameIsFull -> "game-is-full"
-            else -> TODO("add support for ${errorMessage.error::class.java}")
+            is TooFewPlayers -> "too-few-players"
+            else -> TODO("add support for ${errorMessage.error::class.java.simpleName}")
         }
 
     override fun JsonNodeObject.deserializeOrThrow(): ErrorMessage =
         ErrorMessage(
             when (val reason = +reason) {
                 "game-is-full" -> GameIsFull()
+                "too-few-players" -> TooFewPlayers()
                 else -> error("unknown error code - $reason")
             },
         )

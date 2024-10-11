@@ -21,6 +21,7 @@ import com.tamj0rd2.skullking.application.port.output.GameUpdateListener
 import com.tamj0rd2.skullking.domain.model.PlayerId
 import com.tamj0rd2.skullking.domain.model.game.GameErrorCode
 import com.tamj0rd2.skullking.domain.model.game.GameId
+import com.tamj0rd2.skullking.domain.model.game.GameUpdate
 import dev.forkhandles.result4k.Result4k
 import dev.forkhandles.values.ZERO
 import org.http4k.client.ApacheClient
@@ -43,7 +44,6 @@ class SkullKingWebClient(
     private lateinit var ws: Websocket
     private var playerId = PlayerId.ZERO
     private lateinit var gameUpdateListener: GameUpdateListener
-    private val allReceivedMessages = mutableListOf<Message>()
 
     override fun invoke(command: CreateNewGameCommand): CreateNewGameOutput =
         httpClient(CreateGameController.newRequest()).use {
@@ -59,7 +59,7 @@ class SkullKingWebClient(
         ws.onMessage {
             val message = wsLens(it)
             if (message is GameUpdateMessage) {
-                command.gameUpdateListener.send(message.gameUpdate)
+                gameUpdateListener.send(message.gameUpdate)
             }
         }
 
@@ -67,9 +67,35 @@ class SkullKingWebClient(
         return JoinGameOutput(playerId).asSuccess()
     }
 
-    override fun invoke(command: StartGameCommand): StartGameOutput {
+    override fun invoke(command: StartGameCommand): Result4k<StartGameOutput, GameErrorCode> {
         ws.send(wsLens(StartGameMessage))
-        return StartGameOutput
+        ws.waitForGameUpdateMatching { it is GameUpdate.GameStarted }
+        return StartGameOutput.asSuccess()
+    }
+
+    private fun Websocket.waitForGameUpdateMatching(matcher: (GameUpdate) -> Boolean) {
+        waitForMessageMatching { it is GameUpdateMessage && matcher(it.gameUpdate) }
+    }
+
+    private fun Websocket.waitForMessageMatching(matcher: (Message) -> Boolean) {
+        val latch = CountDownLatch(1)
+        var failureReason: GameErrorCode? = null
+
+        onMessage {
+            val message = wsLens(it)
+
+            if (matcher(message)) {
+                latch.countDown()
+            }
+
+            if (message is ErrorMessage) {
+                failureReason = message.error
+                latch.countDown()
+            }
+        }
+
+        latch.await()
+        failureReason?.let { throw it }
     }
 
     private fun Websocket.waitForJoinAcknowledgement() {
@@ -104,14 +130,11 @@ class SkullKingWebClient(
                 uri = baseUri.scheme("ws").path("/game/${GameId.show(gameId)}"),
                 timeout = Duration.ofSeconds(1),
                 onConnect = { println("client $clientId connected") },
+                onError = { println("client $clientId error: $it") },
             )
         ws.onClose { println("client $clientId closed: $it") }
         ws.onError { println("client $clientId error: $it") }
-        ws.onMessage {
-            val message = wsLens(it)
-            allReceivedMessages.add(message)
-            println("client $clientId received: $message")
-        }
+        ws.onMessage { println("client $clientId received: ${wsLens(it)}") }
         return ws
     }
 
