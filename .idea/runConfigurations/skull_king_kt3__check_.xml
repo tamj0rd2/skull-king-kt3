@@ -10,8 +10,6 @@
       </option>
       <option name="taskNames">
         <list>
-          <option value="domain:check" />
-          <option value="application:check" />
           <option value="check" />
         </list>
       </option>

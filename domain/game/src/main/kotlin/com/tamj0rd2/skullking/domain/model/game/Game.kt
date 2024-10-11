@@ -31,6 +31,12 @@ value class Version private constructor(
     }
 }
 
+/**
+ * Game is a DDD aggregate
+ * It has a lifecycle - it starts when it is created, and ends when the game is completed.
+ * It is a transactional boundary - all changes to any entities used by game must be ACID
+ * It is a consistency boundary - all changes must either happen, or not.
+ */
 class Game {
     override fun toString(): String = "${super.toString()}\n${state.pretty()}"
 

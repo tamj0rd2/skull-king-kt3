@@ -3,6 +3,7 @@ package com.tamj0rd2.skullking.application.port.input
 import com.tamj0rd2.skullking.domain.model.PlayerId
 import com.tamj0rd2.skullking.domain.model.game.GameUpdate
 import dev.forkhandles.values.ZERO
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import strikt.api.expectThat
 import strikt.assertions.isNotEqualTo
@@ -28,5 +29,11 @@ abstract class JoinGameGameUseCaseContract {
         player2.joinsAGame(gameId)
 
         player1.received(GameUpdate.PlayerJoined(player2.id))
+    }
+
+    @Test
+    @Disabled
+    fun `joining a game that has started is not possible`() {
+        TODO()
     }
 }
