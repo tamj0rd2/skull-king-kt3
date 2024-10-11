@@ -18,7 +18,7 @@ data class GameState private constructor(
 
     private fun apply(event: GameStarted): Result4k<GameState, StartGameErrorCode> {
         if (players.size < Game.MINIMUM_PLAYER_COUNT) return TooFewPlayers().asFailure()
-        return copy(playerHands = players.associateWith { listOf(Card()) }).asSuccess()
+        return copy(playerHands = players.associateWith { listOf(Card) }).asSuccess()
     }
 
     internal fun apply(event: GameEvent): Result4k<GameState, GameErrorCode> =
@@ -37,4 +37,4 @@ data class GameState private constructor(
     }
 }
 
-class Card
+data object Card

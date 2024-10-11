@@ -10,7 +10,10 @@ import dev.forkhandles.result4k.orThrow
 import io.kotest.common.runBlocking
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.arbitrary
+import io.kotest.property.arbitrary.choice
+import io.kotest.property.arbitrary.list
 import io.kotest.property.arbitrary.map
+import io.kotest.property.arbitrary.merge
 import io.kotest.property.arbitrary.set
 import io.kotest.property.arbitrary.uuid
 import strikt.api.Assertion
@@ -20,20 +23,36 @@ import strikt.assertions.isA
 object GameArbs {
     val playerIdArb = Arb.uuid().map { PlayerId.of(it) }
 
-    private val playerJoinedActionArb =
+    private val addPlayerActionArb =
         arbitrary {
             val playerId = playerIdArb.bind()
             GameAction("add player $playerId") { addPlayer(playerId) }
         }
 
+    private val startGameActionArb =
+        arbitrary {
+            GameAction("start game") { start() }
+        }
+
+    val possiblyInvalidGameActionsArb =
+        Arb
+            .list(
+                Arb.choice(
+                    addPlayerActionArb,
+                    startGameActionArb,
+                ),
+            ).map(::GameActions)
+
     val validGameActionsArb =
         arbitrary {
             GameActions(
                 buildList {
-                    addAll(Arb.set(playerJoinedActionArb, 0..MAXIMUM_PLAYER_COUNT).bind())
+                    addAll(Arb.set(addPlayerActionArb, 0..MAXIMUM_PLAYER_COUNT).bind())
                 },
             )
         }
+
+    val gameActionsArb = possiblyInvalidGameActionsArb.merge(validGameActionsArb)
 
     val gameArb =
         arbitrary {

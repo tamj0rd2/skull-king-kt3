@@ -41,6 +41,9 @@ java {
 
 tasks.named<Test>("test") {
     useJUnitPlatform()
+    systemProperty("junit.jupiter.execution.parallel.enabled", "true")
+    systemProperty("junit.jupiter.execution.parallel.mode.default", "concurrent")
+    systemProperty("junit.jupiter.execution.parallel.mode.classes.default", "concurrent")
     systemProperty("junit.jupiter.execution.timeout.test.method.default", "2s")
     systemProperty("junit.jupiter.execution.timeout.mode", "disabled_on_debug")
 }
