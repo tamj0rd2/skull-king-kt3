@@ -74,28 +74,6 @@ class GameTests {
             }
         }
 
-    // TODO: remove this once the test in the JoinGameContract is passing
-    @Test
-    fun `joining a full game is not possible`() =
-        propertyTest {
-            checkAll(
-                gameArb.filter { it.state.players.size == MAXIMUM_PLAYER_COUNT },
-                playerIdArb,
-            ) { game, playerWhoWantsToJoin ->
-                val initialPlayers = game.state.players
-                val initialEvents = game.events
-
-                assume(initialPlayers.size == MAXIMUM_PLAYER_COUNT)
-                assume(!initialPlayers.contains(playerWhoWantsToJoin))
-
-                expectThat(game.addPlayer(playerWhoWantsToJoin)).isA<Failure<GameIsFull>>()
-                expectThat(game).run {
-                    get { state.players }.isEqualTo(initialPlayers)
-                    get { events }.isEqualTo(initialEvents)
-                }
-            }
-        }
-
     // TODO: replace this with: the players in a game are always unique
     @Test
     fun `a player cannot join the same game twice`() =
