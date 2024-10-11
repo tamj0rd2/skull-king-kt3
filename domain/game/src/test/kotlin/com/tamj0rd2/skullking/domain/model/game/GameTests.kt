@@ -1,7 +1,6 @@
 package com.tamj0rd2.skullking.domain.model.game
 
 import com.tamj0rd2.skullking.domain.GameArbs.gameArb
-import com.tamj0rd2.skullking.domain.GameArbs.gameEventsArb
 import com.tamj0rd2.skullking.domain.GameArbs.playerIdArb
 import com.tamj0rd2.skullking.domain.GameArbs.validGameEventsArb
 import com.tamj0rd2.skullking.domain.model.PlayerId
@@ -19,7 +18,6 @@ import io.kotest.property.checkAll
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import strikt.api.expectCatching
 import strikt.api.expectThat
 import strikt.api.expectThrows
 import strikt.assertions.all
@@ -28,25 +26,22 @@ import strikt.assertions.first
 import strikt.assertions.hasSize
 import strikt.assertions.isA
 import strikt.assertions.isEqualTo
-import strikt.assertions.isFailure
+import strikt.assertions.one
 
 class GameTests {
     @Test
-    fun `games start with a GameCreated event`() {
-        val game = Game.new()
-        expectThat(game.events) {
-            hasSize(1)
-            first().isA<GameCreated>().get { gameId }.isEqualTo(game.id)
+    fun `games always start with a GameCreated event`() =
+        propertyTest {
+            checkAll(gameArb) { game ->
+                expectThat(game.events).first().isA<GameCreated>()
+            }
         }
-    }
 
-    // TODO: this should be tested using the actions arb instead.
     @Test
     fun `games always have a single GameCreated event`() =
         propertyTest {
-            checkAll(gameEventsArb) { events ->
-                assume(events.count { it is GameCreated } > 1)
-                expectCatching { Game.from(events) }.isFailure()
+            checkAll(gameArb) { game ->
+                expectThat(game.events).one { isA<GameCreated>() }
             }
         }
 
