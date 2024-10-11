@@ -55,7 +55,6 @@ class SkullKingWebClient(
         ws.onMessage {
             val message = wsLens(it)
             if (message is GameUpdateMessage) {
-                println("received a game update message!")
                 command.gameUpdateListener.send(message.gameUpdate)
             }
         }

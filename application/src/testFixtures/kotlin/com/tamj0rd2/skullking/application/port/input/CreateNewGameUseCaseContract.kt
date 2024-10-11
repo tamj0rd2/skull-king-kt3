@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test
 import strikt.api.expectCatching
 import strikt.assertions.isSuccess
 
-abstract class CreateNewGameGameUseCaseContract {
+abstract class CreateNewGameUseCaseContract {
     protected abstract val scenario: TestScenario
 
     @Test

@@ -28,6 +28,8 @@ import strikt.assertions.isEqualTo
 import strikt.assertions.one
 
 class GameTests {
+    // TODO: these invariant tests should be checking after every action, rather than just at the end.
+    //  they should also allow testing invalid state transitions.
     @Test
     fun `games always start with a GameCreated event`() =
         propertyTest {
@@ -64,7 +66,15 @@ class GameTests {
             }
         }
 
-    // TODO: replace this with: a game never has more than 6 players
+    @Test
+    fun `games can never have more than 6 players`() =
+        propertyTest {
+            checkAll(gameArb) { game ->
+                expectThat(game.events)
+            }
+        }
+
+    // TODO: remove this once the test in the JoinGameContract is passing
     @Test
     fun `joining a full game is not possible`() =
         propertyTest {
