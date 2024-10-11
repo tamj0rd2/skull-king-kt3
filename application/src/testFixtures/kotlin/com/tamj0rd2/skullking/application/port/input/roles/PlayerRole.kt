@@ -8,6 +8,7 @@ import com.tamj0rd2.skullking.application.port.output.GameUpdateListener
 import com.tamj0rd2.skullking.domain.model.PlayerId
 import com.tamj0rd2.skullking.domain.model.game.GameId
 import com.tamj0rd2.skullking.domain.model.game.GameUpdate
+import dev.forkhandles.result4k.orThrow
 import dev.forkhandles.values.ZERO
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
@@ -28,7 +29,7 @@ class PlayerRole(
     fun joinsAGame(gameId: GameId): PlayerId {
         this.gameId = gameId
         val command = JoinGameCommand(gameId = gameId, gameUpdateListener = this)
-        return driver(command).playerId.also { id = it }
+        return driver(command).orThrow().playerId.also { id = it }
     }
 
     fun startsTheGame() {

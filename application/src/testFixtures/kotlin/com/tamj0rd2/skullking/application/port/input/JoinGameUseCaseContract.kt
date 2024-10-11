@@ -35,7 +35,6 @@ abstract class JoinGameUseCaseContract {
     }
 
     @Test
-    @Disabled
     fun `joining a full game is not possible`() {
         val players = buildList { repeat(Game.MAXIMUM_PLAYER_COUNT) { add(scenario.newPlayer()) } }
 

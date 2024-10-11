@@ -1,11 +1,14 @@
 package com.tamj0rd2.skullking.adapter.web
 
+import com.tamj0rd2.extensions.asSuccess
 import com.tamj0rd2.skullking.application.port.input.JoinGameUseCase
 import com.tamj0rd2.skullking.application.port.input.JoinGameUseCase.JoinGameCommand
 import com.tamj0rd2.skullking.application.port.output.GameUpdateListener
-import com.tamj0rd2.skullking.domain.model.PlayerId
+import com.tamj0rd2.skullking.domain.model.game.GameErrorCode
 import com.tamj0rd2.skullking.domain.model.game.GameId
 import com.tamj0rd2.skullking.domain.model.game.GameUpdate
+import dev.forkhandles.result4k.Result4k
+import dev.forkhandles.result4k.onFailure
 import org.http4k.websocket.Websocket
 import org.http4k.websocket.WsMessage
 
@@ -15,16 +18,16 @@ class JoinGameController(
     fun joinGame(
         ws: Websocket,
         gameId: GameId,
-    ): PlayerId {
+    ): Result4k<PlayerSession, GameErrorCode> {
         val command =
             JoinGameCommand(
                 gameId = gameId,
                 gameUpdateListener = newGameUpdateListener(ws),
             )
 
-        val output = joinGameUseCase.invoke(command)
+        val output = joinGameUseCase.invoke(command).onFailure { return it }
         ws.send(wsLens(JoinAcknowledgedMessage(output.playerId)))
-        return output.playerId
+        return PlayerSession(ws = ws, gameId = gameId, playerId = output.playerId).asSuccess()
     }
 
     private fun newGameUpdateListener(ws: Websocket) =

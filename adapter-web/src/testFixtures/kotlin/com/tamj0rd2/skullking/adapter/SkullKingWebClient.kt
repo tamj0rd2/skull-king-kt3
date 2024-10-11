@@ -1,6 +1,8 @@
 package com.tamj0rd2.skullking.adapter
 
+import com.tamj0rd2.extensions.asSuccess
 import com.tamj0rd2.skullking.adapter.web.CreateGameController
+import com.tamj0rd2.skullking.adapter.web.ErrorMessage
 import com.tamj0rd2.skullking.adapter.web.GameCreatedMessage
 import com.tamj0rd2.skullking.adapter.web.GameUpdateMessage
 import com.tamj0rd2.skullking.adapter.web.JoinAcknowledgedMessage
@@ -17,7 +19,9 @@ import com.tamj0rd2.skullking.application.port.input.StartGameUseCase.StartGameC
 import com.tamj0rd2.skullking.application.port.input.StartGameUseCase.StartGameOutput
 import com.tamj0rd2.skullking.application.port.output.GameUpdateListener
 import com.tamj0rd2.skullking.domain.model.PlayerId
+import com.tamj0rd2.skullking.domain.model.game.GameErrorCode
 import com.tamj0rd2.skullking.domain.model.game.GameId
+import dev.forkhandles.result4k.Result4k
 import dev.forkhandles.values.ZERO
 import org.http4k.client.ApacheClient
 import org.http4k.client.WebsocketClient
@@ -48,7 +52,7 @@ class SkullKingWebClient(
             CreateNewGameOutput(response.gameId)
         }
 
-    override fun invoke(command: JoinGameCommand): JoinGameOutput {
+    override fun invoke(command: JoinGameCommand): Result4k<JoinGameOutput, GameErrorCode> {
         gameUpdateListener = command.gameUpdateListener
         ws = connectToWs(command.gameId)
         ws.waitForJoinAcknowledgement()
@@ -60,7 +64,7 @@ class SkullKingWebClient(
         }
 
         check(playerId != PlayerId.ZERO) { "the player id has not been set" }
-        return JoinGameOutput(playerId)
+        return JoinGameOutput(playerId).asSuccess()
     }
 
     override fun invoke(command: StartGameCommand): StartGameOutput {
@@ -70,18 +74,27 @@ class SkullKingWebClient(
 
     private fun Websocket.waitForJoinAcknowledgement() {
         val latch = CountDownLatch(1)
+        var failureReason: GameErrorCode? = null
 
         onMessage {
             if (playerId != PlayerId.ZERO) return@onMessage
 
-            val message = wsLens(it)
-            if (message is JoinAcknowledgedMessage) {
-                playerId = message.playerId
-                latch.countDown()
+            when (val message = wsLens(it)) {
+                is JoinAcknowledgedMessage -> {
+                    playerId = message.playerId
+                    latch.countDown()
+                }
+                is ErrorMessage -> {
+                    failureReason = message.error
+                    latch.countDown()
+                }
+                else -> Unit
             }
         }
 
         latch.await()
+        failureReason?.let { throw it }
+        check(playerId != PlayerId.ZERO) { "the player id has not been set" }
     }
 
     private fun connectToWs(gameId: GameId): Websocket {

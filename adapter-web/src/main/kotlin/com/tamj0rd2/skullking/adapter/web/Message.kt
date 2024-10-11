@@ -1,7 +1,9 @@
 package com.tamj0rd2.skullking.adapter.web
 
 import com.tamj0rd2.skullking.domain.model.PlayerId
+import com.tamj0rd2.skullking.domain.model.game.GameErrorCode
 import com.tamj0rd2.skullking.domain.model.game.GameId
+import com.tamj0rd2.skullking.domain.model.game.GameIsFull
 import com.tamj0rd2.skullking.domain.model.game.GameUpdate
 import com.tamj0rd2.skullking.domain.model.game.GameUpdate.GameStarted
 import com.tamj0rd2.skullking.domain.model.game.GameUpdate.PlayerJoined
@@ -35,6 +37,10 @@ data class GameUpdateMessage(
     val gameUpdate: GameUpdate,
 ) : Message
 
+data class ErrorMessage(
+    val error: GameErrorCode,
+) : Message
+
 data object StartGameMessage : Message
 
 internal val wsLens =
@@ -61,6 +67,7 @@ private object JMessage : JSealed<Message>() {
                 "start-game" to JSingleton(StartGameMessage),
                 "join-acknowledged" to JAcknowledged,
                 "game-update" to JGameUpdateMessage,
+                "error-message" to JErrorMessage,
             )
 
     override fun extractTypeName(obj: Message): String =
@@ -70,6 +77,7 @@ private object JMessage : JSealed<Message>() {
             is JoinAcknowledgedMessage -> "join-acknowledged"
             is GameUpdateMessage -> "game-update"
             is StartGameMessage -> "start-game"
+            is ErrorMessage -> "error-message"
         }
 }
 
@@ -128,6 +136,24 @@ private object JPlayerJoined : JAny<PlayerJoined>() {
     private val playerId by str(JPlayerId, PlayerJoined::playerId)
 
     override fun JsonNodeObject.deserializeOrThrow() = PlayerJoined(playerId = +playerId)
+}
+
+private object JErrorMessage : JAny<ErrorMessage>() {
+    private val reason by str(::errorMessageAsString)
+
+    private fun errorMessageAsString(errorMessage: ErrorMessage): String =
+        when (errorMessage.error) {
+            is GameIsFull -> "game-is-full"
+            else -> TODO("add support for ${errorMessage.error::class.java}")
+        }
+
+    override fun JsonNodeObject.deserializeOrThrow(): ErrorMessage =
+        ErrorMessage(
+            when (val reason = +reason) {
+                "game-is-full" -> GameIsFull()
+                else -> error("unknown error code - $reason")
+            },
+        )
 }
 
 private class JSingleton<T : Any>(

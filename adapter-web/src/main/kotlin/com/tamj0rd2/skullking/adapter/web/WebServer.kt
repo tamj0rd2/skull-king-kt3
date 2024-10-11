@@ -5,6 +5,7 @@ import com.tamj0rd2.skullking.application.SkullKingApplication
 import com.tamj0rd2.skullking.application.port.output.GameUpdateNotifierInMemoryAdapter
 import com.tamj0rd2.skullking.domain.model.PlayerId
 import com.tamj0rd2.skullking.domain.model.game.GameId
+import dev.forkhandles.result4k.onFailure
 import org.http4k.contract.contract
 import org.http4k.core.Request
 import org.http4k.lens.Path
@@ -15,6 +16,7 @@ import org.http4k.server.Undertow
 import org.http4k.server.asServer
 import org.http4k.websocket.Websocket
 import org.http4k.websocket.WsResponse
+import org.http4k.websocket.WsStatus
 import java.net.ServerSocket
 import org.http4k.routing.ws.bind as bindWs
 
@@ -61,8 +63,12 @@ object WebServer {
                         ws.onError { println("server: client $clientId: error - $it") }
                         ws.onClose { println("server: client $clientId: disconnecting") }
 
-                        val playerId = joinGameController.joinGame(ws, gameId)
-                        val session = PlayerSession(ws = ws, gameId = gameId, playerId = playerId)
+                        val session =
+                            joinGameController.joinGame(ws, gameId).onFailure {
+                                ws.send(wsLens(ErrorMessage(it.reason)))
+                                ws.close(WsStatus.REFUSE)
+                                return@WsResponse
+                            }
 
                         ws.onMessage {
                             val message = wsLens(it)
@@ -75,6 +81,7 @@ object WebServer {
                                 is GameUpdateMessage,
                                 is CreateNewGameMessage,
                                 is JoinAcknowledgedMessage,
+                                is ErrorMessage,
                                 -> error("this message should never be received by the server")
                             }
                         }
