@@ -27,7 +27,9 @@ import strikt.assertions.first
 import strikt.assertions.hasSize
 import strikt.assertions.isA
 import strikt.assertions.isEqualTo
+import strikt.assertions.isLessThanOrEqualTo
 import strikt.assertions.one
+import strikt.assertions.size
 
 // I'm ok with these tests taking longer to run if necessary because these invariants are important
 @Timeout(10)
@@ -79,7 +81,7 @@ class GameTests {
     @Test
     fun `games can never have more than 6 players`() =
         gameInvariant { game ->
-            expectThat(game.events)
+            expectThat(game.state.players).size.isLessThanOrEqualTo(MAXIMUM_PLAYER_COUNT)
         }
 
     // ==== WARNING: Stuff below this line hasn't been updated to use the new invariant stuff yet ====
