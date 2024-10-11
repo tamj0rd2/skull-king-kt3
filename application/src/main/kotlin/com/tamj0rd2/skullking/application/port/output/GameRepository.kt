@@ -8,3 +8,5 @@ interface GameRepository {
 
     fun save(game: Game)
 }
+
+class GameDoesNotExist : IllegalStateException()

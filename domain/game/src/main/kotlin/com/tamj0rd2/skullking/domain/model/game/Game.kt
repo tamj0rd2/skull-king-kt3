@@ -47,8 +47,6 @@ class Game {
     }
 
     private constructor(history: List<GameEvent>) {
-        check(history.isNotEmpty()) { "Provided history was empty. Create a new game instead." }
-
         id = history.first().gameId
         check(history.all { it.gameId == id }) { "GameId mismatch" }
         check(history.count { it is GameCreated } == 1) { "There was more than 1 game created event" }

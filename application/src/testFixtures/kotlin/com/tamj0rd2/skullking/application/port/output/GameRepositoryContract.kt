@@ -29,9 +29,10 @@ abstract class GameRepositoryContract {
                 }
 
                 val gameThatWasSavedAndLoaded = gameRepository.load(gameId)
+                expectThat(gameThatWasSavedAndLoaded.id).isEqualTo(gameModifiedInMemoryOnly.id)
                 expectThat(gameThatWasSavedAndLoaded.events).isEqualTo(gameModifiedInMemoryOnly.events)
                 expectThat(gameThatWasSavedAndLoaded.state).isEqualTo(gameModifiedInMemoryOnly.state)
-                expectThat(gameThatWasSavedAndLoaded.id).isEqualTo(gameModifiedInMemoryOnly.id)
+                // TODO: these 2 assertions deserve their own test.
                 expectThat(gameThatWasSavedAndLoaded.loadedVersion).isEqualTo(Version.of(actions.size))
                 expectThat(gameModifiedInMemoryOnly.loadedVersion).isEqualTo(Version.NONE)
             }
@@ -39,6 +40,6 @@ abstract class GameRepositoryContract {
 
     @Test
     fun `a game that has not been saved cannot be loaded`() {
-        expectThrows<IllegalStateException> { gameRepository.load(GameId.random()) }
+        expectThrows<GameDoesNotExist> { gameRepository.load(GameId.random()) }
     }
 }
