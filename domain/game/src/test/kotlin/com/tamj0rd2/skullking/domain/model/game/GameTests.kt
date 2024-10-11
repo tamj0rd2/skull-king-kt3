@@ -2,7 +2,6 @@ package com.tamj0rd2.skullking.domain.model.game
 
 import com.tamj0rd2.skullking.domain.GameArbs.gameArb
 import com.tamj0rd2.skullking.domain.GameArbs.playerIdArb
-import com.tamj0rd2.skullking.domain.GameArbs.validGameEventsArb
 import com.tamj0rd2.skullking.domain.model.PlayerId
 import com.tamj0rd2.skullking.domain.model.game.Game.Companion.MAXIMUM_PLAYER_COUNT
 import com.tamj0rd2.skullking.domain.model.game.Game.Companion.MINIMUM_PLAYER_COUNT
@@ -57,21 +56,11 @@ class GameTests {
             }
         }
 
-    // TODO: replace this with: all events within a game relate to that specific game
     @Test
-    fun `a game cannot be built from events that affect multiple different games`() =
+    fun `all events within a game relate to that specific game`() =
         propertyTest {
-            checkAll(
-                validGameEventsArb,
-                validGameEventsArb,
-            ) { eventsForThisGame, eventsForADifferentGame ->
-                assume(eventsForThisGame.isNotEmpty())
-                assume(eventsForADifferentGame.isNotEmpty())
-                assume(eventsForADifferentGame.any { it.gameId != eventsForThisGame.first().gameId })
-
-                val eventsContainingMultipleGames =
-                    eventsForThisGame.take(1) + (eventsForThisGame.drop(1) + eventsForADifferentGame).shuffled()
-                expectThrows<IllegalStateException> { Game.from(eventsContainingMultipleGames) }
+            checkAll(gameArb) { game ->
+                expectThat(game.events).all { get { gameId }.isEqualTo(game.id) }
             }
         }
 

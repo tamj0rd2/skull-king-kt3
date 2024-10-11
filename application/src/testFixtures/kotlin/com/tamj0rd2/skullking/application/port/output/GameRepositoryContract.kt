@@ -22,8 +22,8 @@ abstract class GameRepositoryContract {
                 val gameModifiedInMemoryOnly = Game.new().also(gameRepository::save)
                 val gameId = gameModifiedInMemoryOnly.id
 
-                actions.forEach { action -> action.mutate(gameModifiedInMemoryOnly) }
-                actions.forEach { action ->
+                actions.applyAllTo(gameModifiedInMemoryOnly)
+                actions.applyEach { action ->
                     val modifiedGame = gameRepository.load(gameId).apply(action::mutate)
                     gameRepository.save(modifiedGame)
                 }

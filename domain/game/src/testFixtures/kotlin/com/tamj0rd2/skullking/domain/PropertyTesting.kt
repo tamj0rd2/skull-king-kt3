@@ -9,13 +9,10 @@ import com.tamj0rd2.skullking.domain.model.game.GameId
 import com.tamj0rd2.skullking.domain.model.game.PlayerJoined
 import dev.forkhandles.result4k.Result4k
 import dev.forkhandles.result4k.Success
-import dev.forkhandles.result4k.orThrow
+import dev.forkhandles.result4k.onFailure
 import io.kotest.common.runBlocking
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.arbitrary
-import io.kotest.property.arbitrary.choice
-import io.kotest.property.arbitrary.flatMap
-import io.kotest.property.arbitrary.list
 import io.kotest.property.arbitrary.map
 import io.kotest.property.arbitrary.set
 import io.kotest.property.arbitrary.uuid
@@ -30,16 +27,6 @@ object GameArbs {
     private fun gameCreatedArb(gameId: GameId) = arbitrary { GameCreated(gameId) }
 
     private fun playerJoinedArb(gameId: GameId) = playerIdArb.map { playerId -> PlayerJoined(gameId, playerId) }
-
-    val gameEventsArb =
-        Arb.list(
-            gameIdArb.flatMap { gameId ->
-                Arb.choice(
-                    gameCreatedArb(gameId),
-                    playerJoinedArb(gameId),
-                )
-            },
-        )
 
     val validGameEventsArb =
         arbitrary {
@@ -59,15 +46,17 @@ object GameArbs {
 
     val validGameActionsArb =
         arbitrary {
-            buildList {
-                addAll(Arb.set(playerJoinedActionArb, 0..MAXIMUM_PLAYER_COUNT).bind())
-            }
+            GameActions(
+                buildList {
+                    addAll(Arb.set(playerJoinedActionArb, 0..MAXIMUM_PLAYER_COUNT).bind())
+                },
+            )
         }
 
     val gameArb =
         arbitrary {
             Game.new().also { game ->
-                validGameActionsArb.bind().forEach { it.mutate(game) }
+                validGameActionsArb.bind().applyAllTo(game)
             }
         }
 }
@@ -76,13 +65,33 @@ fun propertyTest(block: suspend () -> Unit) = runBlocking(block)
 
 fun <T, E> Assertion.Builder<Result4k<T, E>>.wasSuccessful() = run { isA<Success<*>>() }
 
+data class GameActions(
+    private val actions: List<GameAction>,
+) {
+    val size = actions.size
+
+    fun applyAllTo(game: Game) {
+        actions.fold(listOf<GameAction>()) { appliedActions, action ->
+            action.mutate(game).onFailure {
+                println("Previously applied actions:\n${appliedActions.joinToString("\n")}\n")
+                println("Failed to apply: $action")
+                throw it.reason
+            }
+
+            appliedActions + action
+        }
+    }
+
+    fun applyEach(block: (GameAction) -> Unit) = actions.forEach(block)
+}
+
 data class GameAction(
     private val description: String,
     private val mutation: Game.() -> Result4k<Unit, GameErrorCode>,
 ) {
     override fun toString(): String = description
 
-    fun mutate(game: Game) = mutation(game).orThrow()
+    fun mutate(game: Game) = mutation(game)
 
     override fun equals(other: Any?): Boolean {
         if (other !is GameAction) return false
