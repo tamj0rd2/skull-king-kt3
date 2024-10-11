@@ -2,7 +2,6 @@ package com.tamj0rd2.skullking.domain.model.game
 
 import com.tamj0rd2.extensions.filterOrThrow
 import com.tamj0rd2.skullking.domain.model.PlayerId
-import com.tamj0rd2.utils.pretty
 import dev.forkhandles.result4k.Result4k
 import dev.forkhandles.result4k.map
 import dev.forkhandles.result4k.orThrow
@@ -38,8 +37,6 @@ value class Version private constructor(
  * It is a consistency boundary - all changes must either happen, or not.
  */
 class Game {
-    override fun toString(): String = "${super.toString()}\n${state.pretty()}"
-
     private constructor() {
         id = GameId.random()
         appendEvent(GameCreated(id))

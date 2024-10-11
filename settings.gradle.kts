@@ -17,5 +17,4 @@ include(
     ":application",
     ":domain:game",
     ":lib:forkhandles-extensions",
-    ":lib:utils",
 )

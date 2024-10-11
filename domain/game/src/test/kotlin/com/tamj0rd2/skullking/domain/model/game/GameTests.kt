@@ -2,27 +2,25 @@ package com.tamj0rd2.skullking.domain.model.game
 
 import com.tamj0rd2.skullking.domain.GameArbs.gameActionsArb
 import com.tamj0rd2.skullking.domain.GameArbs.gameArb
-import com.tamj0rd2.skullking.domain.GameArbs.playerIdArb
 import com.tamj0rd2.skullking.domain.model.PlayerId
 import com.tamj0rd2.skullking.domain.model.game.Game.Companion.MAXIMUM_PLAYER_COUNT
 import com.tamj0rd2.skullking.domain.model.game.Game.Companion.MINIMUM_PLAYER_COUNT
 import com.tamj0rd2.skullking.domain.propertyTest
-import com.tamj0rd2.skullking.domain.wasSuccessful
-import dev.forkhandles.result4k.Failure
 import dev.forkhandles.result4k.orThrow
 import dev.forkhandles.values.random
 import io.kotest.property.arbitrary.filter
 import io.kotest.property.arbitrary.next
-import io.kotest.property.assume
 import io.kotest.property.checkAll
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
+import strikt.api.Assertion
 import strikt.api.expectThat
 import strikt.api.expectThrows
 import strikt.assertions.all
 import strikt.assertions.containsExactly
+import strikt.assertions.containsExactlyInAnyOrder
 import strikt.assertions.first
 import strikt.assertions.hasSize
 import strikt.assertions.isA
@@ -84,35 +82,13 @@ class GameTests {
             expectThat(game.state.players).size.isLessThanOrEqualTo(MAXIMUM_PLAYER_COUNT)
         }
 
-    // ==== WARNING: Stuff below this line hasn't been updated to use the new invariant stuff yet ====
-    // TODO: replace this with: the players in a game are always unique
     @Test
-    fun `a player cannot join the same game twice`() =
-        propertyTest {
-            checkAll(
-                gameArb.filter { it.state.players.size < MAXIMUM_PLAYER_COUNT - 2 },
-                playerIdArb,
-            ) { game, playerWhoWantsToJoin ->
-                assume(game.state.players.size <= MAXIMUM_PLAYER_COUNT - 2)
-                assume(!game.state.players.contains(playerWhoWantsToJoin))
-
-                expectThat(game.addPlayer(playerWhoWantsToJoin))
-                    .describedAs("joining the first time")
-                    .wasSuccessful()
-                val playersBeforeSecondJoin = game.state.players
-                val eventsBeforeSecondJoin = game.events
-
-                expectThat(game.addPlayer(playerWhoWantsToJoin))
-                    .describedAs("trying to join again")
-                    .isA<Failure<PlayerHasAlreadyJoined>>()
-                expectThat(game) {
-                    get { state.players }.isEqualTo(playersBeforeSecondJoin)
-                    get { events }.isEqualTo(eventsBeforeSecondJoin)
-                }
-            }
+    fun `the players in the game are always unique`() =
+        gameInvariant { game ->
+            expectThat(game.state.players).doesNotContainAnyDuplicateValues()
         }
 
-    // TODO: this seems like it should be the invariant of a Hand model.
+    // TODO: this seems like it should be an invariant of a Hand model.
     @Test
     @Disabled
     fun `within the players hands, there can't be more cards than exist of that type (new cards aren't invented from thin air)`() {
@@ -144,3 +120,8 @@ class GameTests {
         }
     }
 }
+
+private fun <T> Assertion.Builder<List<T>>.doesNotContainAnyDuplicateValues() =
+    apply {
+        containsExactlyInAnyOrder(subject.toSet())
+    }

@@ -6,8 +6,6 @@ dependencies {
     api(libs.values4k)
     api(libs.result4k)
     api(project(":lib:forkhandles-extensions"))
-    implementation(project(":lib:utils"))
-    testFixturesImplementation(project(":lib:utils"))
 }
 
 tasks {
