@@ -38,9 +38,9 @@ class GameTests {
         iterations: Int = 1000,
         checkInvariant: (Game) -> Unit,
     ) = propertyTest {
-        checkAll(iterations, gameActionsArb) {
+        checkAll(iterations, gameActionsArb) { gameActions ->
             val game = Game.new()
-            it.applyEach { action ->
+            gameActions.applyEach { action ->
                 // I don't care whether the action is actually possible.
                 // I just want to ensure the invariants are always upheld.
                 runCatching { action.mutate(game) }
