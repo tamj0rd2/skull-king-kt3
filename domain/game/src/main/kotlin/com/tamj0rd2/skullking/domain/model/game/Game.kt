@@ -39,14 +39,14 @@ value class Version private constructor(
 class Game {
     private constructor() {
         id = GameId.random()
-        appendEvent(GameCreated(id))
+        appendEvent(GameCreatedEvent(id))
         loadedVersion = Version.NONE
     }
 
     private constructor(history: List<GameEvent>) {
         id = history.first().gameId
         check(history.all { it.gameId == id }) { "GameId mismatch" }
-        check(history.count { it is GameCreated } == 1) { "There was more than 1 game created event" }
+        check(history.count { it is GameCreatedEvent } == 1) { "There was more than 1 game created event" }
         history.forEach { appendEvent(it).orThrow() }
         loadedVersion = Version.of(history.size - 1)
     }
@@ -62,11 +62,11 @@ class Game {
     val newEvents get() = _events.drop(loadedVersion.value + 1)
 
     fun addPlayer(playerId: PlayerId): Result4k<Unit, AddPlayerErrorCode> =
-        appendEvent(PlayerJoined(id, playerId))
+        appendEvent(PlayerJoinedEvent(id, playerId))
             .filterOrThrow<Unit, GameErrorCode, AddPlayerErrorCode>()
 
     fun start(): Result4k<Unit, StartGameErrorCode> =
-        appendEvent(GameStarted(id))
+        appendEvent(GameStartedEvent(id))
             .filterOrThrow<Unit, GameErrorCode, StartGameErrorCode>()
 
     private fun appendEvent(event: GameEvent): Result4k<Unit, GameErrorCode> =

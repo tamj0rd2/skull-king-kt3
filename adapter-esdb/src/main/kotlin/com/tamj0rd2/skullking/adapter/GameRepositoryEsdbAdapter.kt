@@ -12,10 +12,10 @@ import com.tamj0rd2.skullking.application.port.output.GameDoesNotExist
 import com.tamj0rd2.skullking.application.port.output.GameRepository
 import com.tamj0rd2.skullking.domain.model.PlayerId
 import com.tamj0rd2.skullking.domain.model.game.Game
-import com.tamj0rd2.skullking.domain.model.game.GameCreated
+import com.tamj0rd2.skullking.domain.model.game.GameCreatedEvent
 import com.tamj0rd2.skullking.domain.model.game.GameEvent
 import com.tamj0rd2.skullking.domain.model.game.GameId
-import com.tamj0rd2.skullking.domain.model.game.PlayerJoined
+import com.tamj0rd2.skullking.domain.model.game.PlayerJoinedEvent
 import com.tamj0rd2.skullking.domain.model.game.Version
 import com.ubertob.kondor.json.JAny
 import com.ubertob.kondor.json.JSealed
@@ -91,8 +91,8 @@ class GameRepositoryEsdbAdapter(
         private object JGameEvent : JSealed<GameEvent>() {
             private val config =
                 listOf(
-                    Triple(GameCreated::class, "game-created", JGameCreated),
-                    Triple(PlayerJoined::class, "player-joined", JPlayerJoined),
+                    Triple(GameCreatedEvent::class, "game-created", JGameCreated),
+                    Triple(PlayerJoinedEvent::class, "player-joined", JPlayerJoined),
                 )
 
             override val subConverters: Map<String, ObjectNodeConverter<out GameEvent>>
@@ -101,21 +101,21 @@ class GameRepositoryEsdbAdapter(
             override fun extractTypeName(obj: GameEvent): String = config.single { (clazz, _, _) -> clazz == obj::class }.second
         }
 
-        private object JGameCreated : JAny<GameCreated>() {
-            private val gameId by str(JGameId, GameCreated::gameId)
+        private object JGameCreated : JAny<GameCreatedEvent>() {
+            private val gameId by str(JGameId, GameCreatedEvent::gameId)
 
             override fun JsonNodeObject.deserializeOrThrow() =
-                GameCreated(
+                GameCreatedEvent(
                     gameId = +gameId,
                 )
         }
 
-        private object JPlayerJoined : JAny<PlayerJoined>() {
-            private val playerId by str(JPlayerId, PlayerJoined::playerId)
-            private val gameId by str(JGameId, PlayerJoined::gameId)
+        private object JPlayerJoined : JAny<PlayerJoinedEvent>() {
+            private val playerId by str(JPlayerId, PlayerJoinedEvent::playerId)
+            private val gameId by str(JGameId, PlayerJoinedEvent::gameId)
 
             override fun JsonNodeObject.deserializeOrThrow() =
-                PlayerJoined(
+                PlayerJoinedEvent(
                     playerId = +playerId,
                     gameId = +gameId,
                 )

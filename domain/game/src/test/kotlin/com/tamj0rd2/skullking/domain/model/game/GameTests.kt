@@ -50,13 +50,13 @@ class GameTests {
     @Test
     fun `games always start with a GameCreated event`() =
         gameInvariant { game ->
-            expectThat(game.events).first().isA<GameCreated>()
+            expectThat(game.events).first().isA<GameCreatedEvent>()
         }
 
     @Test
     fun `games always have a single GameCreated event`() =
         gameInvariant { game ->
-            expectThat(game.events).one { isA<GameCreated>() }
+            expectThat(game.events).one { isA<GameCreatedEvent>() }
         }
 
     @Test
