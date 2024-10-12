@@ -12,7 +12,7 @@ import com.tamj0rd2.testhelpers.eventually
 import dev.forkhandles.result4k.orThrow
 import dev.forkhandles.values.ZERO
 import strikt.api.expectThat
-import strikt.assertions.isEqualTo
+import strikt.assertions.contains
 
 class PlayerRole(
     private val driver: SkullKingUseCases,
@@ -22,7 +22,7 @@ class PlayerRole(
 
     private var gameId = GameId.NONE
 
-    private val receivedEvents = mutableListOf<GameUpdate>()
+    private val receivedGameUpdates = mutableListOf<GameUpdate>()
 
     fun createsAGame(): GameId = driver(CreateNewGameCommand).gameId
 
@@ -36,13 +36,17 @@ class PlayerRole(
         driver(StartGameCommand(gameId, id)).orThrow()
     }
 
-    fun received(expectedNotification: GameUpdate): Unit =
+    private var gameUpdatesRead = 0
+
+    fun received(expectedUpdate: GameUpdate) {
         eventually {
-            // TODO: this assertion is obviously going to break very quickly.
-            expectThat(receivedEvents.toList()).isEqualTo(listOf(expectedNotification))
+            val recentGameUpdates = receivedGameUpdates.drop(gameUpdatesRead)
+            expectThat(recentGameUpdates).contains(expectedUpdate)
+            gameUpdatesRead = recentGameUpdates.indexOfFirst { it == expectedUpdate } + 1
         }
+    }
 
     override fun send(updates: List<GameUpdate>) {
-        receivedEvents += updates
+        receivedGameUpdates += updates
     }
 }

@@ -20,7 +20,7 @@ abstract class StartGameUseCaseContract {
 
         player1.startsTheGame()
 
-        // TODO: assert that player1 also received the game update
+        player1.received(GameUpdate.GameStarted)
         player2.received(GameUpdate.GameStarted)
     }
 
