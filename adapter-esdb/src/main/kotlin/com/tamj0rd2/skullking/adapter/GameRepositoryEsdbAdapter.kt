@@ -8,7 +8,6 @@ import com.eventstore.dbclient.ExpectedRevision
 import com.eventstore.dbclient.ReadStreamOptions
 import com.eventstore.dbclient.ResolvedEvent
 import com.eventstore.dbclient.StreamNotFoundException
-import com.tamj0rd2.skullking.adapter.GameRepositoryEsdbAdapter.Companion.JPlayerJoined.playerId
 import com.tamj0rd2.skullking.application.port.output.GameDoesNotExist
 import com.tamj0rd2.skullking.application.port.output.GameRepository
 import com.tamj0rd2.skullking.domain.model.PlayerId

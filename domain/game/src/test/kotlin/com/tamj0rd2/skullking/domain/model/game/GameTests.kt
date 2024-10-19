@@ -1,11 +1,14 @@
 package com.tamj0rd2.skullking.domain.model.game
 
-import com.tamj0rd2.skullking.domain.GameArbs.gameActionsArb
+import com.tamj0rd2.skullking.domain.GameAction
+import com.tamj0rd2.skullking.domain.GameActionArbs.gameActionsArb
+import com.tamj0rd2.skullking.domain.GameActions
 import com.tamj0rd2.skullking.domain.GameArbs.gameArb
 import com.tamj0rd2.skullking.domain.model.game.Game.Companion.MAXIMUM_PLAYER_COUNT
 import com.tamj0rd2.skullking.domain.model.game.Game.Companion.MINIMUM_PLAYER_COUNT
 import com.tamj0rd2.skullking.domain.propertyTest
 import dev.forkhandles.result4k.orThrow
+import io.kotest.property.Arb
 import io.kotest.property.arbitrary.filter
 import io.kotest.property.arbitrary.next
 import io.kotest.property.checkAll
@@ -29,36 +32,21 @@ import strikt.assertions.size
 // I'm ok with these tests taking longer to run if necessary because these invariants are important
 @Timeout(10)
 class GameTests {
-    private fun gameInvariant(
-        iterations: Int = 1000,
-        checkInvariant: (Game) -> Unit,
-    ) = propertyTest {
-        checkAll(iterations, gameActionsArb) { gameActions ->
-            val game = Game.new()
-            gameActions.applyEach { action ->
-                // I don't care whether the action is actually possible.
-                // I just want to ensure the invariants are always upheld.
-                runCatching { action.mutate(game) }
-                checkInvariant(game)
-            }
-        }
-    }
-
     @Test
     fun `games always start with a GameCreated event`() =
-        gameInvariant { game ->
+        invariant { game ->
             expectThat(game.events).first().isA<GameCreatedEvent>()
         }
 
     @Test
     fun `games always have a single GameCreated event`() =
-        gameInvariant { game ->
+        invariant { game ->
             expectThat(game.events).one { isA<GameCreatedEvent>() }
         }
 
     @Test
     fun `a game can be restored using its history of events`() =
-        gameInvariant { game ->
+        invariant { game ->
             val restoredGame = Game.from(game.events)
             expectThat(restoredGame) {
                 get { events }.isEqualTo(game.events)
@@ -69,19 +57,19 @@ class GameTests {
     @Test
     fun `all events within a game relate to that specific game`() =
         // specifying the iterations because 1000 iterations * 100 events is just too many to run the tests in a reasonable timeframe.
-        gameInvariant(iterations = 200) { game ->
+        invariant(iterations = 200) { game ->
             expectThat(game.events).all { get { gameId }.isEqualTo(game.id) }
         }
 
     @Test
     fun `games can never have more than 6 players`() =
-        gameInvariant { game ->
+        invariant { game ->
             expectThat(game.state.players).size.isLessThanOrEqualTo(MAXIMUM_PLAYER_COUNT)
         }
 
     @Test
     fun `the players in the game are always unique`() =
-        gameInvariant { game ->
+        invariant { game ->
             expectThat(game.state.players).doesNotContainAnyDuplicateValues()
         }
 
@@ -104,6 +92,29 @@ class GameTests {
 
             expectThat(game.state.playerHands.keys).containsExactly(players)
             expectThat(game.state.playerHands.values).all { hasSize(1) }
+        }
+    }
+}
+
+internal fun invariant(
+    iterations: Int = 1000,
+    checkInvariant: (Game) -> Unit,
+) = invariant(iterations) { game, action ->
+    // I don't care whether the action succeeds.
+    // I just want to ensure the invariants are always upheld regardless.
+    runCatching { action.mutate(game) }
+    checkInvariant(game)
+}
+
+internal fun invariant(
+    iterations: Int = 1000,
+    arb: Arb<GameActions> = gameActionsArb,
+    checkInvariant: (Game, GameAction) -> Unit,
+) = propertyTest {
+    arb.checkAll(iterations) { gameActions ->
+        val game = Game.new()
+        gameActions.applyEach { action ->
+            checkInvariant(game, action)
         }
     }
 }
