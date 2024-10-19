@@ -8,4 +8,6 @@ sealed interface GameUpdate {
     ) : GameUpdate
 
     data object GameStarted : GameUpdate
+
+    data object CardDealt : GameUpdate
 }

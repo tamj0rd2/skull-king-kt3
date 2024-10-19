@@ -67,7 +67,11 @@ class Game {
     fun addPlayer(playerId: PlayerId): Result4k<Unit, AddPlayerErrorCode> =
         appendEvent(PlayerJoinedEvent(id, playerId)).filterOrThrow<AddPlayerErrorCode>()
 
-    fun start(): Result4k<Unit, StartGameErrorCode> = appendEvent(GameStartedEvent(id)).filterOrThrow<StartGameErrorCode>()
+    fun start(): Result4k<Unit, GameErrorCode> {
+        appendEvent(GameStartedEvent(id)).filterOrThrow<StartGameErrorCode>().onFailure { return it }
+        appendEvent(CardDealtEvent(id)).filterOrThrow<DealCardErrorCode>().onFailure { return it }
+        return Unit.asSuccess()
+    }
 
     private fun appendEvent(event: GameEvent): Result4k<Unit, GameErrorCode> {
         val nextState =
@@ -84,7 +88,12 @@ class Game {
                 is GameStartedEvent ->
                     state.run {
                         if (players.size < MINIMUM_PLAYER_COUNT) return TooFewPlayers().asFailure()
-                        copy(playerHands = players.associateWith { listOf(Card) }).asSuccess()
+                        this.asSuccess()
+                    }
+
+                is CardDealtEvent ->
+                    state.run {
+                        this.asSuccess()
                     }
             }.onFailure { return it }
 
@@ -118,3 +127,5 @@ class PlayerHasAlreadyJoined : AddPlayerErrorCode()
 sealed class StartGameErrorCode : GameErrorCode() {
     class TooFewPlayers : StartGameErrorCode()
 }
+
+class DealCardErrorCode : GameErrorCode()

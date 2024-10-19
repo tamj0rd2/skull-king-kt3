@@ -11,6 +11,7 @@ import com.eventstore.dbclient.StreamNotFoundException
 import com.tamj0rd2.skullking.application.port.output.GameDoesNotExist
 import com.tamj0rd2.skullking.application.port.output.GameRepository
 import com.tamj0rd2.skullking.domain.model.PlayerId
+import com.tamj0rd2.skullking.domain.model.game.CardDealtEvent
 import com.tamj0rd2.skullking.domain.model.game.Game
 import com.tamj0rd2.skullking.domain.model.game.GameCreatedEvent
 import com.tamj0rd2.skullking.domain.model.game.GameEvent
@@ -95,12 +96,17 @@ class GameRepositoryEsdbAdapter(
                     Triple(GameCreatedEvent::class, "game-created", JGameCreated),
                     Triple(PlayerJoinedEvent::class, "player-joined", JPlayerJoined),
                     Triple(GameStartedEvent::class, "game-started", JGameStarted),
+                    Triple(CardDealtEvent::class, "card-dealt-event", JCardDealt),
                 )
 
             override val subConverters: Map<String, ObjectNodeConverter<out GameEvent>>
                 get() = config.associate { (_, eventType, converter) -> eventType to converter }
 
-            override fun extractTypeName(obj: GameEvent): String = config.single { (clazz, _, _) -> clazz == obj::class }.second
+            override fun extractTypeName(obj: GameEvent): String {
+                val configForThisObj = config.firstOrNull { (clazz, _, _) -> clazz == obj::class }
+                checkNotNull(configForThisObj) { "Configure parsing for event type ${obj::class.java.simpleName}" }
+                return configForThisObj.second
+            }
         }
 
         private object JGameCreated : JAny<GameCreatedEvent>() {
@@ -128,6 +134,15 @@ class GameRepositoryEsdbAdapter(
 
             override fun JsonNodeObject.deserializeOrThrow() =
                 GameStartedEvent(
+                    gameId = +gameId,
+                )
+        }
+
+        private object JCardDealt : JAny<CardDealtEvent>() {
+            private val gameId by str(JGameId, CardDealtEvent::gameId)
+
+            override fun JsonNodeObject.deserializeOrThrow() =
+                CardDealtEvent(
                     gameId = +gameId,
                 )
         }

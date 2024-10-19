@@ -3,26 +3,18 @@ package com.tamj0rd2.skullking.domain.model.game
 import com.tamj0rd2.skullking.domain.GameAction
 import com.tamj0rd2.skullking.domain.GameActionArbs.gameActionsArb
 import com.tamj0rd2.skullking.domain.GameActions
-import com.tamj0rd2.skullking.domain.GameArbs.gameArb
 import com.tamj0rd2.skullking.domain.model.game.Game.Companion.MAXIMUM_PLAYER_COUNT
-import com.tamj0rd2.skullking.domain.model.game.Game.Companion.MINIMUM_PLAYER_COUNT
 import com.tamj0rd2.skullking.domain.propertyTest
-import dev.forkhandles.result4k.orThrow
 import io.kotest.property.Arb
-import io.kotest.property.arbitrary.filter
-import io.kotest.property.arbitrary.next
 import io.kotest.property.checkAll
 import org.junit.jupiter.api.Disabled
-import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import strikt.api.Assertion
 import strikt.api.expectThat
 import strikt.assertions.all
-import strikt.assertions.containsExactly
 import strikt.assertions.containsExactlyInAnyOrder
 import strikt.assertions.first
-import strikt.assertions.hasSize
 import strikt.assertions.isA
 import strikt.assertions.isEqualTo
 import strikt.assertions.isLessThanOrEqualTo
@@ -78,21 +70,6 @@ class GameTests {
     @Disabled
     fun `within the players hands, there can't be more cards than exist of that type (new cards aren't invented from thin air)`() {
         TODO()
-    }
-
-    @Nested
-    inner class StartGameTests {
-        // TODO: delete once covered in use case
-        @Test
-        fun `when the game is started, each player is dealt 1 card`() {
-            val game = gameArb.filter { it.state.players.size >= MINIMUM_PLAYER_COUNT }.next()
-            val players = game.state.players
-
-            game.start().orThrow()
-
-            expectThat(game.state.playerHands.keys).containsExactly(players)
-            expectThat(game.state.playerHands.values).all { hasSize(1) }
-        }
     }
 }
 

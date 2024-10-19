@@ -18,3 +18,7 @@ data class PlayerJoinedEvent(
 data class GameStartedEvent(
     override val gameId: GameId,
 ) : GameEvent
+
+data class CardDealtEvent(
+    override val gameId: GameId,
+) : GameEvent

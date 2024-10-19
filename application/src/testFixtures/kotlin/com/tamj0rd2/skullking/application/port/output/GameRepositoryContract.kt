@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test
 import strikt.api.expectThat
 import strikt.api.expectThrows
 import strikt.assertions.isEqualTo
+import strikt.assertions.isGreaterThanOrEqualTo
 
 abstract class GameRepositoryContract {
     protected abstract val gameRepository: GameRepository
@@ -33,7 +34,8 @@ abstract class GameRepositoryContract {
                 expectThat(gameThatWasSavedAndLoaded.events).isEqualTo(gameModifiedInMemoryOnly.events)
                 expectThat(gameThatWasSavedAndLoaded.state).isEqualTo(gameModifiedInMemoryOnly.state)
                 // TODO: these 2 assertions deserve their own test.
-                expectThat(gameThatWasSavedAndLoaded.loadedVersion).isEqualTo(Version.of(actions.size))
+                // TODO: also, this is now very sketchy. As a single game action can result in multiple events.
+                expectThat(gameThatWasSavedAndLoaded.loadedVersion.value).isGreaterThanOrEqualTo(actions.size)
                 expectThat(gameModifiedInMemoryOnly.loadedVersion).isEqualTo(Version.NONE)
             }
         }

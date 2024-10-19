@@ -5,6 +5,7 @@ import com.tamj0rd2.skullking.domain.model.game.GameErrorCode
 import com.tamj0rd2.skullking.domain.model.game.GameId
 import com.tamj0rd2.skullking.domain.model.game.GameIsFull
 import com.tamj0rd2.skullking.domain.model.game.GameUpdate
+import com.tamj0rd2.skullking.domain.model.game.GameUpdate.CardDealt
 import com.tamj0rd2.skullking.domain.model.game.GameUpdate.GameStarted
 import com.tamj0rd2.skullking.domain.model.game.GameUpdate.PlayerJoined
 import com.tamj0rd2.skullking.domain.model.game.StartGameErrorCode.TooFewPlayers
@@ -124,12 +125,14 @@ private object JGameUpdate : JSealed<GameUpdate>() {
             mapOf(
                 "player-joined" to JPlayerJoined,
                 "game-started" to JSingleton(GameStarted),
+                "card-dealt" to JSingleton(CardDealt),
             )
 
     override fun extractTypeName(obj: GameUpdate): String =
         when (obj) {
             is PlayerJoined -> "player-joined"
             is GameStarted -> "game-started"
+            is CardDealt -> "card-dealt"
         }
 }
 

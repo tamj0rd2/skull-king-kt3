@@ -31,9 +31,10 @@ abstract class StartGameUseCaseContract {
     }
 
     @Test
-    @Disabled
     fun `each player is dealt 1 card`() {
-        TODO()
+        val players = scenario.newGame().withMinimumPlayersToStart().done()
+        players.first().startsTheGame()
+        players.each { received(GameUpdate.CardDealt) }
     }
 
     @Test
