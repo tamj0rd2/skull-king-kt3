@@ -12,5 +12,3 @@ data class GameState(
             )
     }
 }
-
-data object Card
