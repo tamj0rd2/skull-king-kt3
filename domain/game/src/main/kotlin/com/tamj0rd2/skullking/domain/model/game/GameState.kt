@@ -27,7 +27,9 @@ data class GameState private constructor(
         return copy(players = players + event.playerId).asSuccess()
     }
 
-    private fun apply(event: GameStartedEvent): Result4k<GameState, StartGameErrorCode> {
+    private fun apply(
+        @Suppress("UNUSED_PARAMETER") event: GameStartedEvent,
+    ): Result4k<GameState, StartGameErrorCode> {
         if (players.size < MINIMUM_PLAYER_COUNT) return TooFewPlayers().asFailure()
         return this.asSuccess()
     }
