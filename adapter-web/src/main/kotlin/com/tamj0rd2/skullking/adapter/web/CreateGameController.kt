@@ -2,6 +2,7 @@ package com.tamj0rd2.skullking.adapter.web
 
 import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase
 import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.CreateNewGameCommand
+import com.tamj0rd2.skullking.domain.model.auth.SessionId
 import com.tamj0rd2.skullking.domain.model.game.GameId
 import dev.forkhandles.values.random
 import org.http4k.contract.PreFlightExtraction
@@ -18,10 +19,8 @@ class CreateGameController(
 ) {
     val route = createGameRoute to ::handle
 
-    private fun handle(
-        @Suppress("UNUSED_PARAMETER") request: Request,
-    ): Response {
-        val output = createNewGameUseCase(CreateNewGameCommand)
+    private fun handle(request: Request): Response {
+        val output = createNewGameUseCase(CreateNewGameCommand(request.sessionId))
         val message = GameCreatedMessage(output.gameId)
         return Response(Status.CREATED).with(httpLens of message)
     }
@@ -38,6 +37,9 @@ class CreateGameController(
                 returning(Status.CREATED, httpLens to example)
             } bindContract POST
 
-        fun newRequest() = createGameRoute.newRequest()
+        // TODO: create a lens for the sessionId
+        fun newRequest(sessionId: SessionId) = createGameRoute.newRequest().header("session_id", SessionId.show(sessionId))
+
+        val Request.sessionId: SessionId get() = header("session_id")?.let { SessionId.parse(it) } ?: error("no session id provided")
     }
 }

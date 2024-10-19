@@ -1,8 +1,10 @@
 package com.tamj0rd2.skullking.adapter.web
 
 import com.tamj0rd2.skullking.adapter.GameRepositoryEsdbAdapter
+import com.tamj0rd2.skullking.adapter.web.CreateGameController.Companion.sessionId
 import com.tamj0rd2.skullking.application.SkullKingApplication
 import com.tamj0rd2.skullking.application.port.output.GameUpdateNotifierInMemoryAdapter
+import com.tamj0rd2.skullking.application.port.output.PlayerIdStorageInMemoryAdapter
 import com.tamj0rd2.skullking.domain.model.PlayerId
 import com.tamj0rd2.skullking.domain.model.game.GameId
 import dev.forkhandles.result4k.onFailure
@@ -32,12 +34,15 @@ object WebServer {
 
     fun start(port: Int = getUnusedPort()) = createServer(application = createApp(), port = port).start()
 
-    private fun createApp(): SkullKingApplication =
-        SkullKingApplication(
+    private fun createApp(): SkullKingApplication {
+        val playerIdStorage = PlayerIdStorageInMemoryAdapter()
+        return SkullKingApplication(
             gameRepository = GameRepositoryEsdbAdapter(),
-            // TODO: swap this out maybe?
             gameUpdateNotifier = GameUpdateNotifierInMemoryAdapter(),
+            findPlayerIdPort = playerIdStorage,
+            savePlayerIdPort = playerIdStorage,
         )
+    }
 
     fun createServer(
         application: SkullKingApplication,
@@ -55,8 +60,9 @@ object WebServer {
         val ws =
             websockets(
                 "/game/{gameId}" bindWs { req: Request ->
-                    // TODO: send the client ID (or session id?) in the header when connecting to ws.
+                    // TODO: replace clientId with SessionId
                     val clientId = newClientId()
+                    val sessionId = req.sessionId
                     val gameId = GameId.parse(gameIdLens(req))
 
                     WsResponse { ws ->
@@ -64,7 +70,7 @@ object WebServer {
                         ws.onClose { println("server: client $clientId: disconnecting") }
 
                         val session =
-                            joinGameController.joinGame(ws, gameId).onFailure {
+                            joinGameController.joinGame(ws, sessionId, gameId).onFailure {
                                 ws.send(wsLens(ErrorMessage(it.reason)))
                                 ws.close(WsStatus.REFUSE)
                                 return@WsResponse

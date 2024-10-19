@@ -17,8 +17,8 @@ import com.tamj0rd2.skullking.application.port.input.JoinGameUseCase.JoinGameOut
 import com.tamj0rd2.skullking.application.port.input.SkullKingUseCases
 import com.tamj0rd2.skullking.application.port.input.StartGameUseCase.StartGameCommand
 import com.tamj0rd2.skullking.application.port.input.StartGameUseCase.StartGameOutput
-import com.tamj0rd2.skullking.application.port.output.GameUpdateListener
 import com.tamj0rd2.skullking.domain.model.PlayerId
+import com.tamj0rd2.skullking.domain.model.auth.SessionId
 import com.tamj0rd2.skullking.domain.model.game.GameErrorCode
 import com.tamj0rd2.skullking.domain.model.game.GameId
 import com.tamj0rd2.skullking.domain.model.game.GameUpdate
@@ -37,6 +37,7 @@ import strikt.api.expectThat
 import strikt.assertions.isEqualTo
 import java.time.Duration
 import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit.MILLISECONDS
 
 class SkullKingWebClient(
     private val baseUri: Uri,
@@ -46,14 +47,14 @@ class SkullKingWebClient(
     private var playerId = PlayerId.ZERO
 
     override fun invoke(command: CreateNewGameCommand): CreateNewGameOutput =
-        httpClient(CreateGameController.newRequest()).use {
+        httpClient(CreateGameController.newRequest(command.sessionId)).use {
             expectThat(it).status.isEqualTo(Status.CREATED)
             val response = httpLens(it) as GameCreatedMessage
             CreateNewGameOutput(response.gameId)
         }
 
     override fun invoke(command: JoinGameCommand): Result4k<JoinGameOutput, GameErrorCode> {
-        ws = connectToWs(command.gameId, command.gameUpdateListener)
+        ws = connectToWs(command)
         playerId = ws.waitForMessage<JoinAcknowledgedMessage>().playerId
         check(playerId != PlayerId.ZERO) { "player id is zero still" }
         return JoinGameOutput(playerId).asSuccess()
@@ -87,19 +88,17 @@ class SkullKingWebClient(
             }
         }
 
-        latch.await()
+        latch.await(500, MILLISECONDS)
         failureReason?.let { throw it }
         return wantedMessage!!
     }
 
-    private fun connectToWs(
-        gameId: GameId,
-        gameUpdateListener: GameUpdateListener,
-    ): Websocket {
+    private fun connectToWs(command: JoinGameCommand): Websocket {
         val clientId = newClientId()
         val ws =
             WebsocketClient.nonBlocking(
-                uri = baseUri.scheme("ws").path("/game/${GameId.show(gameId)}"),
+                uri = baseUri.scheme("ws").path("/game/${GameId.show(command.gameId)}"),
+                headers = listOf("session_id" to SessionId.show(command.sessionId)),
                 timeout = Duration.ofSeconds(1),
                 onConnect = { ws ->
                     println("client $clientId connected")
@@ -108,7 +107,7 @@ class SkullKingWebClient(
                         println("client $clientId received: $message")
 
                         if (message is GameUpdateMessage) {
-                            gameUpdateListener.send(message.gameUpdate)
+                            command.gameUpdateListener.send(message.gameUpdate)
                         }
                     }
                 },

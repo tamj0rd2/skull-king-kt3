@@ -28,6 +28,10 @@ class PlayerRole(
     var id = PlayerId.ZERO
         private set
 
+    // NOTE: for now I'm assuming the client generates the sessionId. I can have the server do this instead. The user can make an http request
+    // to create a session, which is returned to the user. Then the user can send that along with the request to connect to the websocket.
+    // https://devcenter.heroku.com/articles/websocket-security#authentication-authorization
+    // Essentially, in application terms, I need some kind of "command" to create and return a sessionId, before doing anything else.
     private val sessionId = SessionId.random()
 
     override fun toString(): String = "$sessionId ($id)"
@@ -36,12 +40,17 @@ class PlayerRole(
 
     private val receivedGameUpdates = mutableListOf<GameUpdate>()
 
-    fun createsAGame(): GameId = driver(CreateNewGameCommand).gameId
+    fun createsAGame(): GameId = driver(CreateNewGameCommand(sessionId)).gameId
 
     fun joinsAGame(gameId: GameId): PlayerId {
         this.gameId = gameId
-        val command = JoinGameCommand(gameId = gameId, gameUpdateListener = this)
-        return driver(command).orThrow().playerId.also {
+        val command =
+            JoinGameCommand(
+                sessionId = sessionId,
+                gameId = gameId,
+                gameUpdateListener = this,
+            )
+        return driver.invoke(command).orThrow().playerId.also {
             expectThat(it).isNotEqualTo(PlayerId.ZERO)
             id = it
         }

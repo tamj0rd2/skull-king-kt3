@@ -25,16 +25,18 @@ class Setup(
         creator.joinsAGame(gameId)
     }
 
-    fun withMinimumPlayersToStart() =
+    fun withMinimumPlayersToStart() = withPlayerCount(Game.MINIMUM_PLAYER_COUNT)
+
+    fun withPlayerCount(count: Int) =
         apply {
-            repeat(Game.MINIMUM_PLAYER_COUNT - playerRoles.size) {
+            repeat(count - playerRoles.size) {
                 val player = scenario.newPlayer()
                 player.joinsAGame(gameId)
                 playerRoles.add(player)
             }
         }
 
-    fun done() = playerRoles.toList()
+    fun done() = gameId to playerRoles.toList()
 }
 
 fun List<PlayerRole>.each(block: PlayerRole.() -> Unit) = forEach(block)

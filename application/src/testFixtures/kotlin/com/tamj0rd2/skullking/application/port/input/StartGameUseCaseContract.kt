@@ -16,14 +16,14 @@ abstract class StartGameUseCaseContract {
     // TODO: after this, write a test for a BiddingUseCase. When the game is started, it should be possible to bid 0 or 1.
     @Test
     fun `starting the game begins round 1`() {
-        val players = scenario.newGame().withMinimumPlayersToStart().done()
+        val (_, players) = scenario.newGame().withMinimumPlayersToStart().done()
         players.first().startsTheGame()
         players.each { gameState { roundNumber.isEqualTo(RoundNumber.of(1)) } }
     }
 
     @Test
     fun `each player is dealt 1 card`() {
-        val players = scenario.newGame().withMinimumPlayersToStart().done()
+        val (_, players) = scenario.newGame().withMinimumPlayersToStart().done()
         players.first().startsTheGame()
         players.each { gameState { hand.hasSize(1) } }
     }

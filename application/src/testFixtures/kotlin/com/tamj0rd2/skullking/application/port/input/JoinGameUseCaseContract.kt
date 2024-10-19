@@ -1,8 +1,9 @@
 package com.tamj0rd2.skullking.application.port.input
 
 import com.tamj0rd2.skullking.application.port.input.roles.PlayerRole.PlayerGameState.Companion.players
-import com.tamj0rd2.skullking.domain.model.game.Game
+import com.tamj0rd2.skullking.domain.model.game.Game.Companion.MAXIMUM_PLAYER_COUNT
 import com.tamj0rd2.skullking.domain.model.game.GameIsFull
+import com.tamj0rd2.skullking.domain.model.game.PlayerHasAlreadyJoined
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import strikt.api.expectThrows
@@ -34,14 +35,19 @@ abstract class JoinGameUseCaseContract {
 
     @Test
     fun `joining a full game is not possible`() {
-        val players = buildList { repeat(Game.MAXIMUM_PLAYER_COUNT) { add(scenario.newPlayer()) } }
-
-        val gameId = players.first().createsAGame()
-        players.forEach { it.joinsAGame(gameId) }
+        val (gameId, _) = scenario.newGame().withPlayerCount(MAXIMUM_PLAYER_COUNT).done()
 
         // TODO: right now, the server is throwing whenever there are failures. That needs fixing.
         val anotherPlayer = scenario.newPlayer()
         expectThrows<GameIsFull> { anotherPlayer.joinsAGame(gameId) }
+    }
+
+    @Test
+    fun `the same player cannot join the game more than once`() {
+        val player = scenario.newPlayer()
+        val gameId = player.createsAGame()
+        player.joinsAGame(gameId)
+        expectThrows<PlayerHasAlreadyJoined> { player.joinsAGame(gameId) }
     }
 
     @Test

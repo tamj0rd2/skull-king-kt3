@@ -4,9 +4,12 @@ import com.tamj0rd2.extensions.asSuccess
 import com.tamj0rd2.skullking.application.port.input.JoinGameUseCase
 import com.tamj0rd2.skullking.application.port.input.JoinGameUseCase.JoinGameCommand
 import com.tamj0rd2.skullking.application.port.input.JoinGameUseCase.JoinGameOutput
+import com.tamj0rd2.skullking.application.port.output.FindPlayerIdPort
 import com.tamj0rd2.skullking.application.port.output.GameRepository
 import com.tamj0rd2.skullking.application.port.output.GameUpdateNotifier
+import com.tamj0rd2.skullking.application.port.output.SavePlayerIdPort
 import com.tamj0rd2.skullking.domain.model.PlayerId
+import com.tamj0rd2.skullking.domain.model.auth.SessionId
 import com.tamj0rd2.skullking.domain.model.game.GameErrorCode
 import com.tamj0rd2.skullking.domain.model.game.GameUpdate
 import dev.forkhandles.result4k.Result4k
@@ -16,9 +19,11 @@ import dev.forkhandles.values.random
 class JoinGameService(
     private val gameRepository: GameRepository,
     private val gameUpdateNotifier: GameUpdateNotifier,
+    private val findPlayerIdPort: FindPlayerIdPort,
+    private val savePlayerIdPort: SavePlayerIdPort,
 ) : JoinGameUseCase {
     override fun invoke(command: JoinGameCommand): Result4k<JoinGameOutput, GameErrorCode> {
-        val playerId = PlayerId.random()
+        val playerId = findOrCreatePlayerId(command.sessionId)
 
         val game = gameRepository.load(command.gameId)
         game.addPlayer(playerId).onFailure { return it }
@@ -29,4 +34,8 @@ class JoinGameService(
 
         return JoinGameOutput(playerId).asSuccess()
     }
+
+    private fun findOrCreatePlayerId(sessionId: SessionId): PlayerId =
+        findPlayerIdPort.findBy(sessionId)
+            ?: PlayerId.random().also { savePlayerIdPort.save(sessionId, it) }
 }

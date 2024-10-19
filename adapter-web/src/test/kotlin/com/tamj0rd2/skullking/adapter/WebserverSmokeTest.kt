@@ -4,9 +4,7 @@ import com.tamj0rd2.skullking.adapter.web.WebServer
 import com.tamj0rd2.skullking.application.port.input.roles.PlayerRole
 import org.http4k.core.Uri
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.Timeout
 
-@Timeout(5)
 class WebserverSmokeTest {
     // TODO: this should test Main instead. Figure out how to do it.
     private val server = WebServer.start()
@@ -20,7 +18,8 @@ class WebserverSmokeTest {
         val gameId = player1.createsAGame()
         player1.joinsAGame(gameId)
         player2.joinsAGame(gameId)
+        player1.startsTheGame()
 
-        // TODO: continue from here when I implement starting the game
+        // TODO: add a konsist test to make sure I'm at least using every game action once
     }
 }

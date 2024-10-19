@@ -9,6 +9,7 @@ import com.tamj0rd2.skullking.domain.model.game.GameUpdate
 import com.tamj0rd2.skullking.domain.model.game.GameUpdate.CardDealt
 import com.tamj0rd2.skullking.domain.model.game.GameUpdate.GameStarted
 import com.tamj0rd2.skullking.domain.model.game.GameUpdate.PlayerJoined
+import com.tamj0rd2.skullking.domain.model.game.PlayerHasAlreadyJoined
 import com.tamj0rd2.skullking.domain.model.game.StartGameErrorCode.TooFewPlayers
 import com.ubertob.kondor.json.JAny
 import com.ubertob.kondor.json.JSealed
@@ -156,6 +157,7 @@ private object JErrorMessage : JAny<ErrorMessage>() {
         when (errorMessage.error) {
             is GameIsFull -> "game-is-full"
             is TooFewPlayers -> "too-few-players"
+            is PlayerHasAlreadyJoined -> "player-already-joined"
             else -> TODO("add support for ${errorMessage.error::class.java.simpleName}")
         }
 
@@ -164,6 +166,7 @@ private object JErrorMessage : JAny<ErrorMessage>() {
             when (val reason = +reason) {
                 "game-is-full" -> GameIsFull()
                 "too-few-players" -> TooFewPlayers()
+                "player-already-joined" -> PlayerHasAlreadyJoined()
                 else -> error("unknown error code - $reason")
             },
         )
