@@ -8,6 +8,7 @@ import com.eventstore.dbclient.ExpectedRevision
 import com.eventstore.dbclient.ReadStreamOptions
 import com.eventstore.dbclient.ResolvedEvent
 import com.eventstore.dbclient.StreamNotFoundException
+import com.tamj0rd2.skullking.adapter.GameRepositoryEsdbAdapter.Companion.JPlayerJoined.playerId
 import com.tamj0rd2.skullking.application.port.output.GameDoesNotExist
 import com.tamj0rd2.skullking.application.port.output.GameRepository
 import com.tamj0rd2.skullking.domain.model.PlayerId
@@ -15,6 +16,7 @@ import com.tamj0rd2.skullking.domain.model.game.Game
 import com.tamj0rd2.skullking.domain.model.game.GameCreatedEvent
 import com.tamj0rd2.skullking.domain.model.game.GameEvent
 import com.tamj0rd2.skullking.domain.model.game.GameId
+import com.tamj0rd2.skullking.domain.model.game.GameStartedEvent
 import com.tamj0rd2.skullking.domain.model.game.PlayerJoinedEvent
 import com.tamj0rd2.skullking.domain.model.game.Version
 import com.ubertob.kondor.json.JAny
@@ -93,6 +95,7 @@ class GameRepositoryEsdbAdapter(
                 listOf(
                     Triple(GameCreatedEvent::class, "game-created", JGameCreated),
                     Triple(PlayerJoinedEvent::class, "player-joined", JPlayerJoined),
+                    Triple(GameStartedEvent::class, "game-started", JGameStarted),
                 )
 
             override val subConverters: Map<String, ObjectNodeConverter<out GameEvent>>
@@ -117,6 +120,15 @@ class GameRepositoryEsdbAdapter(
             override fun JsonNodeObject.deserializeOrThrow() =
                 PlayerJoinedEvent(
                     playerId = +playerId,
+                    gameId = +gameId,
+                )
+        }
+
+        private object JGameStarted : JAny<GameStartedEvent>() {
+            private val gameId by str(JGameId, GameStartedEvent::gameId)
+
+            override fun JsonNodeObject.deserializeOrThrow() =
+                GameStartedEvent(
                     gameId = +gameId,
                 )
         }
