@@ -94,10 +94,4 @@ class PlayerRole(
             val Builder<PlayerGameState>.players get() = get { players }
         }
     }
-
-    companion object {
-        private var playerNumber = 0
-
-        fun shortPlayerId() = ++playerNumber
-    }
 }

@@ -17,6 +17,7 @@ import com.tamj0rd2.skullking.application.port.input.JoinGameUseCase.JoinGameOut
 import com.tamj0rd2.skullking.application.port.input.SkullKingUseCases
 import com.tamj0rd2.skullking.application.port.input.StartGameUseCase.StartGameCommand
 import com.tamj0rd2.skullking.application.port.input.StartGameUseCase.StartGameOutput
+import com.tamj0rd2.skullking.application.port.output.GameUpdateListener
 import com.tamj0rd2.skullking.domain.model.PlayerId
 import com.tamj0rd2.skullking.domain.model.auth.SessionId
 import com.tamj0rd2.skullking.domain.model.game.GameErrorCode
@@ -41,6 +42,7 @@ import java.util.concurrent.TimeUnit.MILLISECONDS
 
 class SkullKingWebClient(
     private val baseUri: Uri,
+    private val timeoutMs: Long = 500,
 ) : SkullKingUseCases {
     private val httpClient = SetBaseUriFrom(baseUri.scheme("http")).then(ApacheClient())
     private lateinit var ws: Websocket
@@ -54,7 +56,7 @@ class SkullKingWebClient(
         }
 
     override fun invoke(command: JoinGameCommand): Result4k<JoinGameOutput, GameErrorCode> {
-        ws = connectToWs(command)
+        ws = connectToWs(command.sessionId, command.gameId, command.gameUpdateListener)
         playerId = ws.waitForMessage<JoinAcknowledgedMessage>().playerId
         check(playerId != PlayerId.ZERO) { "player id is zero still" }
         return JoinGameOutput(playerId).asSuccess()
@@ -88,39 +90,36 @@ class SkullKingWebClient(
             }
         }
 
-        latch.await(500, MILLISECONDS)
+        latch.await(timeoutMs, MILLISECONDS)
         failureReason?.let { throw it }
         return wantedMessage!!
     }
 
-    private fun connectToWs(command: JoinGameCommand): Websocket {
-        val clientId = newClientId()
+    private fun connectToWs(
+        sessionId: SessionId,
+        gameId: GameId,
+        gameUpdateListener: GameUpdateListener,
+    ): Websocket {
         val ws =
             WebsocketClient.nonBlocking(
-                uri = baseUri.scheme("ws").path("/game/${GameId.show(command.gameId)}"),
-                headers = listOf("session_id" to SessionId.show(command.sessionId)),
+                uri = baseUri.scheme("ws").path("/game/${GameId.show(gameId)}"),
+                headers = listOf("session_id" to SessionId.show(sessionId)),
                 timeout = Duration.ofSeconds(1),
                 onConnect = { ws ->
-                    println("client $clientId connected")
+                    println("client: $sessionId: connected")
                     ws.onMessage {
                         val message = wsLens(it)
-                        println("client $clientId received: $message")
+                        println("client: $sessionId: received: $message")
 
                         if (message is GameUpdateMessage) {
-                            command.gameUpdateListener.send(message.gameUpdate)
+                            gameUpdateListener.send(message.gameUpdate)
                         }
                     }
                 },
-                onError = { println("client $clientId error: $it") },
+                onError = { println("client: $sessionId: error: $it") },
             )
-        ws.onClose { println("client $clientId closed: $it") }
-        ws.onError { println("client $clientId error: $it") }
+        ws.onClose { println("client: $sessionId: closed: $it") }
+        ws.onError { println("client: $sessionId: error: $it") }
         return ws
-    }
-
-    companion object {
-        private var clientCount = 0
-
-        private fun newClientId(): Int = ++clientCount
     }
 }

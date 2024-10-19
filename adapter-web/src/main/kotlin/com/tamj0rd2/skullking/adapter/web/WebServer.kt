@@ -60,14 +60,12 @@ object WebServer {
         val ws =
             websockets(
                 "/game/{gameId}" bindWs { req: Request ->
-                    // TODO: replace clientId with SessionId
-                    val clientId = newClientId()
                     val sessionId = req.sessionId
                     val gameId = GameId.parse(gameIdLens(req))
 
                     WsResponse { ws ->
-                        ws.onError { println("server: client $clientId: error - $it") }
-                        ws.onClose { println("server: client $clientId: disconnecting") }
+                        ws.onError { println("server: $sessionId: error - $it") }
+                        ws.onClose { println("server: $sessionId: disconnecting") }
 
                         val session =
                             joinGameController.joinGame(ws, sessionId, gameId).onFailure {
@@ -78,7 +76,7 @@ object WebServer {
 
                         ws.onMessage {
                             val message = wsLens(it)
-                            println("server: client $clientId: received $message")
+                            println("server: $sessionId: received $message")
 
                             when (message) {
                                 is StartGameMessage -> startGameController(session)
@@ -107,10 +105,6 @@ object WebServer {
         socket.close()
         return port
     }
-
-    private var clientCount = 0
-
-    private fun newClientId(): Int = ++clientCount
 
     private val gameIdLens = Path.of("gameId")
 }
