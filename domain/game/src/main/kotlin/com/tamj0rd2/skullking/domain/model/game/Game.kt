@@ -1,9 +1,12 @@
 package com.tamj0rd2.skullking.domain.model.game
 
+import com.tamj0rd2.extensions.asFailure
+import com.tamj0rd2.extensions.asSuccess
 import com.tamj0rd2.extensions.filterOrThrow
 import com.tamj0rd2.skullking.domain.model.PlayerId
+import com.tamj0rd2.skullking.domain.model.game.StartGameErrorCode.TooFewPlayers
 import dev.forkhandles.result4k.Result4k
-import dev.forkhandles.result4k.map
+import dev.forkhandles.result4k.onFailure
 import dev.forkhandles.result4k.orThrow
 import dev.forkhandles.values.IntValueFactory
 import dev.forkhandles.values.UUIDValueFactory
@@ -62,18 +65,34 @@ class Game {
     val newEvents get() = _events.drop(loadedVersion.value + 1)
 
     fun addPlayer(playerId: PlayerId): Result4k<Unit, AddPlayerErrorCode> =
-        appendEvent(PlayerJoinedEvent(id, playerId))
-            .filterOrThrow<Unit, GameErrorCode, AddPlayerErrorCode>()
+        appendEvent(PlayerJoinedEvent(id, playerId)).filterOrThrow<AddPlayerErrorCode>()
 
-    fun start(): Result4k<Unit, StartGameErrorCode> =
-        appendEvent(GameStartedEvent(id))
-            .filterOrThrow<Unit, GameErrorCode, StartGameErrorCode>()
+    fun start(): Result4k<Unit, StartGameErrorCode> = appendEvent(GameStartedEvent(id)).filterOrThrow<StartGameErrorCode>()
 
-    private fun appendEvent(event: GameEvent): Result4k<Unit, GameErrorCode> =
-        state.apply(event).map { nextState ->
-            state = nextState
-            _events += event
-        }
+    private fun appendEvent(event: GameEvent): Result4k<Unit, GameErrorCode> {
+        val nextState =
+            when (event) {
+                is GameCreatedEvent -> state.asSuccess()
+
+                is PlayerJoinedEvent ->
+                    state.run {
+                        if (players.size >= MAXIMUM_PLAYER_COUNT) return GameIsFull().asFailure()
+                        if (players.contains(event.playerId)) return PlayerHasAlreadyJoined().asFailure()
+                        copy(players = players + event.playerId).asSuccess()
+                    }
+
+                is GameStartedEvent ->
+                    state.run {
+                        if (players.size < MINIMUM_PLAYER_COUNT) return TooFewPlayers().asFailure()
+                        copy(playerHands = players.associateWith { listOf(Card) }).asSuccess()
+                    }
+            }.onFailure { return it }
+
+        state = nextState
+        _events += event
+
+        return Unit.asSuccess()
+    }
 
     companion object {
         const val MINIMUM_PLAYER_COUNT = 2
@@ -84,6 +103,9 @@ class Game {
         fun from(history: List<GameEvent>) = Game(history)
     }
 }
+
+private inline fun <reified E : GameErrorCode> Result4k<Unit, GameErrorCode>.filterOrThrow(): Result4k<Unit, E> =
+    filterOrThrow<Unit, GameErrorCode, E>()
 
 sealed class GameErrorCode : RuntimeException()
 
