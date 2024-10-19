@@ -6,6 +6,7 @@ import com.tamj0rd2.skullking.application.port.input.SkullKingUseCases
 import com.tamj0rd2.skullking.application.port.input.StartGameUseCase.StartGameCommand
 import com.tamj0rd2.skullking.application.port.output.GameUpdateListener
 import com.tamj0rd2.skullking.domain.model.PlayerId
+import com.tamj0rd2.skullking.domain.model.auth.SessionId
 import com.tamj0rd2.skullking.domain.model.game.Card
 import com.tamj0rd2.skullking.domain.model.game.GameId
 import com.tamj0rd2.skullking.domain.model.game.GameUpdate
@@ -16,6 +17,7 @@ import com.tamj0rd2.skullking.domain.model.game.RoundNumber
 import com.tamj0rd2.testhelpers.eventually
 import dev.forkhandles.result4k.orThrow
 import dev.forkhandles.values.ZERO
+import dev.forkhandles.values.random
 import strikt.api.Assertion.Builder
 import strikt.api.expectThat
 import strikt.assertions.isNotEqualTo
@@ -26,9 +28,9 @@ class PlayerRole(
     var id = PlayerId.ZERO
         private set
 
-    private val playerNumber = shortPlayerId()
+    private val sessionId = SessionId.random()
 
-    override fun toString(): String = "Player $playerNumber (${id.value})"
+    override fun toString(): String = "$sessionId ($id)"
 
     private var gameId = GameId.NONE
 

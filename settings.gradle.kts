@@ -15,6 +15,7 @@ include(
     ":adapter-esdb",
     ":adapter-web",
     ":application",
+    ":domain:auth",
     ":domain:game",
     ":lib:forkhandles-extensions",
 )
