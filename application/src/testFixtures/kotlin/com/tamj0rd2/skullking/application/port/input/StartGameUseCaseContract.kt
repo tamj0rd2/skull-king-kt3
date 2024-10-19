@@ -24,6 +24,7 @@ abstract class StartGameUseCaseContract {
         player2.received(GameUpdate.GameStarted)
     }
 
+    // TODO: after this, write a test for a BiddingUseCase. When the game is started, it should be possible to bid 0 or 1.
     @Test
     @Disabled
     fun `starting the game begins the round 1 bidding phase`() {

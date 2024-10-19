@@ -1,10 +1,8 @@
 package com.tamj0rd2.skullking.domain.model.game
 
-import com.tamj0rd2.extensions.asFailure
 import com.tamj0rd2.extensions.asSuccess
 import com.tamj0rd2.extensions.filterOrThrow
 import com.tamj0rd2.skullking.domain.model.PlayerId
-import com.tamj0rd2.skullking.domain.model.game.StartGameErrorCode.TooFewPlayers
 import dev.forkhandles.result4k.Result4k
 import dev.forkhandles.result4k.onFailure
 import dev.forkhandles.result4k.orThrow
@@ -74,32 +72,9 @@ class Game {
     }
 
     private fun appendEvent(event: GameEvent): Result4k<Unit, GameErrorCode> {
-        val nextState =
-            when (event) {
-                is GameCreatedEvent -> state.asSuccess()
-
-                is PlayerJoinedEvent ->
-                    state.run {
-                        if (players.size >= MAXIMUM_PLAYER_COUNT) return GameIsFull().asFailure()
-                        if (players.contains(event.playerId)) return PlayerHasAlreadyJoined().asFailure()
-                        copy(players = players + event.playerId).asSuccess()
-                    }
-
-                is GameStartedEvent ->
-                    state.run {
-                        if (players.size < MINIMUM_PLAYER_COUNT) return TooFewPlayers().asFailure()
-                        this.asSuccess()
-                    }
-
-                is CardDealtEvent ->
-                    state.run {
-                        this.asSuccess()
-                    }
-            }.onFailure { return it }
-
+        val nextState = state.apply(event).onFailure { return it }
         state = nextState
         _events += event
-
         return Unit.asSuccess()
     }
 
