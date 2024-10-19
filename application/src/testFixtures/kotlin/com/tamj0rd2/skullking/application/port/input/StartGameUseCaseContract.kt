@@ -1,41 +1,31 @@
 package com.tamj0rd2.skullking.application.port.input
 
-import com.tamj0rd2.skullking.domain.model.game.GameUpdate
+import com.tamj0rd2.skullking.application.port.input.roles.PlayerRole.PlayerGameState.Companion.hand
+import com.tamj0rd2.skullking.application.port.input.roles.PlayerRole.PlayerGameState.Companion.roundNumber
+import com.tamj0rd2.skullking.domain.model.game.RoundNumber
 import com.tamj0rd2.skullking.domain.model.game.StartGameErrorCode.TooFewPlayers
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import strikt.api.expectThrows
+import strikt.assertions.hasSize
+import strikt.assertions.isEqualTo
 
 abstract class StartGameUseCaseContract {
     protected abstract val scenario: TestScenario
 
-    @Test
-    fun `when the game is started, all joined players receive a game update`() {
-        val player1 = scenario.newPlayer()
-        val player2 = scenario.newPlayer()
-
-        val gameId = player1.createsAGame()
-        player1.joinsAGame(gameId)
-        player2.joinsAGame(gameId)
-
-        player1.startsTheGame()
-
-        player1.received(GameUpdate.GameStarted)
-        player2.received(GameUpdate.GameStarted)
-    }
-
     // TODO: after this, write a test for a BiddingUseCase. When the game is started, it should be possible to bid 0 or 1.
     @Test
-    @Disabled
-    fun `starting the game begins the round 1 bidding phase`() {
-        TODO()
+    fun `starting the game begins round 1`() {
+        val players = scenario.newGame().withMinimumPlayersToStart().done()
+        players.first().startsTheGame()
+        players.each { gameState { roundNumber.isEqualTo(RoundNumber.of(1)) } }
     }
 
     @Test
     fun `each player is dealt 1 card`() {
         val players = scenario.newGame().withMinimumPlayersToStart().done()
         players.first().startsTheGame()
-        players.each { received(GameUpdate.CardDealt) }
+        players.each { gameState { hand.hasSize(1) } }
     }
 
     @Test

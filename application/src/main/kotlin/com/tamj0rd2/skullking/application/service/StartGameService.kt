@@ -6,6 +6,7 @@ import com.tamj0rd2.skullking.application.port.input.StartGameUseCase.StartGameC
 import com.tamj0rd2.skullking.application.port.input.StartGameUseCase.StartGameOutput
 import com.tamj0rd2.skullking.application.port.output.GameRepository
 import com.tamj0rd2.skullking.application.port.output.GameUpdateNotifier
+import com.tamj0rd2.skullking.domain.model.game.Card
 import com.tamj0rd2.skullking.domain.model.game.CardDealtEvent
 import com.tamj0rd2.skullking.domain.model.game.GameCreatedEvent
 import com.tamj0rd2.skullking.domain.model.game.GameErrorCode
@@ -35,7 +36,7 @@ class StartGameService(
                 is GameCreatedEvent -> TODO()
                 is GameStartedEvent -> GameUpdate.GameStarted
                 is PlayerJoinedEvent -> TODO()
-                is CardDealtEvent -> GameUpdate.CardDealt
+                is CardDealtEvent -> GameUpdate.CardDealt(Card)
             }
         }
 }

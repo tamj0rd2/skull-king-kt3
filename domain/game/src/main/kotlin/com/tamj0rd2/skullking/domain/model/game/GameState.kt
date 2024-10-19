@@ -7,6 +7,8 @@ import com.tamj0rd2.skullking.domain.model.game.Game.Companion.MAXIMUM_PLAYER_CO
 import com.tamj0rd2.skullking.domain.model.game.Game.Companion.MINIMUM_PLAYER_COUNT
 import com.tamj0rd2.skullking.domain.model.game.StartGameErrorCode.TooFewPlayers
 import dev.forkhandles.result4k.Result4k
+import dev.forkhandles.values.IntValueFactory
+import dev.forkhandles.values.Value
 
 data class GameState private constructor(
     val players: List<PlayerId>,
@@ -37,3 +39,18 @@ data class GameState private constructor(
             )
     }
 }
+
+// TODO: the round number can never be greater than 10
+// TODO: Also, make a value to present, No Round or something
+@JvmInline
+value class RoundNumber private constructor(
+    override val value: Int,
+) : Value<Int> {
+    companion object : IntValueFactory<RoundNumber>(::RoundNumber) {
+        val none = RoundNumber(0)
+    }
+
+    fun next() = RoundNumber.of(value + 1)
+}
+
+data object Card

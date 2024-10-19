@@ -1,6 +1,7 @@
 package com.tamj0rd2.skullking.adapter.web
 
 import com.tamj0rd2.skullking.domain.model.PlayerId
+import com.tamj0rd2.skullking.domain.model.game.Card
 import com.tamj0rd2.skullking.domain.model.game.GameErrorCode
 import com.tamj0rd2.skullking.domain.model.game.GameId
 import com.tamj0rd2.skullking.domain.model.game.GameIsFull
@@ -125,7 +126,7 @@ private object JGameUpdate : JSealed<GameUpdate>() {
             mapOf(
                 "player-joined" to JPlayerJoined,
                 "game-started" to JSingleton(GameStarted),
-                "card-dealt" to JSingleton(CardDealt),
+                "card-dealt" to JCardDealt,
             )
 
     override fun extractTypeName(obj: GameUpdate): String =
@@ -140,6 +141,12 @@ private object JPlayerJoined : JAny<PlayerJoined>() {
     private val playerId by str(JPlayerId, PlayerJoined::playerId)
 
     override fun JsonNodeObject.deserializeOrThrow() = PlayerJoined(playerId = +playerId)
+}
+
+private object JCardDealt : JAny<CardDealt>() {
+    private val card by obj(JSingleton(Card), CardDealt::card)
+
+    override fun JsonNodeObject.deserializeOrThrow() = CardDealt(card = +card)
 }
 
 private object JErrorMessage : JAny<ErrorMessage>() {

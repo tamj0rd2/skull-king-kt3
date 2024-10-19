@@ -9,5 +9,7 @@ sealed interface GameUpdate {
 
     data object GameStarted : GameUpdate
 
-    data object CardDealt : GameUpdate
+    data class CardDealt(
+        val card: Card,
+    ) : GameUpdate
 }
