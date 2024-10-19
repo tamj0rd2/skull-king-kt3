@@ -1,15 +1,13 @@
 package com.tamj0rd2.skullking.application.port.input
 
-import com.tamj0rd2.skullking.domain.model.PlayerId
+import com.tamj0rd2.skullking.application.port.input.roles.PlayerRole.PlayerGameState.Companion.players
 import com.tamj0rd2.skullking.domain.model.game.Game
 import com.tamj0rd2.skullking.domain.model.game.GameIsFull
-import com.tamj0rd2.skullking.domain.model.game.GameUpdate
-import dev.forkhandles.values.ZERO
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
-import strikt.api.expectThat
 import strikt.api.expectThrows
-import strikt.assertions.isNotEqualTo
+import strikt.assertions.containsExactlyInAnyOrder
+import strikt.assertions.isEqualTo
 
 abstract class JoinGameUseCaseContract {
     protected abstract val scenario: TestScenario
@@ -19,11 +17,11 @@ abstract class JoinGameUseCaseContract {
         val player = scenario.newPlayer()
         val gameId = player.createsAGame()
         val playerId = player.joinsAGame(gameId)
-        expectThat(playerId).isNotEqualTo(PlayerId.ZERO)
+        player.gameState { players.isEqualTo(listOf(playerId)) }
     }
 
     @Test
-    fun `given there is already a player in a game, when another player joins, the first player is notified`() {
+    fun `given there is already a player in a game, when another player joins, both players know about the other`() {
         val player1 = scenario.newPlayer()
         val player2 = scenario.newPlayer()
 
@@ -31,7 +29,7 @@ abstract class JoinGameUseCaseContract {
         player1.joinsAGame(gameId)
         player2.joinsAGame(gameId)
 
-        player1.received(GameUpdate.PlayerJoined(player2.id))
+        listOf(player1, player2).each { gameState { players.containsExactlyInAnyOrder(player1.id, player2.id) } }
     }
 
     @Test

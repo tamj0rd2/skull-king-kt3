@@ -24,10 +24,8 @@ class JoinGameService(
         game.addPlayer(playerId).onFailure { return it }
         gameRepository.save(game)
 
-        gameUpdateNotifier.broadcast(GameUpdate.PlayerJoined(playerId))
-        gameUpdateNotifier.subscribe(
-            listener = command.gameUpdateListener,
-        )
+        gameUpdateNotifier.subscribe(game.id, command.gameUpdateListener)
+        gameUpdateNotifier.broadcast(game.id, GameUpdate.PlayerJoined(playerId))
 
         return JoinGameOutput(playerId).asSuccess()
     }

@@ -1,14 +1,24 @@
 package com.tamj0rd2.skullking.application.port.output
 
+import com.tamj0rd2.skullking.domain.model.game.GameId
 import com.tamj0rd2.skullking.domain.model.game.GameUpdate
 
 interface GameUpdateNotifier {
-    fun subscribe(listener: GameUpdateListener)
+    fun subscribe(
+        gameId: GameId,
+        listener: GameUpdateListener,
+    )
 
-    fun broadcast(updates: List<GameUpdate>)
+    fun broadcast(
+        gameId: GameId,
+        updates: List<GameUpdate>,
+    )
 
-    fun broadcast(vararg updates: GameUpdate) {
+    fun broadcast(
+        gameId: GameId,
+        vararg updates: GameUpdate,
+    ) {
         require(updates.isNotEmpty()) { "list of updates was empty" }
-        return broadcast(updates.toList())
+        return broadcast(gameId, updates.toList())
     }
 }

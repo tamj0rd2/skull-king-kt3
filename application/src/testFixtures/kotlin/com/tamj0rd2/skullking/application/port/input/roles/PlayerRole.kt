@@ -18,13 +18,17 @@ import dev.forkhandles.result4k.orThrow
 import dev.forkhandles.values.ZERO
 import strikt.api.Assertion.Builder
 import strikt.api.expectThat
-import strikt.assertions.contains
+import strikt.assertions.isNotEqualTo
 
 class PlayerRole(
     private val driver: SkullKingUseCases,
 ) : GameUpdateListener {
     var id = PlayerId.ZERO
         private set
+
+    private val playerNumber = shortPlayerId()
+
+    override fun toString(): String = "Player $playerNumber (${id.value})"
 
     private var gameId = GameId.NONE
 
@@ -35,21 +39,14 @@ class PlayerRole(
     fun joinsAGame(gameId: GameId): PlayerId {
         this.gameId = gameId
         val command = JoinGameCommand(gameId = gameId, gameUpdateListener = this)
-        return driver(command).orThrow().playerId.also { id = it }
+        return driver(command).orThrow().playerId.also {
+            expectThat(it).isNotEqualTo(PlayerId.ZERO)
+            id = it
+        }
     }
 
     fun startsTheGame() {
         driver(StartGameCommand(gameId, id)).orThrow()
-    }
-
-    private var gameUpdatesRead = 0
-
-    fun received(expectedUpdate: GameUpdate) {
-        eventually {
-            val recentGameUpdates = receivedGameUpdates.drop(gameUpdatesRead)
-            expectThat(recentGameUpdates).contains(expectedUpdate)
-            gameUpdatesRead = recentGameUpdates.indexOfFirst { it == expectedUpdate } + 1
-        }
     }
 
     private var state = PlayerGameState()
@@ -64,21 +61,32 @@ class PlayerRole(
         receivedGameUpdates += updates
 
         updates.forEach {
-            when (it) {
-                is CardDealt -> state = state.run { copy(hand = hand + it.card) }
-                is GameStarted -> state = state.run { copy(roundNumber = roundNumber.next()) }
-                is PlayerJoined -> Unit
-            }
+            state =
+                state.run {
+                    when (it) {
+                        is CardDealt -> copy(hand = hand + it.card)
+                        is GameStarted -> copy(roundNumber = roundNumber.next())
+                        is PlayerJoined -> copy(players = players + it.playerId)
+                    }
+                }
         }
     }
 
     data class PlayerGameState(
         val roundNumber: RoundNumber = RoundNumber.none,
         val hand: List<Card> = emptyList(),
+        val players: List<PlayerId> = emptyList(),
     ) {
         companion object {
-            val Builder<PlayerGameState>.roundNumber get() = get { roundNumber }.describedAs("roundNumber")
-            val Builder<PlayerGameState>.hand get() = get { hand }.describedAs("hand")
+            val Builder<PlayerGameState>.roundNumber get() = get { roundNumber }
+            val Builder<PlayerGameState>.hand get() = get { hand }
+            val Builder<PlayerGameState>.players get() = get { players }
         }
+    }
+
+    companion object {
+        private var playerNumber = 0
+
+        fun shortPlayerId() = ++playerNumber
     }
 }
