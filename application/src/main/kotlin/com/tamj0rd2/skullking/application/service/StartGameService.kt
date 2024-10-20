@@ -8,6 +8,7 @@ import com.tamj0rd2.skullking.application.port.output.GameRepository
 import com.tamj0rd2.skullking.application.port.output.GameUpdateNotifier
 import com.tamj0rd2.skullking.domain.model.game.Card
 import com.tamj0rd2.skullking.domain.model.game.CardDealtEvent
+import com.tamj0rd2.skullking.domain.model.game.GameAction
 import com.tamj0rd2.skullking.domain.model.game.GameCreatedEvent
 import com.tamj0rd2.skullking.domain.model.game.GameErrorCode
 import com.tamj0rd2.skullking.domain.model.game.GameEvent
@@ -23,7 +24,7 @@ class StartGameService(
 ) : StartGameUseCase {
     override fun invoke(command: StartGameCommand): Result4k<StartGameOutput, GameErrorCode> {
         val game = gameRepository.load(command.gameId)
-        game.start().onFailure { return it }
+        game.execute(GameAction.Start).onFailure { return it }
         gameRepository.save(game)
 
         gameUpdateNotifier.broadcast(game.id, game.newEvents.toGameUpdates())

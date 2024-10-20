@@ -1,35 +1,30 @@
 package com.tamj0rd2.skullking.domain.model.game
 
 import com.lemonappdev.konsist.api.Konsist
-import com.lemonappdev.konsist.api.declaration.KoFunctionDeclaration
-import com.lemonappdev.konsist.api.ext.list.modifierprovider.withPublicOrDefaultModifier
 import com.lemonappdev.konsist.api.ext.list.withName
-import com.lemonappdev.konsist.api.ext.list.withNameStartingWith
-import com.lemonappdev.konsist.api.ext.provider.declarationsOf
 import com.lemonappdev.konsist.api.verify.assertNotEmpty
 import com.tamj0rd2.skullking.domain.GameActionArbs.validGameActionsArb
+import com.tamj0rd2.skullking.domain.mustExecute
 import org.junit.jupiter.api.Test
 import strikt.api.Assertion.Builder
 import strikt.api.expectCatching
 import strikt.api.expectThat
 import strikt.assertions.contains
-import strikt.assertions.containsExactlyInAnyOrder
 import strikt.assertions.isSuccess
 import strikt.assertions.single
 
-class GameActionsTest {
+class GameActionsArbsTest {
     private val gameModuleName = "domain/game"
 
     @Test
     fun `for every action in the Game, there is a corresponding game action arbitrary`() {
-        val publicGameMethodNames =
+        val gameCommandNames =
             Konsist
                 .scopeFromProduction(gameModuleName)
                 .classes()
-                .withName("Game")
+                .withName("GameAction")
                 .single()
-                .declarationsOf<KoFunctionDeclaration>(includeNested = false)
-                .withPublicOrDefaultModifier()
+                .classesAndObjects(includeNested = false)
                 .apply { assertNotEmpty() }
                 .map { it.name }
 
@@ -41,11 +36,9 @@ class GameActionsTest {
                 .single()
                 .properties(includeNested = false)
 
-        val expectedGameActionArbNames = publicGameMethodNames.map { "${it}GameActionArb" }
+        val expectedGameActionArbNames = gameCommandNames.map { it.first().lowercase() + it.drop(1) + "GameActionArb" }
 
-        expectThat(gameActionArbsProperties)
-            .get { withNameStartingWith(publicGameMethodNames).map { it.name } }
-            .containsExactlyInAnyOrder(expectedGameActionArbNames)
+        expectThat(gameActionArbsProperties).get { map { it.name } }.contains(expectedGameActionArbNames)
 
         expectThat(gameActionArbsProperties)
             .get { withName("gameActionArb") }
@@ -65,7 +58,7 @@ class GameActionsTest {
     @Test
     fun `valid game actions never throw`() =
         invariant(arb = validGameActionsArb) { game, action ->
-            expectCatching { action.applyTo(game) }.isSuccess()
+            expectCatching { game.mustExecute(action) }.isSuccess()
         }
 }
 

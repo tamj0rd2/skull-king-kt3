@@ -10,6 +10,7 @@ import com.tamj0rd2.skullking.application.port.output.GameUpdateNotifier
 import com.tamj0rd2.skullking.application.port.output.SavePlayerIdPort
 import com.tamj0rd2.skullking.domain.model.PlayerId
 import com.tamj0rd2.skullking.domain.model.auth.SessionId
+import com.tamj0rd2.skullking.domain.model.game.GameAction
 import com.tamj0rd2.skullking.domain.model.game.GameErrorCode
 import com.tamj0rd2.skullking.domain.model.game.GameUpdate
 import dev.forkhandles.result4k.Result4k
@@ -26,7 +27,7 @@ class JoinGameService(
         val playerId = findOrCreatePlayerId(command.sessionId)
 
         val game = gameRepository.load(command.gameId)
-        game.addPlayer(playerId).onFailure { return it }
+        game.execute(GameAction.AddPlayer(playerId)).onFailure { return it }
         gameRepository.save(game)
 
         gameUpdateNotifier.subscribe(game.id, command.gameUpdateListener)

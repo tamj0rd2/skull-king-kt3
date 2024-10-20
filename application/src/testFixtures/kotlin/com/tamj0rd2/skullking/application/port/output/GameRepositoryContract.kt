@@ -4,6 +4,7 @@ import com.tamj0rd2.skullking.domain.GameActionArbs.validGameActionsArb
 import com.tamj0rd2.skullking.domain.model.game.Game
 import com.tamj0rd2.skullking.domain.model.game.GameId
 import com.tamj0rd2.skullking.domain.model.game.Version
+import com.tamj0rd2.skullking.domain.mustExecute
 import com.tamj0rd2.skullking.domain.propertyTest
 import dev.forkhandles.values.random
 import io.kotest.property.checkAll
@@ -23,10 +24,11 @@ abstract class GameRepositoryContract {
                 val gameModifiedInMemoryOnly = Game.new().also(gameRepository::save)
                 val gameId = gameModifiedInMemoryOnly.id
 
-                actions.applyAllTo(gameModifiedInMemoryOnly)
-                actions.applyEach { action ->
-                    val modifiedGame = gameRepository.load(gameId).apply(action::mutate)
-                    gameRepository.save(modifiedGame)
+                actions.forEach { gameModifiedInMemoryOnly.mustExecute(it) }
+                actions.forEach {
+                    val game = gameRepository.load(gameId)
+                    game.mustExecute(it)
+                    gameRepository.save(game)
                 }
 
                 val gameThatWasSavedAndLoaded = gameRepository.load(gameId)

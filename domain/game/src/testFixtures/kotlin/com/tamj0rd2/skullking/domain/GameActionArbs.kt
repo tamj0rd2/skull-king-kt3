@@ -1,24 +1,26 @@
 package com.tamj0rd2.skullking.domain
 
 import com.tamj0rd2.skullking.domain.model.game.Game
+import com.tamj0rd2.skullking.domain.model.game.GameAction
+import dev.forkhandles.result4k.orThrow
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.arbitrary
 import io.kotest.property.arbitrary.choice
 import io.kotest.property.arbitrary.choose
 import io.kotest.property.arbitrary.list
-import io.kotest.property.arbitrary.map
 import io.kotest.property.arbitrary.set
 
 object GameActionArbs {
     private val addPlayerGameActionArb =
         arbitrary {
-            val playerId = GameArbs.playerIdArb.bind()
-            GameAction("add player $playerId") { addPlayer(playerId) }
+            GameAction.AddPlayer(
+                playerId = GameArbs.playerIdArb.bind(),
+            )
         }
 
     private val startGameActionArb =
         arbitrary {
-            GameAction("start game") { start() }
+            GameAction.Start
         }
 
     private val gameActionArb =
@@ -27,17 +29,14 @@ object GameActionArbs {
             startGameActionArb,
         )
 
-    private val possiblyInvalidGameActionsArb = Arb.list(gameActionArb).map { GameActions(actions = it) }
+    private val possiblyInvalidGameActionsArb = Arb.list(gameActionArb)
 
     val validGameActionsArb =
         arbitrary {
-            GameActions(
-                actions =
-                    buildList {
-                        addAll(Arb.set(addPlayerGameActionArb, Game.MINIMUM_PLAYER_COUNT..Game.MAXIMUM_PLAYER_COUNT).bind())
-                        add(startGameActionArb.bind())
-                    },
-            )
+            buildList {
+                addAll(Arb.set(addPlayerGameActionArb, Game.MINIMUM_PLAYER_COUNT..Game.MAXIMUM_PLAYER_COUNT).bind())
+                add(startGameActionArb.bind())
+            }
         }
 
     val gameActionsArb =
@@ -46,3 +45,5 @@ object GameActionArbs {
             1 to possiblyInvalidGameActionsArb,
         )
 }
+
+fun Game.mustExecute(action: GameAction) = execute(action).orThrow()

@@ -1,10 +1,9 @@
 package com.tamj0rd2.skullking.domain.model.game
 
-import com.tamj0rd2.skullking.domain.GameAction
 import com.tamj0rd2.skullking.domain.GameActionArbs.gameActionsArb
-import com.tamj0rd2.skullking.domain.GameActions
 import com.tamj0rd2.skullking.domain.model.PlayerId
 import com.tamj0rd2.skullking.domain.model.game.Game.Companion.MAXIMUM_PLAYER_COUNT
+import com.tamj0rd2.skullking.domain.mustExecute
 import com.tamj0rd2.skullking.domain.propertyTest
 import io.kotest.property.Arb
 import io.kotest.property.checkAll
@@ -87,18 +86,18 @@ internal fun invariant(
 ) = invariant(iterations) { game, action ->
     // I don't care whether the action succeeds.
     // I just want to ensure the invariants are always upheld regardless.
-    runCatching { action.mutate(game) }
+    runCatching { game.mustExecute(action) }
     checkInvariant(game)
 }
 
 internal fun invariant(
     iterations: Int = 1000,
-    arb: Arb<GameActions> = gameActionsArb,
+    arb: Arb<List<GameAction>> = gameActionsArb,
     checkInvariant: (Game, GameAction) -> Unit,
 ) = propertyTest {
     arb.checkAll(iterations) { gameActions ->
         val game = Game.new()
-        gameActions.applyEach { action ->
+        gameActions.forEach { action ->
             checkInvariant(game, action)
         }
     }
