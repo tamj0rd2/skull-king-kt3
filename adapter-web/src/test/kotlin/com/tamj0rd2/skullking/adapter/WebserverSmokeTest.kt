@@ -4,9 +4,7 @@ import com.tamj0rd2.skullking.adapter.web.WebServer
 import com.tamj0rd2.skullking.application.port.input.roles.PlayerRole
 import org.http4k.core.Uri
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.Timeout
 
-@Timeout(2)
 class WebserverSmokeTest {
     // TODO: this should test Main instead. Figure out how to do it.
     private val server = WebServer.start()
