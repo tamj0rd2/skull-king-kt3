@@ -36,8 +36,6 @@ abstract class JoinGameUseCaseContract {
     @Test
     fun `joining a full game is not possible`() {
         val (gameId, _) = scenario.newGame().withPlayerCount(MAXIMUM_PLAYER_COUNT).done()
-
-        // TODO: right now, the server is throwing whenever there are failures. That needs fixing.
         val anotherPlayer = scenario.newPlayer()
         expectThrows<GameIsFull> { anotherPlayer.joinsAGame(gameId) }
     }
