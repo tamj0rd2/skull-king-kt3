@@ -18,7 +18,7 @@ abstract class JoinGameUseCaseContract {
         val player = scenario.newPlayer()
         val gameId = player.createsAGame()
         val playerId = player.joinsAGame(gameId)
-        player.gameState { players.isEqualTo(listOf(playerId)) }
+        player.hasGameStateWhere { players.isEqualTo(listOf(playerId)) }
     }
 
     @Test
@@ -30,7 +30,7 @@ abstract class JoinGameUseCaseContract {
         player1.joinsAGame(gameId)
         player2.joinsAGame(gameId)
 
-        listOf(player1, player2).each { gameState { players.containsExactlyInAnyOrder(player1.id, player2.id) } }
+        listOf(player1, player2).each { hasGameStateWhere { players.containsExactlyInAnyOrder(player1.id, player2.id) } }
     }
 
     @Test

@@ -18,14 +18,14 @@ abstract class StartGameUseCaseContract {
     fun `starting the game begins round 1`() {
         val (_, players) = scenario.newGame().withMinimumPlayersToStart().done()
         players.first().startsTheGame()
-        players.each { gameState { roundNumber.isEqualTo(RoundNumber.of(1)) } }
+        players.each { hasGameStateWhere { roundNumber.isEqualTo(RoundNumber.of(1)) } }
     }
 
     @Test
     fun `each player is dealt 1 card`() {
         val (_, players) = scenario.newGame().withMinimumPlayersToStart().done()
         players.first().startsTheGame()
-        players.each { gameState { hand.hasSize(1) } }
+        players.each { hasGameStateWhere { hand.hasSize(1) } }
     }
 
     @Test

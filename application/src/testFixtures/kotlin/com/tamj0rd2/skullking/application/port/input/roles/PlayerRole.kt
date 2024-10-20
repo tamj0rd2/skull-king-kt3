@@ -62,7 +62,7 @@ class PlayerRole(
 
     private var state = PlayerGameState()
 
-    fun gameState(assertion: Builder<PlayerGameState>.() -> Unit) {
+    fun hasGameStateWhere(assertion: Builder<PlayerGameState>.() -> Unit) {
         eventually {
             expectThat(this).get { state }.assertion()
         }
