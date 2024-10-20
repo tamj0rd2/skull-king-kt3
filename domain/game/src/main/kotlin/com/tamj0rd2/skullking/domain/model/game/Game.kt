@@ -124,6 +124,3 @@ class PlayerHasAlreadyJoined : AddPlayerErrorCode()
 sealed class StartGameErrorCode : GameErrorCode() {
     class TooFewPlayers : StartGameErrorCode()
 }
-
-// TODO: get rid of this - it doesn't make any sense.
-class DealCardErrorCode : GameErrorCode()
