@@ -36,6 +36,11 @@ class Setup(
             }
         }
 
+    fun start() =
+        apply {
+            playerRoles.random().startsTheGame()
+        }
+
     fun done() = gameId to playerRoles.toList()
 }
 

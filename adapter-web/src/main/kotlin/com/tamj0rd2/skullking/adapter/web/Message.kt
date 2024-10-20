@@ -1,6 +1,7 @@
 package com.tamj0rd2.skullking.adapter.web
 
 import com.tamj0rd2.skullking.domain.model.PlayerId
+import com.tamj0rd2.skullking.domain.model.game.AddPlayerErrorCode.GameHasAlreadyStarted
 import com.tamj0rd2.skullking.domain.model.game.Card
 import com.tamj0rd2.skullking.domain.model.game.GameErrorCode
 import com.tamj0rd2.skullking.domain.model.game.GameId
@@ -158,6 +159,7 @@ private object JErrorMessage : JAny<ErrorMessage>() {
             is GameIsFull -> "game-is-full"
             is TooFewPlayers -> "too-few-players"
             is PlayerHasAlreadyJoined -> "player-already-joined"
+            is GameHasAlreadyStarted -> "game-already-started"
             else -> TODO("add support for ${errorMessage.error::class.java.simpleName}")
         }
 
@@ -167,6 +169,7 @@ private object JErrorMessage : JAny<ErrorMessage>() {
                 "game-is-full" -> GameIsFull()
                 "too-few-players" -> TooFewPlayers()
                 "player-already-joined" -> PlayerHasAlreadyJoined()
+                "game-already-started" -> GameHasAlreadyStarted()
                 else -> error("unknown error code - $reason")
             },
         )

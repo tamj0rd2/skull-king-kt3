@@ -3,15 +3,19 @@ package com.tamj0rd2.skullking.domain.model.game
 import com.tamj0rd2.extensions.asFailure
 import com.tamj0rd2.extensions.asSuccess
 import com.tamj0rd2.skullking.domain.model.PlayerId
+import com.tamj0rd2.skullking.domain.model.game.AddPlayerErrorCode.GameHasAlreadyStarted
 import com.tamj0rd2.skullking.domain.model.game.Game.Companion.MAXIMUM_PLAYER_COUNT
 import com.tamj0rd2.skullking.domain.model.game.Game.Companion.MINIMUM_PLAYER_COUNT
 import com.tamj0rd2.skullking.domain.model.game.StartGameErrorCode.TooFewPlayers
+import com.tamj0rd2.skullking.domain.model.game.Status.IN_LOBBY
+import com.tamj0rd2.skullking.domain.model.game.Status.IN_PROGRESS
 import dev.forkhandles.result4k.Result4k
 import dev.forkhandles.values.IntValueFactory
 import dev.forkhandles.values.Value
 
 data class GameState private constructor(
     val players: List<PlayerId>,
+    val status: Status,
 ) {
     internal fun apply(event: GameEvent): Result4k<GameState, GameErrorCode> =
         when (event) {
@@ -22,6 +26,7 @@ data class GameState private constructor(
         }
 
     private fun apply(event: PlayerJoinedEvent): Result4k<GameState, AddPlayerErrorCode> {
+        if (status == IN_PROGRESS) return GameHasAlreadyStarted().asFailure()
         if (players.size >= MAXIMUM_PLAYER_COUNT) return GameIsFull().asFailure()
         if (players.contains(event.playerId)) return PlayerHasAlreadyJoined().asFailure()
         return copy(players = players + event.playerId).asSuccess()
@@ -31,15 +36,21 @@ data class GameState private constructor(
         @Suppress("UNUSED_PARAMETER") event: GameStartedEvent,
     ): Result4k<GameState, StartGameErrorCode> {
         if (players.size < MINIMUM_PLAYER_COUNT) return TooFewPlayers().asFailure()
-        return this.asSuccess()
+        return copy(status = IN_PROGRESS).asSuccess()
     }
 
     companion object {
         internal fun new() =
             GameState(
                 players = emptyList(),
+                status = IN_LOBBY,
             )
     }
+}
+
+enum class Status {
+    IN_LOBBY,
+    IN_PROGRESS,
 }
 
 // TODO: the round number can never be greater than 10

@@ -93,8 +93,11 @@ private inline fun <reified E : GameErrorCode> Result4k<Unit, GameErrorCode>.fil
 
 sealed class GameErrorCode : RuntimeException()
 
-sealed class AddPlayerErrorCode : GameErrorCode()
+sealed class AddPlayerErrorCode : GameErrorCode() {
+    class GameHasAlreadyStarted : AddPlayerErrorCode()
+}
 
+// TODO: nest these too.
 class GameIsFull : AddPlayerErrorCode()
 
 class PlayerHasAlreadyJoined : AddPlayerErrorCode()
@@ -103,4 +106,5 @@ sealed class StartGameErrorCode : GameErrorCode() {
     class TooFewPlayers : StartGameErrorCode()
 }
 
+// TODO: get rid of this - it doesn't make any sense.
 class DealCardErrorCode : GameErrorCode()

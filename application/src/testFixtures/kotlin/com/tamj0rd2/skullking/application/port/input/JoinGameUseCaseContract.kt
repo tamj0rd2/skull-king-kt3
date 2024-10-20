@@ -1,10 +1,11 @@
 package com.tamj0rd2.skullking.application.port.input
 
 import com.tamj0rd2.skullking.application.port.input.roles.PlayerRole.PlayerGameState.Companion.players
+import com.tamj0rd2.skullking.domain.model.game.AddPlayerErrorCode.GameHasAlreadyStarted
 import com.tamj0rd2.skullking.domain.model.game.Game.Companion.MAXIMUM_PLAYER_COUNT
+import com.tamj0rd2.skullking.domain.model.game.Game.Companion.MINIMUM_PLAYER_COUNT
 import com.tamj0rd2.skullking.domain.model.game.GameIsFull
 import com.tamj0rd2.skullking.domain.model.game.PlayerHasAlreadyJoined
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import strikt.api.expectThrows
 import strikt.assertions.containsExactlyInAnyOrder
@@ -49,8 +50,15 @@ abstract class JoinGameUseCaseContract {
     }
 
     @Test
-    @Disabled
     fun `joining a game that has started is not possible`() {
-        TODO()
+        val (gameId, _) =
+            scenario
+                .newGame()
+                .withPlayerCount(MINIMUM_PLAYER_COUNT)
+                .start()
+                .done()
+
+        val lateJoiningPlayer = scenario.newPlayer()
+        expectThrows<GameHasAlreadyStarted> { lateJoiningPlayer.joinsAGame(gameId) }
     }
 }
