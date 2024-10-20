@@ -3,6 +3,7 @@ package com.tamj0rd2.skullking.domain.model.game
 import com.tamj0rd2.skullking.domain.GameAction
 import com.tamj0rd2.skullking.domain.GameActionArbs.gameActionsArb
 import com.tamj0rd2.skullking.domain.GameActions
+import com.tamj0rd2.skullking.domain.model.PlayerId
 import com.tamj0rd2.skullking.domain.model.game.Game.Companion.MAXIMUM_PLAYER_COUNT
 import com.tamj0rd2.skullking.domain.propertyTest
 import io.kotest.property.Arb
@@ -18,6 +19,7 @@ import strikt.assertions.first
 import strikt.assertions.isA
 import strikt.assertions.isEqualTo
 import strikt.assertions.isLessThanOrEqualTo
+import strikt.assertions.isNotEqualTo
 import strikt.assertions.one
 import strikt.assertions.size
 
@@ -63,6 +65,12 @@ class GameTests {
     fun `the players in the game are always unique`() =
         invariant { game ->
             expectThat(game.state.players).doesNotContainAnyDuplicateValues()
+        }
+
+    @Test
+    fun `the players in the game always have a non-zero id`() =
+        invariant { game ->
+            expectThat(game.state.players).all { isNotEqualTo(PlayerId.NONE) }
         }
 
     // TODO: this seems like it should be an invariant of a Hand model.

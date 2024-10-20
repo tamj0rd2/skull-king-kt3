@@ -25,7 +25,6 @@ import com.tamj0rd2.skullking.domain.model.game.GameId
 import com.tamj0rd2.skullking.domain.model.game.GameUpdate
 import com.tamj0rd2.skullking.domain.model.game.GameUpdate.GameStarted
 import dev.forkhandles.result4k.Result4k
-import dev.forkhandles.values.ZERO
 import org.http4k.client.ApacheClient
 import org.http4k.client.WebsocketClient
 import org.http4k.core.Status
@@ -46,7 +45,7 @@ class SkullKingWebClient(
 ) : SkullKingUseCases {
     private val httpClient = SetBaseUriFrom(baseUri.scheme("http")).then(ApacheClient())
     private lateinit var ws: Websocket
-    private var playerId = PlayerId.ZERO
+    private var playerId = PlayerId.NONE
 
     override fun invoke(command: CreateNewGameCommand): CreateNewGameOutput =
         httpClient(CreateGameController.newRequest(command.sessionId)).use {
@@ -58,7 +57,7 @@ class SkullKingWebClient(
     override fun invoke(command: JoinGameCommand): Result4k<JoinGameOutput, GameErrorCode> {
         ws = connectToWs(command.sessionId, command.gameId, command.gameUpdateListener)
         playerId = ws.waitForMessage<JoinAcknowledgedMessage>().playerId
-        check(playerId != PlayerId.ZERO) { "player id is zero still" }
+        check(playerId != PlayerId.NONE) { "player id is zero still" }
         return JoinGameOutput(playerId).asSuccess()
     }
 

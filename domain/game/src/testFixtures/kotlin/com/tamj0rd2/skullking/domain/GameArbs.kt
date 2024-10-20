@@ -15,7 +15,7 @@ import io.kotest.property.arbitrary.map
 import io.kotest.property.arbitrary.uuid
 
 object GameArbs {
-    val playerIdArb = Arb.uuid().map { PlayerId.of(it) }
+    val playerIdArb = Arb.uuid(allowNilValue = false).map { PlayerId.of(it) }
     val gameIdArb = Arb.uuid(allowNilValue = false).map { GameId.of(it) }
 
     val gameArb =

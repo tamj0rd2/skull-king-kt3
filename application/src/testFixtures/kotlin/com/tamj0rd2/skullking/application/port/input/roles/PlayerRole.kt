@@ -16,7 +16,6 @@ import com.tamj0rd2.skullking.domain.model.game.GameUpdate.PlayerJoined
 import com.tamj0rd2.skullking.domain.model.game.RoundNumber
 import com.tamj0rd2.testhelpers.eventually
 import dev.forkhandles.result4k.orThrow
-import dev.forkhandles.values.ZERO
 import dev.forkhandles.values.random
 import strikt.api.Assertion.Builder
 import strikt.api.expectThat
@@ -25,7 +24,7 @@ import strikt.assertions.isNotEqualTo
 class PlayerRole(
     private val driver: SkullKingUseCases,
 ) : GameUpdateListener {
-    var id = PlayerId.ZERO
+    var id = PlayerId.NONE
         private set
 
     // NOTE: for now I'm assuming the client generates the sessionId. I can have the server do this instead. The user can make an http request
@@ -51,7 +50,7 @@ class PlayerRole(
                 gameUpdateListener = this,
             )
         return driver.invoke(command).orThrow().playerId.also {
-            expectThat(it).isNotEqualTo(PlayerId.ZERO)
+            expectThat(it).isNotEqualTo(PlayerId.NONE)
             id = it
         }
     }
