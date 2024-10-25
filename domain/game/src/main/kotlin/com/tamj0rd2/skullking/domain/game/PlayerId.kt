@@ -4,7 +4,6 @@ import dev.forkhandles.values.UUIDValueFactory
 import dev.forkhandles.values.Value
 import java.util.UUID
 
-// TODO: move this into the game package.
 @JvmInline
 value class PlayerId private constructor(
     override val value: UUID,
