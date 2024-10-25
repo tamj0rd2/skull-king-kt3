@@ -4,14 +4,14 @@ import com.tamj0rd2.skullking.adapter.web.MessageToClient.ErrorMessage
 import com.tamj0rd2.skullking.adapter.web.MessageToClient.GameUpdateMessage
 import com.tamj0rd2.skullking.adapter.web.MessageToClient.JoinAcknowledgedMessage
 import com.tamj0rd2.skullking.domain.game.AddPlayerErrorCode.GameHasAlreadyStarted
+import com.tamj0rd2.skullking.domain.game.AddPlayerErrorCode.GameIsFull
+import com.tamj0rd2.skullking.domain.game.AddPlayerErrorCode.PlayerHasAlreadyJoined
 import com.tamj0rd2.skullking.domain.game.Card
 import com.tamj0rd2.skullking.domain.game.GameErrorCode
-import com.tamj0rd2.skullking.domain.game.GameIsFull
 import com.tamj0rd2.skullking.domain.game.GameUpdate
 import com.tamj0rd2.skullking.domain.game.GameUpdate.CardDealt
 import com.tamj0rd2.skullking.domain.game.GameUpdate.GameStarted
 import com.tamj0rd2.skullking.domain.game.GameUpdate.PlayerJoined
-import com.tamj0rd2.skullking.domain.game.PlayerHasAlreadyJoined
 import com.tamj0rd2.skullking.domain.game.PlayerId
 import com.tamj0rd2.skullking.domain.game.StartGameErrorCode.TooFewPlayers
 import com.tamj0rd2.skullking.serialization.json.JPlayerId
