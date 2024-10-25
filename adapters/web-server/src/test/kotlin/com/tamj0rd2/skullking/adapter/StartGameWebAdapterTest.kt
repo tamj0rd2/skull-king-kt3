@@ -1,4 +1,4 @@
-package com.tamj0rd2.skullking.application.service
+package com.tamj0rd2.skullking.adapter
 
 import com.tamj0rd2.skullking.application.port.input.StartGameUseCaseContract
 

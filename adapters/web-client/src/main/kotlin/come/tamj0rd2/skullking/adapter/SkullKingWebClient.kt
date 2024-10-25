@@ -1,15 +1,15 @@
-package com.tamj0rd2.skullking.adapter
+package come.tamj0rd2.skullking.adapter
 
 import com.tamj0rd2.extensions.asSuccess
-import com.tamj0rd2.skullking.adapter.web.CreateGameController
-import com.tamj0rd2.skullking.adapter.web.ErrorMessage
-import com.tamj0rd2.skullking.adapter.web.GameCreatedMessage
-import com.tamj0rd2.skullking.adapter.web.GameUpdateMessage
-import com.tamj0rd2.skullking.adapter.web.JoinAcknowledgedMessage
-import com.tamj0rd2.skullking.adapter.web.Message
-import com.tamj0rd2.skullking.adapter.web.StartGameMessage
-import com.tamj0rd2.skullking.adapter.web.httpLens
-import com.tamj0rd2.skullking.adapter.web.wsLens
+import com.tamj0rd2.skullking.adapter.CreateNewGameEndpoint
+import com.tamj0rd2.skullking.adapter.ErrorMessage
+import com.tamj0rd2.skullking.adapter.GameCreatedMessage
+import com.tamj0rd2.skullking.adapter.GameUpdateMessage
+import com.tamj0rd2.skullking.adapter.JoinAcknowledgedMessage
+import com.tamj0rd2.skullking.adapter.Message
+import com.tamj0rd2.skullking.adapter.StartGameMessage
+import com.tamj0rd2.skullking.adapter.httpLens
+import com.tamj0rd2.skullking.adapter.wsLens
 import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.CreateNewGameCommand
 import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.CreateNewGameOutput
 import com.tamj0rd2.skullking.application.port.input.JoinGameUseCase.JoinGameCommand
@@ -27,19 +27,14 @@ import com.tamj0rd2.skullking.domain.model.game.GameUpdate.GameStarted
 import dev.forkhandles.result4k.Result4k
 import org.http4k.client.ApacheClient
 import org.http4k.client.WebsocketClient
-import org.http4k.core.Status
 import org.http4k.core.Uri
 import org.http4k.core.then
 import org.http4k.filter.ClientFilters.SetBaseUriFrom
-import org.http4k.strikt.status
 import org.http4k.websocket.Websocket
-import strikt.api.expectThat
-import strikt.assertions.isEqualTo
 import java.time.Duration
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit.MILLISECONDS
 
-// TODO: this doesn't need to be in test fixtures. It's a legit web client.
 class SkullKingWebClient(
     private val baseUri: Uri,
     private val timeoutMs: Long = 500,
@@ -49,8 +44,8 @@ class SkullKingWebClient(
     private var playerId = PlayerId.NONE
 
     override fun invoke(command: CreateNewGameCommand): CreateNewGameOutput =
-        httpClient(CreateGameController.newRequest(command.sessionId)).use {
-            expectThat(it).status.isEqualTo(Status.CREATED)
+        httpClient(CreateNewGameEndpoint.newRequest(command.sessionId)).use {
+            if (!it.status.successful) TODO("handle failure to create a new game")
             val response = httpLens(it) as GameCreatedMessage
             CreateNewGameOutput(response.gameId)
         }

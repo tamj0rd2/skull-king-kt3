@@ -13,6 +13,8 @@ plugins {
 rootProject.name = "skull-king"
 include(
     ":adapters:esdb",
+    ":adapters:web-api",
+    ":adapters:web-client",
     ":adapters:web-server",
     ":application",
     ":domain:auth",

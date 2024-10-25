@@ -1,4 +1,4 @@
-package com.tamj0rd2.skullking.adapter.web
+package com.tamj0rd2.skullking.adapter
 
 import com.tamj0rd2.skullking.domain.model.PlayerId
 import com.tamj0rd2.skullking.domain.model.game.AddPlayerErrorCode.GameHasAlreadyStarted
@@ -48,13 +48,13 @@ data class ErrorMessage(
 
 data object StartGameMessage : Message
 
-internal val wsLens =
+val wsLens =
     BiDiWsMessageLens(
         get = { wsMessage -> JMessage.fromJson(wsMessage.bodyString()).orThrow() },
         setLens = { message, _ -> WsMessage(JMessage.toJson(message)) },
     )
 
-internal val httpLens =
+val httpLens =
     httpBodyRoot(emptyList(), APPLICATION_JSON, ContentNegotiation.None)
         .map(
             nextIn = { JMessage.fromJson(it.payload.asString()).orThrow() },
@@ -152,7 +152,7 @@ private object JCardDealt : JAny<CardDealt>() {
 }
 
 private object JErrorMessage : JAny<ErrorMessage>() {
-    private val reason by str(::errorMessageAsString)
+    private val reason by str(JErrorMessage::errorMessageAsString)
 
     private fun errorMessageAsString(errorMessage: ErrorMessage): String =
         when (errorMessage.error) {

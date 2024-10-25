@@ -1,7 +1,14 @@
 package com.tamj0rd2.skullking.adapter.web
 
+import com.tamj0rd2.skullking.adapter.CreateNewGameEndpoint.sessionId
+import com.tamj0rd2.skullking.adapter.CreateNewGameMessage
+import com.tamj0rd2.skullking.adapter.ErrorMessage
+import com.tamj0rd2.skullking.adapter.GameCreatedMessage
 import com.tamj0rd2.skullking.adapter.GameRepositoryEsdbAdapter
-import com.tamj0rd2.skullking.adapter.web.CreateGameController.Companion.sessionId
+import com.tamj0rd2.skullking.adapter.GameUpdateMessage
+import com.tamj0rd2.skullking.adapter.JoinAcknowledgedMessage
+import com.tamj0rd2.skullking.adapter.StartGameMessage
+import com.tamj0rd2.skullking.adapter.wsLens
 import com.tamj0rd2.skullking.application.SkullKingApplication
 import com.tamj0rd2.skullking.application.port.output.GameUpdateNotifierInMemoryAdapter
 import com.tamj0rd2.skullking.application.port.output.PlayerIdStorageInMemoryAdapter
@@ -54,7 +61,7 @@ object WebServer {
 
         val http =
             contract {
-                routes += createGameController.route
+                routes += createGameController.contractRoute
             }
 
         val ws =
@@ -93,10 +100,7 @@ object WebServer {
                 },
             )
 
-        return PolyHandler(
-            http = http,
-            ws = ws,
-        ).asServer(Undertow(port))
+        return PolyHandler(http, ws).asServer(Undertow(port))
     }
 
     private fun getUnusedPort(): Int {
