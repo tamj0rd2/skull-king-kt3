@@ -4,6 +4,10 @@ import com.tamj0rd2.extensions.asSuccess
 import com.tamj0rd2.skullking.adapter.web.CreateNewGameEndpoint.contract
 import com.tamj0rd2.skullking.adapter.web.CreateNewGameEndpoint.gameCreatedMessageLens
 import com.tamj0rd2.skullking.adapter.web.CreateNewGameEndpoint.sessionIdLens
+import com.tamj0rd2.skullking.adapter.web.MessageFromClient.StartGameMessage
+import com.tamj0rd2.skullking.adapter.web.MessageToClient.ErrorMessage
+import com.tamj0rd2.skullking.adapter.web.MessageToClient.GameUpdateMessage
+import com.tamj0rd2.skullking.adapter.web.MessageToClient.JoinAcknowledgedMessage
 import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.CreateNewGameCommand
 import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.CreateNewGameOutput
 import com.tamj0rd2.skullking.application.port.input.JoinAGameUseCase.JoinGameCommand
@@ -54,7 +58,7 @@ class SkullKingWebClient(
     }
 
     override fun invoke(command: StartGameCommand): Result4k<StartGameOutput, GameErrorCode> {
-        ws.send(wsLens(StartGameMessage))
+        ws.send(messageFromClient(StartGameMessage))
         ws.waitForGameUpdate<GameStarted>()
         return StartGameOutput.asSuccess()
     }
@@ -62,13 +66,13 @@ class SkullKingWebClient(
     private inline fun <reified T : GameUpdate> Websocket.waitForGameUpdate(): T =
         waitForMessage<GameUpdateMessage> { it.gameUpdate is T }.gameUpdate as T
 
-    private inline fun <reified T : Message> Websocket.waitForMessage(crossinline matcher: (T) -> Boolean = { true }): T {
+    private inline fun <reified T : MessageToClient> Websocket.waitForMessage(crossinline matcher: (T) -> Boolean = { true }): T {
         val latch = CountDownLatch(1)
         var failureReason: GameErrorCode? = null
         var wantedMessage: T? = null
 
         onMessage {
-            val message = wsLens(it)
+            val message = messageToClient(it)
 
             if (message is T && matcher(message)) {
                 wantedMessage = message
@@ -99,7 +103,7 @@ class SkullKingWebClient(
                 onConnect = { ws ->
                     println("client: $sessionId: connected")
                     ws.onMessage {
-                        val message = wsLens(it)
+                        val message = messageToClient(it)
                         println("client: $sessionId: received: $message")
 
                         if (message is GameUpdateMessage) {

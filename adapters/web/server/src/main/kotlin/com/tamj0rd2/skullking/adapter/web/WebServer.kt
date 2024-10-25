@@ -4,6 +4,8 @@ import com.tamj0rd2.skullking.adapter.esdb.GameRepositoryEsdbAdapter
 import com.tamj0rd2.skullking.adapter.inmemory.GameUpdateNotifierInMemoryAdapter
 import com.tamj0rd2.skullking.adapter.inmemory.PlayerIdStorageInMemoryAdapter
 import com.tamj0rd2.skullking.adapter.web.CreateNewGameEndpoint.sessionIdLens
+import com.tamj0rd2.skullking.adapter.web.MessageFromClient.StartGameMessage
+import com.tamj0rd2.skullking.adapter.web.MessageToClient.ErrorMessage
 import com.tamj0rd2.skullking.application.SkullKingApplication
 import com.tamj0rd2.skullking.domain.auth.SessionId
 import com.tamj0rd2.skullking.domain.game.GameId
@@ -70,23 +72,17 @@ object WebServer {
 
                         val session =
                             joinGameController.joinGame(ws, sessionId, gameId).onFailure {
-                                ws.send(wsLens(ErrorMessage(it.reason)))
+                                ws.send(messageToClient(ErrorMessage(it.reason)))
                                 ws.close(WsStatus.REFUSE)
                                 return@WsResponse
                             }
 
                         ws.onMessage {
-                            val message = wsLens(it)
+                            val message = messageFromClient(it)
                             println("server: $sessionId: received $message")
 
                             when (message) {
                                 is StartGameMessage -> startGameController(session)
-                                // TODO: these will never be received by the server. it doesn't make sense for them to share a type with the above.
-                                is GameUpdateMessage,
-                                is CreateNewGameMessage,
-                                is JoinAcknowledgedMessage,
-                                is ErrorMessage,
-                                -> error("this message should never be received by the server")
                             }
                         }
                     }

@@ -1,6 +1,8 @@
 package com.tamj0rd2.skullking.adapter.web
 
 import com.tamj0rd2.extensions.asSuccess
+import com.tamj0rd2.skullking.adapter.web.MessageToClient.GameUpdateMessage
+import com.tamj0rd2.skullking.adapter.web.MessageToClient.JoinAcknowledgedMessage
 import com.tamj0rd2.skullking.application.port.input.JoinAGameUseCase
 import com.tamj0rd2.skullking.application.port.input.JoinAGameUseCase.JoinGameCommand
 import com.tamj0rd2.skullking.application.port.output.GameUpdateListener
@@ -29,7 +31,7 @@ class JoinAGameController(
             )
 
         val output = joinAGameUseCase.invoke(command).onFailure { return it }
-        ws.send(wsLens(JoinAcknowledgedMessage(output.playerId)))
+        ws.send(messageToClient(JoinAcknowledgedMessage(output.playerId)))
         return PlayerSession(ws = ws, gameId = gameId, playerId = output.playerId).asSuccess()
     }
 
@@ -41,6 +43,6 @@ class JoinAGameController(
         }
 
     companion object {
-        private fun GameUpdate.toMessage(): WsMessage = wsLens(GameUpdateMessage(this))
+        private fun GameUpdate.toMessage(): WsMessage = messageToClient(GameUpdateMessage(this))
     }
 }
