@@ -6,6 +6,7 @@ dependencies {
     forImplementation(libs.bundles.json)
     forImplementation(libs.eventstoredb)
     forImplementation(project(":application:output-ports"), alsoUseForTesting = true)
+    forImplementation(project(":lib:common-json"))
 }
 
 private fun DependencyHandlerScope.forImplementation(

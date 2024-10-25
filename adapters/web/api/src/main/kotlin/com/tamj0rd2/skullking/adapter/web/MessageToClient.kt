@@ -14,6 +14,8 @@ import com.tamj0rd2.skullking.domain.game.GameUpdate.PlayerJoined
 import com.tamj0rd2.skullking.domain.game.PlayerHasAlreadyJoined
 import com.tamj0rd2.skullking.domain.game.PlayerId
 import com.tamj0rd2.skullking.domain.game.StartGameErrorCode.TooFewPlayers
+import com.tamj0rd2.skullking.serialization.json.JPlayerId
+import com.tamj0rd2.skullking.serialization.json.JSingleton
 import com.ubertob.kondor.json.JAny
 import com.ubertob.kondor.json.JSealed
 import com.ubertob.kondor.json.ObjectNodeConverter

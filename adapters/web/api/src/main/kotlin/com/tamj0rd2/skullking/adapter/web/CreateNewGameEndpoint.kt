@@ -2,6 +2,7 @@ package com.tamj0rd2.skullking.adapter.web
 
 import com.tamj0rd2.skullking.domain.auth.SessionId
 import com.tamj0rd2.skullking.domain.game.GameId
+import com.tamj0rd2.skullking.serialization.json.JGameId
 import com.ubertob.kondor.json.JAny
 import com.ubertob.kondor.json.jsonnode.JsonNodeObject
 import com.ubertob.kondor.json.str

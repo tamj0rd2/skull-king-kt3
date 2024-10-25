@@ -1,6 +1,7 @@
 package com.tamj0rd2.skullking.adapter.web
 
 import com.tamj0rd2.skullking.adapter.web.MessageFromClient.StartGameMessage
+import com.tamj0rd2.skullking.serialization.json.JSingleton
 import com.ubertob.kondor.json.JSealed
 import com.ubertob.kondor.json.ObjectNodeConverter
 import org.http4k.lens.BiDiWsMessageLens

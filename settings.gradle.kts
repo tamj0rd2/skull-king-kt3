@@ -23,4 +23,5 @@ include(
     ":domain:auth",
     ":domain:game",
     ":lib:forkhandles-extensions",
+    ":lib:common-json",
 )

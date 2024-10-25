@@ -16,12 +16,12 @@ import com.tamj0rd2.skullking.domain.game.GameCreatedEvent
 import com.tamj0rd2.skullking.domain.game.GameEvent
 import com.tamj0rd2.skullking.domain.game.GameId
 import com.tamj0rd2.skullking.domain.game.GameStartedEvent
-import com.tamj0rd2.skullking.domain.game.PlayerId
 import com.tamj0rd2.skullking.domain.game.PlayerJoinedEvent
 import com.tamj0rd2.skullking.domain.game.Version
+import com.tamj0rd2.skullking.serialization.json.JGameId
+import com.tamj0rd2.skullking.serialization.json.JPlayerId
 import com.ubertob.kondor.json.JAny
 import com.ubertob.kondor.json.JSealed
-import com.ubertob.kondor.json.JStringRepresentable
 import com.ubertob.kondor.json.ObjectNodeConverter
 import com.ubertob.kondor.json.jsonnode.JsonNodeObject
 import com.ubertob.kondor.json.str
@@ -144,16 +144,6 @@ class GameRepositoryEsdbAdapter : GameRepository {
                 CardDealtEvent(
                     gameId = +gameId,
                 )
-        }
-
-        private object JPlayerId : JStringRepresentable<PlayerId>() {
-            override val cons: (String) -> PlayerId = PlayerId.Companion::parse
-            override val render: (PlayerId) -> String = PlayerId.Companion::show
-        }
-
-        private object JGameId : JStringRepresentable<GameId>() {
-            override val cons: (String) -> GameId = GameId.Companion::parse
-            override val render: (GameId) -> String = GameId.Companion::show
         }
     }
 }
