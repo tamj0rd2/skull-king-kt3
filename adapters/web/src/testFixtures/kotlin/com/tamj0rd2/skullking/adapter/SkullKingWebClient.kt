@@ -39,6 +39,7 @@ import java.time.Duration
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit.MILLISECONDS
 
+// TODO: this doesn't need to be in test fixtures. It's a legit web client.
 class SkullKingWebClient(
     private val baseUri: Uri,
     private val timeoutMs: Long = 500,

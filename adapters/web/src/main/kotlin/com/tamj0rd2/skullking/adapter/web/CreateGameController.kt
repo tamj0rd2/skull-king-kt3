@@ -13,6 +13,7 @@ import org.http4k.core.Request
 import org.http4k.core.Response
 import org.http4k.core.Status
 import org.http4k.core.with
+import org.http4k.lens.Header
 
 class CreateGameController(
     private val createNewGameUseCase: CreateNewGameUseCase,
@@ -37,9 +38,15 @@ class CreateGameController(
                 returning(Status.CREATED, httpLens to example)
             } bindContract POST
 
-        // TODO: create a lens for the sessionId
-        fun newRequest(sessionId: SessionId) = createGameRoute.newRequest().header("session_id", SessionId.show(sessionId))
+        private val sessionIdLens =
+            Header
+                .map(
+                    nextIn = { SessionId.parse(it) },
+                    nextOut = { SessionId.show(it) },
+                ).required("session_id")
 
-        val Request.sessionId: SessionId get() = header("session_id")?.let { SessionId.parse(it) } ?: error("no session id provided")
+        fun newRequest(sessionId: SessionId) = createGameRoute.newRequest().with(sessionIdLens of sessionId)
+
+        val Request.sessionId: SessionId get() = sessionIdLens.extract(this)
     }
 }
