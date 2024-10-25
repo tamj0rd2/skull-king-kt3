@@ -10,13 +10,13 @@ import com.eventstore.dbclient.ResolvedEvent
 import com.eventstore.dbclient.StreamNotFoundException
 import com.tamj0rd2.skullking.application.port.output.GameDoesNotExist
 import com.tamj0rd2.skullking.application.port.output.GameRepository
-import com.tamj0rd2.skullking.domain.model.PlayerId
 import com.tamj0rd2.skullking.domain.model.game.CardDealtEvent
 import com.tamj0rd2.skullking.domain.model.game.Game
 import com.tamj0rd2.skullking.domain.model.game.GameCreatedEvent
 import com.tamj0rd2.skullking.domain.model.game.GameEvent
 import com.tamj0rd2.skullking.domain.model.game.GameId
 import com.tamj0rd2.skullking.domain.model.game.GameStartedEvent
+import com.tamj0rd2.skullking.domain.model.game.PlayerId
 import com.tamj0rd2.skullking.domain.model.game.PlayerJoinedEvent
 import com.tamj0rd2.skullking.domain.model.game.Version
 import com.ubertob.kondor.json.JAny

@@ -1,7 +1,7 @@
 package com.tamj0rd2.skullking.domain
 
-import com.tamj0rd2.skullking.domain.model.PlayerId
 import com.tamj0rd2.skullking.domain.model.game.GameId
+import com.tamj0rd2.skullking.domain.model.game.PlayerId
 import io.kotest.common.runBlocking
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.map

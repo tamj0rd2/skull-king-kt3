@@ -4,7 +4,6 @@ import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.Create
 import com.tamj0rd2.skullking.application.port.input.JoinGameUseCase.JoinGameCommand
 import com.tamj0rd2.skullking.application.port.input.StartGameUseCase.StartGameCommand
 import com.tamj0rd2.skullking.application.port.output.GameUpdateListener
-import com.tamj0rd2.skullking.domain.model.PlayerId
 import com.tamj0rd2.skullking.domain.model.auth.SessionId
 import com.tamj0rd2.skullking.domain.model.game.Card
 import com.tamj0rd2.skullking.domain.model.game.GameId
@@ -12,6 +11,7 @@ import com.tamj0rd2.skullking.domain.model.game.GameUpdate
 import com.tamj0rd2.skullking.domain.model.game.GameUpdate.CardDealt
 import com.tamj0rd2.skullking.domain.model.game.GameUpdate.GameStarted
 import com.tamj0rd2.skullking.domain.model.game.GameUpdate.PlayerJoined
+import com.tamj0rd2.skullking.domain.model.game.PlayerId
 import com.tamj0rd2.skullking.domain.model.game.RoundNumber
 import dev.forkhandles.result4k.orThrow
 import dev.forkhandles.values.random

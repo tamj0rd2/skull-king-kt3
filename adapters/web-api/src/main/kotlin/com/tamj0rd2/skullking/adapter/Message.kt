@@ -1,6 +1,5 @@
 package com.tamj0rd2.skullking.adapter
 
-import com.tamj0rd2.skullking.domain.model.PlayerId
 import com.tamj0rd2.skullking.domain.model.game.AddPlayerErrorCode.GameHasAlreadyStarted
 import com.tamj0rd2.skullking.domain.model.game.Card
 import com.tamj0rd2.skullking.domain.model.game.GameErrorCode
@@ -11,6 +10,7 @@ import com.tamj0rd2.skullking.domain.model.game.GameUpdate.CardDealt
 import com.tamj0rd2.skullking.domain.model.game.GameUpdate.GameStarted
 import com.tamj0rd2.skullking.domain.model.game.GameUpdate.PlayerJoined
 import com.tamj0rd2.skullking.domain.model.game.PlayerHasAlreadyJoined
+import com.tamj0rd2.skullking.domain.model.game.PlayerId
 import com.tamj0rd2.skullking.domain.model.game.StartGameErrorCode.TooFewPlayers
 import com.ubertob.kondor.json.JAny
 import com.ubertob.kondor.json.JSealed
