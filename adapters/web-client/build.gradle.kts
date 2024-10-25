@@ -7,5 +7,4 @@ dependencies {
     implementation(project(":adapters:web-api"))
     implementation(project(":application:input-ports"))
     implementation(project(":application:output-ports"))
-    implementation(project(":domain:game"))
 }

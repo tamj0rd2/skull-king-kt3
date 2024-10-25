@@ -10,9 +10,10 @@ dependencies {
 
 private fun DependencyHandlerScope.forImplementation(
     dependency: Any,
+    transitive: Boolean = false,
     alsoUseForTesting: Boolean = false,
 ) {
-    implementation(dependency)
+    if (transitive) api(dependency) else implementation(dependency)
     if (alsoUseForTesting) forTesting(dependency)
 }
 

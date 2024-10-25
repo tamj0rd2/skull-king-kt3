@@ -3,15 +3,16 @@ plugins {
 }
 
 dependencies {
-    forImplementation(project(":domain:auth"), alsoUseForTesting = true)
-    forImplementation(project(":domain:game"), alsoUseForTesting = true)
+    forImplementation(project(":domain:auth"), transitive = true, alsoUseForTesting = true)
+    forImplementation(project(":domain:game"), transitive = true, alsoUseForTesting = true)
 }
 
 private fun DependencyHandlerScope.forImplementation(
     dependency: Any,
+    transitive: Boolean = false,
     alsoUseForTesting: Boolean = false,
 ) {
-    implementation(dependency)
+    if (transitive) api(dependency) else implementation(dependency)
     if (alsoUseForTesting) forTesting(dependency)
 }
 

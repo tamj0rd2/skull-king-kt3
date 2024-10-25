@@ -7,16 +7,17 @@ dependencies {
     forImplementation(project(":domain:game"), alsoUseForTesting = true)
     forImplementation(project(":application:input-ports"), alsoUseForTesting = true)
     forImplementation(project(":application:output-ports"), alsoUseForTesting = true)
-    forImplementation(project(":adapters:in-memory"), alsoUseForTesting = true)
 
     forTesting(libs.konsist)
+    forTesting(project(":adapters:in-memory"))
 }
 
 private fun DependencyHandlerScope.forImplementation(
     dependency: Any,
+    transitive: Boolean = false,
     alsoUseForTesting: Boolean = false,
 ) {
-    implementation(dependency)
+    if (transitive) api(dependency) else implementation(dependency)
     if (alsoUseForTesting) forTesting(dependency)
 }
 

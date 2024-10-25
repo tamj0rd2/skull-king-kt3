@@ -5,12 +5,11 @@ plugins {
 dependencies {
     forImplementation(libs.bundles.http4k.server)
     forImplementation(project(":adapters:esdb"))
-    forImplementation(project(":adapters:web-api"))
     forImplementation(project(":adapters:in-memory"))
-    forImplementation(project(":application:services"), alsoUseForTesting = true)
+    forImplementation(project(":adapters:web-api"))
     forImplementation(project(":application:input-ports"), alsoUseForTesting = true)
     forImplementation(project(":application:output-ports"), alsoUseForTesting = true)
-    forImplementation(project(":domain:game"), alsoUseForTesting = true)
+    forImplementation(project(":application:services"), alsoUseForTesting = true)
 
     forTesting(libs.http4k.core)
     forTesting(project(":adapters:web-client"))
@@ -18,9 +17,10 @@ dependencies {
 
 private fun DependencyHandlerScope.forImplementation(
     dependency: Any,
+    transitive: Boolean = false,
     alsoUseForTesting: Boolean = false,
 ) {
-    implementation(dependency)
+    if (transitive) api(dependency) else implementation(dependency)
     if (alsoUseForTesting) forTesting(dependency)
 }
 

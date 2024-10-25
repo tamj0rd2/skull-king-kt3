@@ -5,15 +5,15 @@ plugins {
 dependencies {
     forImplementation(libs.bundles.json)
     forImplementation(libs.eventstoredb)
-    forImplementation(project(":domain:game"))
     forImplementation(project(":application:output-ports"), alsoUseForTesting = true)
 }
 
 private fun DependencyHandlerScope.forImplementation(
     dependency: Any,
+    transitive: Boolean = false,
     alsoUseForTesting: Boolean = false,
 ) {
-    implementation(dependency)
+    if (transitive) api(dependency) else implementation(dependency)
     if (alsoUseForTesting) forTesting(dependency)
 }
 

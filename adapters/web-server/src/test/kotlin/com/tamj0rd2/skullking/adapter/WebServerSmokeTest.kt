@@ -6,7 +6,7 @@ import come.tamj0rd2.skullking.adapter.SkullKingWebClient
 import org.http4k.core.Uri
 import org.junit.jupiter.api.Test
 
-class WebserverSmokeTest {
+class WebServerSmokeTest {
     // TODO: this should test Main instead. Figure out how to do it.
     private val server = WebServer.start()
     private val baseUri = Uri.of("ws://localhost:${server.port()}")
