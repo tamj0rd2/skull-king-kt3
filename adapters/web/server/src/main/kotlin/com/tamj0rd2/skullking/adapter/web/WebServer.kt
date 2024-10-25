@@ -3,8 +3,9 @@ package com.tamj0rd2.skullking.adapter.web
 import com.tamj0rd2.skullking.adapter.esdb.GameRepositoryEsdbAdapter
 import com.tamj0rd2.skullking.adapter.inmemory.GameUpdateNotifierInMemoryAdapter
 import com.tamj0rd2.skullking.adapter.inmemory.PlayerIdStorageInMemoryAdapter
-import com.tamj0rd2.skullking.adapter.web.CreateNewGameEndpoint.sessionId
+import com.tamj0rd2.skullking.adapter.web.CreateNewGameEndpoint.sessionIdLens
 import com.tamj0rd2.skullking.application.SkullKingApplication
+import com.tamj0rd2.skullking.domain.auth.SessionId
 import com.tamj0rd2.skullking.domain.game.GameId
 import com.tamj0rd2.skullking.domain.game.PlayerId
 import dev.forkhandles.result4k.onFailure
@@ -81,7 +82,6 @@ object WebServer {
                             when (message) {
                                 is StartGameMessage -> startGameController(session)
                                 // TODO: these will never be received by the server. it doesn't make sense for them to share a type with the above.
-                                is GameCreatedMessage,
                                 is GameUpdateMessage,
                                 is CreateNewGameMessage,
                                 is JoinAcknowledgedMessage,
@@ -104,6 +104,8 @@ object WebServer {
     }
 
     private val gameIdLens = Path.of("gameId")
+
+    internal val Request.sessionId: SessionId get() = sessionIdLens.extract(this)
 }
 
 data class PlayerSession(

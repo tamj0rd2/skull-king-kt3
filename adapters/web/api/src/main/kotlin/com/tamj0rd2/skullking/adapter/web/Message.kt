@@ -19,20 +19,12 @@ import com.ubertob.kondor.json.ObjectNodeConverter
 import com.ubertob.kondor.json.jsonnode.JsonNodeObject
 import com.ubertob.kondor.json.obj
 import com.ubertob.kondor.json.str
-import org.http4k.asString
-import org.http4k.core.ContentType.Companion.APPLICATION_JSON
 import org.http4k.lens.BiDiWsMessageLens
-import org.http4k.lens.ContentNegotiation
-import org.http4k.lens.httpBodyRoot
 import org.http4k.websocket.WsMessage
 
 sealed interface Message
 
 data object CreateNewGameMessage : Message
-
-data class GameCreatedMessage(
-    val gameId: GameId,
-) : Message
 
 data class JoinAcknowledgedMessage(
     val playerId: PlayerId,
@@ -54,20 +46,12 @@ val wsLens =
         setLens = { message, _ -> WsMessage(JMessage.toJson(message)) },
     )
 
-val httpLens =
-    httpBodyRoot(emptyList(), APPLICATION_JSON, ContentNegotiation.None)
-        .map(
-            nextIn = { JMessage.fromJson(it.payload.asString()).orThrow() },
-            nextOut = { org.http4k.core.Body(JMessage.toJson(it)) },
-        ).toLens()
-
-private object JMessage : JSealed<Message>() {
+internal object JMessage : JSealed<Message>() {
     override val discriminatorFieldName: String = "type"
 
     override val subConverters: Map<String, ObjectNodeConverter<out Message>>
         get() =
             mapOf(
-                "game-created" to JGameCreatedMessage,
                 "create-game" to JSingleton(CreateNewGameMessage),
                 "start-game" to JSingleton(StartGameMessage),
                 "join-acknowledged" to JAcknowledged,
@@ -77,7 +61,6 @@ private object JMessage : JSealed<Message>() {
 
     override fun extractTypeName(obj: Message): String =
         when (obj) {
-            is GameCreatedMessage -> "game-created"
             is CreateNewGameMessage -> "create-game"
             is JoinAcknowledgedMessage -> "join-acknowledged"
             is GameUpdateMessage -> "game-update"
@@ -86,26 +69,17 @@ private object JMessage : JSealed<Message>() {
         }
 }
 
-private object JPlayerId : JStringRepresentable<PlayerId>() {
+internal object JPlayerId : JStringRepresentable<PlayerId>() {
     override val cons: (String) -> PlayerId = PlayerId.Companion::parse
     override val render: (PlayerId) -> String = PlayerId.Companion::show
 }
 
-private object JGameId : JStringRepresentable<GameId>() {
+internal object JGameId : JStringRepresentable<GameId>() {
     override val cons: (String) -> GameId = GameId.Companion::parse
     override val render: (GameId) -> String = GameId.Companion::show
 }
 
-private object JGameCreatedMessage : JAny<GameCreatedMessage>() {
-    private val gameId by str(JGameId, GameCreatedMessage::gameId)
-
-    override fun JsonNodeObject.deserializeOrThrow() =
-        GameCreatedMessage(
-            gameId = +gameId,
-        )
-}
-
-private object JAcknowledged : JAny<JoinAcknowledgedMessage>() {
+internal object JAcknowledged : JAny<JoinAcknowledgedMessage>() {
     private val playerId by str(JPlayerId, JoinAcknowledgedMessage::playerId)
 
     override fun JsonNodeObject.deserializeOrThrow() =
@@ -114,13 +88,13 @@ private object JAcknowledged : JAny<JoinAcknowledgedMessage>() {
         )
 }
 
-private object JGameUpdateMessage : JAny<GameUpdateMessage>() {
+internal object JGameUpdateMessage : JAny<GameUpdateMessage>() {
     private val gameUpdate by obj(JGameUpdate, GameUpdateMessage::gameUpdate)
 
     override fun JsonNodeObject.deserializeOrThrow() = GameUpdateMessage(gameUpdate = +gameUpdate)
 }
 
-private object JGameUpdate : JSealed<GameUpdate>() {
+internal object JGameUpdate : JSealed<GameUpdate>() {
     override val discriminatorFieldName: String = "type"
 
     override val subConverters: Map<String, ObjectNodeConverter<out GameUpdate>>
@@ -139,19 +113,19 @@ private object JGameUpdate : JSealed<GameUpdate>() {
         }
 }
 
-private object JPlayerJoined : JAny<PlayerJoined>() {
+internal object JPlayerJoined : JAny<PlayerJoined>() {
     private val playerId by str(JPlayerId, PlayerJoined::playerId)
 
     override fun JsonNodeObject.deserializeOrThrow() = PlayerJoined(playerId = +playerId)
 }
 
-private object JCardDealt : JAny<CardDealt>() {
+internal object JCardDealt : JAny<CardDealt>() {
     private val card by obj(JSingleton(Card), CardDealt::card)
 
     override fun JsonNodeObject.deserializeOrThrow() = CardDealt(card = +card)
 }
 
-private object JErrorMessage : JAny<ErrorMessage>() {
+internal object JErrorMessage : JAny<ErrorMessage>() {
     private val reason by str(JErrorMessage::errorMessageAsString)
 
     private fun errorMessageAsString(errorMessage: ErrorMessage): String =

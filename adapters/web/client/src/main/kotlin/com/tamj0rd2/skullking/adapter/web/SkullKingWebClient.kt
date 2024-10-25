@@ -1,6 +1,9 @@
 package com.tamj0rd2.skullking.adapter.web
 
 import com.tamj0rd2.extensions.asSuccess
+import com.tamj0rd2.skullking.adapter.web.CreateNewGameEndpoint.contract
+import com.tamj0rd2.skullking.adapter.web.CreateNewGameEndpoint.gameCreatedMessageLens
+import com.tamj0rd2.skullking.adapter.web.CreateNewGameEndpoint.sessionIdLens
 import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.CreateNewGameCommand
 import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.CreateNewGameOutput
 import com.tamj0rd2.skullking.application.port.input.JoinGameUseCase.JoinGameCommand
@@ -20,6 +23,7 @@ import org.http4k.client.ApacheClient
 import org.http4k.client.WebsocketClient
 import org.http4k.core.Uri
 import org.http4k.core.then
+import org.http4k.core.with
 import org.http4k.filter.ClientFilters
 import org.http4k.websocket.Websocket
 import java.time.Duration
@@ -34,12 +38,13 @@ class SkullKingWebClient(
     private lateinit var ws: Websocket
     private var playerId = PlayerId.NONE
 
-    override fun invoke(command: CreateNewGameCommand): CreateNewGameOutput =
-        httpClient(CreateNewGameEndpoint.newRequest(command.sessionId)).use {
+    override fun invoke(command: CreateNewGameCommand): CreateNewGameOutput {
+        val request = contract.newRequest().with(sessionIdLens of command.sessionId)
+        return httpClient(request).use {
             if (!it.status.successful) TODO("handle failure to create a new game")
-            val response = httpLens(it) as GameCreatedMessage
-            CreateNewGameOutput(response.gameId)
+            CreateNewGameOutput(gameCreatedMessageLens(it).gameId)
         }
+    }
 
     override fun invoke(command: JoinGameCommand): Result4k<JoinGameOutput, GameErrorCode> {
         ws = connectToWs(command.sessionId, command.gameId, command.gameUpdateListener)
