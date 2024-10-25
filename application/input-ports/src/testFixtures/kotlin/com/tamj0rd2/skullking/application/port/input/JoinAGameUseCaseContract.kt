@@ -6,9 +6,14 @@ import com.tamj0rd2.skullking.domain.game.AddPlayerErrorCode.GameIsFull
 import com.tamj0rd2.skullking.domain.game.AddPlayerErrorCode.PlayerHasAlreadyJoined
 import com.tamj0rd2.skullking.domain.game.Game.Companion.MAXIMUM_PLAYER_COUNT
 import com.tamj0rd2.skullking.domain.game.Game.Companion.MINIMUM_PLAYER_COUNT
+import com.tamj0rd2.skullking.domain.game.listOfSize
+import com.tamj0rd2.skullking.domain.game.propertyTest
+import io.kotest.property.Arb
+import io.kotest.property.arbitrary.int
+import io.kotest.property.checkAll
 import org.junit.jupiter.api.Test
 import strikt.api.expectThrows
-import strikt.assertions.containsExactlyInAnyOrder
+import strikt.assertions.contains
 import strikt.assertions.isEqualTo
 
 abstract class JoinAGameUseCaseContract {
@@ -23,26 +28,50 @@ abstract class JoinAGameUseCaseContract {
     }
 
     @Test
-    fun `given there is already a player in a game, when another player joins, both players know about the other`() {
-        val player1 = scenario.newPlayer()
-        val player2 = scenario.newPlayer()
+    fun `a player who joins the game is able to see themself in the game`() =
+        propertyTest {
+            checkAll(Arb.int(min = 1, max = MAXIMUM_PLAYER_COUNT - 1)) { playerCount ->
+                val (gameId, _) = scenario.newGame().withPlayerCount(playerCount).concludeSetup()
+                val newestPlayer = scenario.newPlayer()
+                newestPlayer.joinsAGame(gameId)
+                newestPlayer.hasGameStateWhere { players.contains(newestPlayer.id) }
+            }
+        }
 
-        val gameId = player1.createsAGame()
-        player1.joinsAGame(gameId)
-        player2.joinsAGame(gameId)
+    @Test
+    fun `a player who joins the game is able to see every player who had already joined before them`() =
+        propertyTest {
+            checkAll(Arb.int(min = 1, max = MAXIMUM_PLAYER_COUNT - 1)) { playerCount ->
+                val (gameId, initialPlayers) = scenario.newGame().withPlayerCount(playerCount).concludeSetup()
+                val newestPlayer = scenario.newPlayer()
+                newestPlayer.joinsAGame(gameId)
+                newestPlayer.hasGameStateWhere { players.contains(initialPlayers.ids) }
+            }
+        }
 
-        listOf(player1, player2).each { hasGameStateWhere { players.containsExactlyInAnyOrder(player1.id, player2.id) } }
-    }
+    @Test
+    fun `a player who joins the game is able to see every player who joins after them`() =
+        propertyTest {
+            checkAll(Arb.int(min = 1, max = MAXIMUM_PLAYER_COUNT - 1)) { playerCount ->
+                val initialPlayer = scenario.newPlayer()
+                val gameId = initialPlayer.createsAGame()
+                initialPlayer.joinsAGame(gameId)
+
+                val playersWhoJoinedAfter = listOfSize(playerCount, scenario::newPlayer).each { joinsAGame(gameId) }
+
+                initialPlayer.hasGameStateWhere { players.contains(playersWhoJoinedAfter.ids) }
+            }
+        }
 
     @Test
     fun `joining a full game is not possible`() {
-        val (gameId, _) = scenario.newGame().withPlayerCount(MAXIMUM_PLAYER_COUNT).done()
+        val (gameId, _) = scenario.newGame().withPlayerCount(MAXIMUM_PLAYER_COUNT).concludeSetup()
         val anotherPlayer = scenario.newPlayer()
         expectThrows<GameIsFull> { anotherPlayer.joinsAGame(gameId) }
     }
 
     @Test
-    fun `the same player cannot join the game more than once`() {
+    fun `a player cannot join a game they're already in`() {
         val player = scenario.newPlayer()
         val gameId = player.createsAGame()
         player.joinsAGame(gameId)
@@ -50,15 +79,18 @@ abstract class JoinAGameUseCaseContract {
     }
 
     @Test
-    fun `joining a game that has started is not possible`() {
-        val (gameId, _) =
-            scenario
-                .newGame()
-                .withPlayerCount(MINIMUM_PLAYER_COUNT)
-                .start()
-                .done()
+    fun `a player cannot join a game that has already started`() =
+        propertyTest {
+            checkAll(Arb.int(min = MINIMUM_PLAYER_COUNT, max = MAXIMUM_PLAYER_COUNT)) { playerCount ->
+                val (gameId, _) =
+                    scenario
+                        .newGame()
+                        .withPlayerCount(playerCount)
+                        .start()
+                        .concludeSetup()
 
-        val lateJoiningPlayer = scenario.newPlayer()
-        expectThrows<GameHasAlreadyStarted> { lateJoiningPlayer.joinsAGame(gameId) }
-    }
+                val lateJoiningPlayer = scenario.newPlayer()
+                expectThrows<GameHasAlreadyStarted> { lateJoiningPlayer.joinsAGame(gameId) }
+            }
+        }
 }

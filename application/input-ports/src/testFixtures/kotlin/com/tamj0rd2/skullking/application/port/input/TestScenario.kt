@@ -40,7 +40,9 @@ class Setup(
             playerRoles.random().startsTheGame()
         }
 
-    fun done() = gameId to playerRoles.toList()
+    fun concludeSetup() = gameId to playerRoles.toList()
 }
 
-fun List<PlayerRole>.each(block: PlayerRole.() -> Unit) = forEach(block)
+fun List<PlayerRole>.each(block: PlayerRole.() -> Unit) = onEach(block)
+
+val List<PlayerRole>.ids get() = map { it.id }
