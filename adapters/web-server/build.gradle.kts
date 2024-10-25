@@ -7,7 +7,7 @@ dependencies {
     forImplementation(project(":adapters:esdb"))
     forImplementation(project(":adapters:web-api"))
     forImplementation(project(":adapters:in-memory"))
-    forImplementation(project(":application"), alsoUseForTesting = true)
+    forImplementation(project(":application:services"), alsoUseForTesting = true)
     forImplementation(project(":application:input-ports"), alsoUseForTesting = true)
     forImplementation(project(":application:output-ports"), alsoUseForTesting = true)
     forImplementation(project(":domain:game"), alsoUseForTesting = true)

@@ -11,7 +11,7 @@ import com.tamj0rd2.skullking.adapter.JoinAcknowledgedMessage
 import com.tamj0rd2.skullking.adapter.PlayerIdStorageInMemoryAdapter
 import com.tamj0rd2.skullking.adapter.StartGameMessage
 import com.tamj0rd2.skullking.adapter.wsLens
-import com.tamj0rd2.skullking.application.SkullKingApplication
+import com.tamj0rd2.skullking.application.service.SkullKingApplication
 import com.tamj0rd2.skullking.domain.model.PlayerId
 import com.tamj0rd2.skullking.domain.model.game.GameId
 import dev.forkhandles.result4k.onFailure

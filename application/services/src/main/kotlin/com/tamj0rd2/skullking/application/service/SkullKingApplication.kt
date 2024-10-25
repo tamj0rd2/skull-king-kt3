@@ -1,4 +1,4 @@
-package com.tamj0rd2.skullking.application
+package com.tamj0rd2.skullking.application.service
 
 import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase
 import com.tamj0rd2.skullking.application.port.input.JoinGameUseCase
@@ -8,9 +8,6 @@ import com.tamj0rd2.skullking.application.port.output.FindPlayerIdPort
 import com.tamj0rd2.skullking.application.port.output.GameRepository
 import com.tamj0rd2.skullking.application.port.output.GameUpdateNotifier
 import com.tamj0rd2.skullking.application.port.output.SavePlayerIdPort
-import com.tamj0rd2.skullking.application.service.CreateNewGameService
-import com.tamj0rd2.skullking.application.service.JoinGameService
-import com.tamj0rd2.skullking.application.service.StartGameService
 
 class SkullKingApplication private constructor(
     private val createNewGameUseCase: CreateNewGameUseCase,
