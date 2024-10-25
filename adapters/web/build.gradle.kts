@@ -4,7 +4,7 @@ plugins {
 
 dependencies {
     implementation(libs.bundles.http4k.server)
-    implementation(project(":adapter-esdb"))
+    implementation(project(":adapters:esdb"))
     implementation(project(":application"))
     implementation(project(":domain:game"))
     testImplementation(testFixtures(project(":application")))

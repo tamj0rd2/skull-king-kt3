@@ -12,8 +12,8 @@ plugins {
 
 rootProject.name = "skull-king"
 include(
-    ":adapter-esdb",
-    ":adapter-web",
+    ":adapters:esdb",
+    ":adapters:web",
     ":application",
     ":domain:auth",
     ":domain:game",
