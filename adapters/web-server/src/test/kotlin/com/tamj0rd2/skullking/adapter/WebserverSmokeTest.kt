@@ -1,7 +1,7 @@
 package com.tamj0rd2.skullking.adapter
 
 import com.tamj0rd2.skullking.adapter.web.WebServer
-import com.tamj0rd2.skullking.application.port.input.roles.PlayerRole
+import com.tamj0rd2.skullking.application.port.input.PlayerRole
 import come.tamj0rd2.skullking.adapter.SkullKingWebClient
 import org.http4k.core.Uri
 import org.junit.jupiter.api.Test

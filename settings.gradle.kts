@@ -18,6 +18,7 @@ include(
     ":adapters:web-client",
     ":adapters:web-server",
     ":application",
+    ":application:input-ports",
     ":application:output-ports",
     ":domain:auth",
     ":domain:game",

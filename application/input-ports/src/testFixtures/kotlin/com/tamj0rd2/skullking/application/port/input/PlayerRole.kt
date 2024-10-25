@@ -1,8 +1,7 @@
-package com.tamj0rd2.skullking.application.port.input.roles
+package com.tamj0rd2.skullking.application.port.input
 
 import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.CreateNewGameCommand
 import com.tamj0rd2.skullking.application.port.input.JoinGameUseCase.JoinGameCommand
-import com.tamj0rd2.skullking.application.port.input.SkullKingUseCases
 import com.tamj0rd2.skullking.application.port.input.StartGameUseCase.StartGameCommand
 import com.tamj0rd2.skullking.application.port.output.GameUpdateListener
 import com.tamj0rd2.skullking.domain.model.PlayerId
@@ -14,12 +13,12 @@ import com.tamj0rd2.skullking.domain.model.game.GameUpdate.CardDealt
 import com.tamj0rd2.skullking.domain.model.game.GameUpdate.GameStarted
 import com.tamj0rd2.skullking.domain.model.game.GameUpdate.PlayerJoined
 import com.tamj0rd2.skullking.domain.model.game.RoundNumber
-import com.tamj0rd2.testhelpers.eventually
 import dev.forkhandles.result4k.orThrow
 import dev.forkhandles.values.random
 import strikt.api.Assertion.Builder
 import strikt.api.expectThat
 import strikt.assertions.isNotEqualTo
+import java.time.Instant
 
 class PlayerRole(
     private val driver: SkullKingUseCases,
@@ -91,6 +90,22 @@ class PlayerRole(
             val Builder<PlayerGameState>.roundNumber get() = get { roundNumber }
             val Builder<PlayerGameState>.hand get() = get { hand }
             val Builder<PlayerGameState>.players get() = get { players }
+        }
+    }
+
+    companion object {
+        private fun <T> eventually(block: () -> T): T {
+            val stopAt = Instant.now().plusMillis(200)
+            var lastError: AssertionError?
+            do {
+                try {
+                    return block()
+                } catch (e: AssertionError) {
+                    lastError = e
+                }
+            } while (stopAt > Instant.now())
+
+            throw checkNotNull(lastError)
         }
     }
 }

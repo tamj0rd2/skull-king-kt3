@@ -1,6 +1,6 @@
 package com.tamj0rd2.skullking.application.port.input
 
-import com.tamj0rd2.skullking.application.port.input.roles.PlayerRole.PlayerGameState.Companion.players
+import com.tamj0rd2.skullking.application.port.input.PlayerRole.PlayerGameState.Companion.players
 import com.tamj0rd2.skullking.domain.model.game.AddPlayerErrorCode.GameHasAlreadyStarted
 import com.tamj0rd2.skullking.domain.model.game.Game.Companion.MAXIMUM_PLAYER_COUNT
 import com.tamj0rd2.skullking.domain.model.game.Game.Companion.MINIMUM_PLAYER_COUNT
