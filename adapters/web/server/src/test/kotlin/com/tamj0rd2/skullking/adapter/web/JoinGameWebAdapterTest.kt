@@ -1,7 +1,7 @@
 package com.tamj0rd2.skullking.adapter.web
 
-import com.tamj0rd2.skullking.application.port.input.JoinGameUseCaseContract
+import com.tamj0rd2.skullking.application.port.input.JoinAGameUseCaseContract
 
-class JoinGameWebAdapterTest : JoinGameUseCaseContract() {
+class JoinGameWebAdapterTest : JoinAGameUseCaseContract() {
     override val scenario = WebTestScenario()
 }

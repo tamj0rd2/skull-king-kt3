@@ -1,7 +1,7 @@
 package com.tamj0rd2.skullking.application.port.input
 
 import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.CreateNewGameCommand
-import com.tamj0rd2.skullking.application.port.input.JoinGameUseCase.JoinGameCommand
+import com.tamj0rd2.skullking.application.port.input.JoinAGameUseCase.JoinGameCommand
 import com.tamj0rd2.skullking.application.port.input.StartGameUseCase.StartGameCommand
 import com.tamj0rd2.skullking.application.port.output.GameUpdateListener
 import com.tamj0rd2.skullking.domain.auth.SessionId

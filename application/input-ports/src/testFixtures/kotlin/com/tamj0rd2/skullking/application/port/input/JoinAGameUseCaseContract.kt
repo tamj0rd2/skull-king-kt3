@@ -11,7 +11,7 @@ import strikt.api.expectThrows
 import strikt.assertions.containsExactlyInAnyOrder
 import strikt.assertions.isEqualTo
 
-abstract class JoinGameUseCaseContract {
+abstract class JoinAGameUseCaseContract {
     protected abstract val scenario: TestScenario
 
     @Test

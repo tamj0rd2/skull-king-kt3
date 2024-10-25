@@ -7,7 +7,7 @@ import com.tamj0rd2.skullking.domain.game.GameId
 import com.tamj0rd2.skullking.domain.game.PlayerId
 import dev.forkhandles.result4k.Result4k
 
-interface JoinGameUseCase {
+interface JoinAGameUseCase {
     operator fun invoke(command: JoinGameCommand): Result4k<JoinGameOutput, GameErrorCode>
 
     data class JoinGameCommand(

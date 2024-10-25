@@ -1,9 +1,9 @@
 package com.tamj0rd2.skullking.application.service
 
 import com.tamj0rd2.extensions.asSuccess
-import com.tamj0rd2.skullking.application.port.input.JoinGameUseCase
-import com.tamj0rd2.skullking.application.port.input.JoinGameUseCase.JoinGameCommand
-import com.tamj0rd2.skullking.application.port.input.JoinGameUseCase.JoinGameOutput
+import com.tamj0rd2.skullking.application.port.input.JoinAGameUseCase
+import com.tamj0rd2.skullking.application.port.input.JoinAGameUseCase.JoinGameCommand
+import com.tamj0rd2.skullking.application.port.input.JoinAGameUseCase.JoinGameOutput
 import com.tamj0rd2.skullking.application.port.output.FindPlayerIdPort
 import com.tamj0rd2.skullking.application.port.output.GameRepository
 import com.tamj0rd2.skullking.application.port.output.GameUpdateNotifier
@@ -17,12 +17,12 @@ import dev.forkhandles.result4k.Result4k
 import dev.forkhandles.result4k.onFailure
 import dev.forkhandles.values.random
 
-class JoinGameService(
+class JoinAGameService(
     private val gameRepository: GameRepository,
     private val gameUpdateNotifier: GameUpdateNotifier,
     private val findPlayerIdPort: FindPlayerIdPort,
     private val savePlayerIdPort: SavePlayerIdPort,
-) : JoinGameUseCase {
+) : JoinAGameUseCase {
     override fun invoke(command: JoinGameCommand): Result4k<JoinGameOutput, GameErrorCode> {
         val playerId = findOrCreatePlayerId(command.sessionId)
 

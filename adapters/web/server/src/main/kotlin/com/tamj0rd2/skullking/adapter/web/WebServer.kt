@@ -50,7 +50,7 @@ object WebServer {
         port: Int = getUnusedPort(),
     ): Http4kServer {
         val createGameController = CreateGameController(application)
-        val joinGameController = JoinGameController(application)
+        val joinGameController = JoinAGameController(application)
         val startGameController = StartGameController(application)
 
         val http =
