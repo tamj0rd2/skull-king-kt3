@@ -14,9 +14,9 @@ rootProject.name = "skull-king"
 include(
     ":adapters:esdb",
     ":adapters:in-memory",
-    ":adapters:web-api",
-    ":adapters:web-client",
-    ":adapters:web-server",
+    ":adapters:web:api",
+    ":adapters:web:client",
+    ":adapters:web:server",
     ":application:input-ports",
     ":application:output-ports",
     ":application:services",

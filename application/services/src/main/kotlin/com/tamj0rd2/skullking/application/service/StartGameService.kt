@@ -6,15 +6,15 @@ import com.tamj0rd2.skullking.application.port.input.StartGameUseCase.StartGameC
 import com.tamj0rd2.skullking.application.port.input.StartGameUseCase.StartGameOutput
 import com.tamj0rd2.skullking.application.port.output.GameRepository
 import com.tamj0rd2.skullking.application.port.output.GameUpdateNotifier
-import com.tamj0rd2.skullking.domain.model.game.Card
-import com.tamj0rd2.skullking.domain.model.game.CardDealtEvent
-import com.tamj0rd2.skullking.domain.model.game.GameAction
-import com.tamj0rd2.skullking.domain.model.game.GameCreatedEvent
-import com.tamj0rd2.skullking.domain.model.game.GameErrorCode
-import com.tamj0rd2.skullking.domain.model.game.GameEvent
-import com.tamj0rd2.skullking.domain.model.game.GameStartedEvent
-import com.tamj0rd2.skullking.domain.model.game.GameUpdate
-import com.tamj0rd2.skullking.domain.model.game.PlayerJoinedEvent
+import com.tamj0rd2.skullking.domain.game.Card
+import com.tamj0rd2.skullking.domain.game.CardDealtEvent
+import com.tamj0rd2.skullking.domain.game.GameAction
+import com.tamj0rd2.skullking.domain.game.GameCreatedEvent
+import com.tamj0rd2.skullking.domain.game.GameErrorCode
+import com.tamj0rd2.skullking.domain.game.GameEvent
+import com.tamj0rd2.skullking.domain.game.GameStartedEvent
+import com.tamj0rd2.skullking.domain.game.GameUpdate
+import com.tamj0rd2.skullking.domain.game.PlayerJoinedEvent
 import dev.forkhandles.result4k.Result4k
 import dev.forkhandles.result4k.onFailure
 

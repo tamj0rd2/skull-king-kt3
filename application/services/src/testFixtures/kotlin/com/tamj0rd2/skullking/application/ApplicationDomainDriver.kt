@@ -1,9 +1,8 @@
 package com.tamj0rd2.skullking.application
 
-import com.tamj0rd2.skullking.adapter.GameRepositoryInMemoryAdapter
-import com.tamj0rd2.skullking.adapter.GameUpdateNotifierInMemoryAdapter
-import com.tamj0rd2.skullking.adapter.PlayerIdStorageInMemoryAdapter
-import com.tamj0rd2.skullking.application.service.SkullKingApplication
+import com.tamj0rd2.skullking.adapter.inmemory.GameRepositoryInMemoryAdapter
+import com.tamj0rd2.skullking.adapter.inmemory.GameUpdateNotifierInMemoryAdapter
+import com.tamj0rd2.skullking.adapter.inmemory.PlayerIdStorageInMemoryAdapter
 
 fun SkullKingApplication.Companion.usingTestDoublesByDefault(): SkullKingApplication {
     val playerIdStorage = PlayerIdStorageInMemoryAdapter()

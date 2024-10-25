@@ -1,10 +1,10 @@
 package com.tamj0rd2.skullking.application.port.input
 
 import com.tamj0rd2.skullking.application.port.output.GameUpdateListener
-import com.tamj0rd2.skullking.domain.model.auth.SessionId
-import com.tamj0rd2.skullking.domain.model.game.GameErrorCode
-import com.tamj0rd2.skullking.domain.model.game.GameId
-import com.tamj0rd2.skullking.domain.model.game.PlayerId
+import com.tamj0rd2.skullking.domain.auth.SessionId
+import com.tamj0rd2.skullking.domain.game.GameErrorCode
+import com.tamj0rd2.skullking.domain.game.GameId
+import com.tamj0rd2.skullking.domain.game.PlayerId
 import dev.forkhandles.result4k.Result4k
 
 interface JoinGameUseCase {

@@ -1,11 +1,11 @@
 package com.tamj0rd2.skullking.application.port.output
 
-import com.tamj0rd2.skullking.domain.GameActionArbs
-import com.tamj0rd2.skullking.domain.model.game.Game
-import com.tamj0rd2.skullking.domain.model.game.GameId
-import com.tamj0rd2.skullking.domain.model.game.Version
-import com.tamj0rd2.skullking.domain.mustExecute
-import com.tamj0rd2.skullking.domain.propertyTest
+import com.tamj0rd2.skullking.domain.game.Game
+import com.tamj0rd2.skullking.domain.game.GameActionArbs
+import com.tamj0rd2.skullking.domain.game.GameId
+import com.tamj0rd2.skullking.domain.game.Version
+import com.tamj0rd2.skullking.domain.game.mustExecute
+import com.tamj0rd2.skullking.domain.game.propertyTest
 import dev.forkhandles.values.random
 import io.kotest.property.checkAll
 import org.junit.jupiter.api.Test

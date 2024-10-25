@@ -1,11 +1,11 @@
 package com.tamj0rd2.skullking.application.port.output
 
-import com.tamj0rd2.skullking.domain.GameArbs
-import com.tamj0rd2.skullking.domain.GameUpdateArbs
-import com.tamj0rd2.skullking.domain.listOfSize
-import com.tamj0rd2.skullking.domain.model.game.Game
-import com.tamj0rd2.skullking.domain.model.game.GameUpdate
-import com.tamj0rd2.skullking.domain.propertyTest
+import com.tamj0rd2.skullking.domain.game.Game
+import com.tamj0rd2.skullking.domain.game.GameArbs
+import com.tamj0rd2.skullking.domain.game.GameUpdate
+import com.tamj0rd2.skullking.domain.game.GameUpdateArbs
+import com.tamj0rd2.skullking.domain.game.listOfSize
+import com.tamj0rd2.skullking.domain.game.propertyTest
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.int
 import io.kotest.property.arbitrary.list

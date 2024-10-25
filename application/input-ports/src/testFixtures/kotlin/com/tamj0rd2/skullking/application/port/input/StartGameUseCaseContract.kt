@@ -2,8 +2,8 @@ package com.tamj0rd2.skullking.application.port.input
 
 import com.tamj0rd2.skullking.application.port.input.PlayerRole.PlayerGameState.Companion.hand
 import com.tamj0rd2.skullking.application.port.input.PlayerRole.PlayerGameState.Companion.roundNumber
-import com.tamj0rd2.skullking.domain.model.game.RoundNumber
-import com.tamj0rd2.skullking.domain.model.game.StartGameErrorCode.TooFewPlayers
+import com.tamj0rd2.skullking.domain.game.RoundNumber
+import com.tamj0rd2.skullking.domain.game.StartGameErrorCode.TooFewPlayers
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import strikt.api.expectThrows

@@ -1,7 +1,7 @@
 package com.tamj0rd2.skullking.application.port.input
 
-import com.tamj0rd2.skullking.domain.model.game.Game
-import com.tamj0rd2.skullking.domain.model.game.GameId
+import com.tamj0rd2.skullking.domain.game.Game
+import com.tamj0rd2.skullking.domain.game.GameId
 
 interface TestScenario {
     fun newPlayer(): PlayerRole
