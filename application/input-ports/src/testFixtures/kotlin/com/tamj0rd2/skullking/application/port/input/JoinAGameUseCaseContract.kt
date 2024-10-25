@@ -31,7 +31,7 @@ abstract class JoinAGameUseCaseContract {
     fun `a player who joins the game is able to see themself in the game`() =
         propertyTest {
             checkAll(Arb.int(min = 1, max = MAXIMUM_PLAYER_COUNT - 1)) { playerCount ->
-                val (gameId, _) = scenario.newGame().withPlayerCount(playerCount).concludeSetup()
+                val (gameId, _) = scenario.newGame(playerCount = playerCount)
                 val newestPlayer = scenario.newPlayer()
                 newestPlayer.joinsAGame(gameId)
                 newestPlayer.hasGameStateWhere { players.contains(newestPlayer.id) }
@@ -42,7 +42,7 @@ abstract class JoinAGameUseCaseContract {
     fun `a player who joins the game is able to see every player who had already joined before them`() =
         propertyTest {
             checkAll(Arb.int(min = 1, max = MAXIMUM_PLAYER_COUNT - 1)) { playerCount ->
-                val (gameId, initialPlayers) = scenario.newGame().withPlayerCount(playerCount).concludeSetup()
+                val (gameId, initialPlayers) = scenario.newGame(playerCount = playerCount)
                 val newestPlayer = scenario.newPlayer()
                 newestPlayer.joinsAGame(gameId)
                 newestPlayer.hasGameStateWhere { players.contains(initialPlayers.ids) }
@@ -65,7 +65,7 @@ abstract class JoinAGameUseCaseContract {
 
     @Test
     fun `joining a full game is not possible`() {
-        val (gameId, _) = scenario.newGame().withPlayerCount(MAXIMUM_PLAYER_COUNT).concludeSetup()
+        val (gameId, _) = scenario.newGame(playerCount = MAXIMUM_PLAYER_COUNT)
         val anotherPlayer = scenario.newPlayer()
         expectThrows<GameIsFull> { anotherPlayer.joinsAGame(gameId) }
     }
@@ -82,13 +82,7 @@ abstract class JoinAGameUseCaseContract {
     fun `a player cannot join a game that has already started`() =
         propertyTest {
             checkAll(Arb.int(min = MINIMUM_PLAYER_COUNT, max = MAXIMUM_PLAYER_COUNT)) { playerCount ->
-                val (gameId, _) =
-                    scenario
-                        .newGame()
-                        .withPlayerCount(playerCount)
-                        .start()
-                        .concludeSetup()
-
+                val (gameId, _) = scenario.newGame(playerCount = playerCount, startGame = true)
                 val lateJoiningPlayer = scenario.newPlayer()
                 expectThrows<GameHasAlreadyStarted> { lateJoiningPlayer.joinsAGame(gameId) }
             }

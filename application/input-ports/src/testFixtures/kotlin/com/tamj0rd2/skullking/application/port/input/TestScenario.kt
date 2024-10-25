@@ -7,40 +7,51 @@ interface TestScenario {
     fun newPlayer(): PlayerRole
 
     fun newGame() = Setup(this)
+
+    fun newGame(
+        playerCount: Int,
+        startGame: Boolean = false,
+    ): Pair<GameId, List<PlayerRole>> {
+        val setup = Setup(this)
+        setup.withPlayerCount(playerCount)
+
+        if (startGame) setup.start()
+        return setup.concludeSetup()
+    }
 }
 
 // TODO: find a way to make this possible using a property-test
 class Setup(
     private val scenario: TestScenario,
 ) {
-    private val playerRoles = mutableListOf<PlayerRole>()
+    private val players = mutableListOf<PlayerRole>()
     private val gameId: GameId
 
     init {
         val creator = scenario.newPlayer()
-        playerRoles.add(creator)
+        players.add(creator)
 
         gameId = creator.createsAGame()
         creator.joinsAGame(gameId)
     }
 
-    fun withMinimumPlayersToStart() = withPlayerCount(Game.MINIMUM_PLAYER_COUNT)
+    fun withEnoughPlayersToStart() = withPlayerCount(Game.MINIMUM_PLAYER_COUNT)
 
     fun withPlayerCount(count: Int) =
         apply {
-            repeat(count - playerRoles.size) {
+            repeat(count - players.size) {
                 val player = scenario.newPlayer()
                 player.joinsAGame(gameId)
-                playerRoles.add(player)
+                players.add(player)
             }
         }
 
     fun start() =
         apply {
-            playerRoles.random().startsTheGame()
+            players.random().startsTheGame()
         }
 
-    fun concludeSetup() = gameId to playerRoles.toList()
+    fun concludeSetup() = gameId to players.toList()
 }
 
 fun List<PlayerRole>.each(block: PlayerRole.() -> Unit) = onEach(block)
