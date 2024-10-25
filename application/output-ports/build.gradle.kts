@@ -1,18 +1,10 @@
 plugins {
-    id("buildlogic.kotlin-application-conventions")
+    id("buildlogic.kotlin-library-conventions")
 }
 
 dependencies {
-    forImplementation(libs.bundles.http4k.server)
-    forImplementation(project(":adapters:esdb"))
-    forImplementation(project(":adapters:web-api"))
-    forImplementation(project(":adapters:in-memory"))
-    forImplementation(project(":application"), alsoUseForTesting = true)
-    forImplementation(project(":application:output-ports"), alsoUseForTesting = true)
+    forImplementation(project(":domain:auth"), alsoUseForTesting = true)
     forImplementation(project(":domain:game"), alsoUseForTesting = true)
-
-    forTesting(libs.http4k.core)
-    forTesting(project(":adapters:web-client"))
 }
 
 private fun DependencyHandlerScope.forImplementation(

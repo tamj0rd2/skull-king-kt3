@@ -1,9 +1,10 @@
-package com.tamj0rd2.skullking.application.port.output
+package com.tamj0rd2.skullking.adapter
 
+import com.tamj0rd2.skullking.application.port.output.GameUpdateListener
+import com.tamj0rd2.skullking.application.port.output.GameUpdateNotifier
 import com.tamj0rd2.skullking.domain.model.game.GameId
 import com.tamj0rd2.skullking.domain.model.game.GameUpdate
 
-// TODO: move this to test fixtures if/when I create a real implementation for the server.
 class GameUpdateNotifierInMemoryAdapter : GameUpdateNotifier {
     private val storagePerGame = mutableMapOf<GameId, GameSpecificNotifier>()
 

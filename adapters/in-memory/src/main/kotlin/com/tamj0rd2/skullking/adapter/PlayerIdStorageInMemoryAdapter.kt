@@ -1,9 +1,9 @@
-package com.tamj0rd2.skullking.application.port.output
+package com.tamj0rd2.skullking.adapter
 
+import com.tamj0rd2.skullking.application.port.output.PlayerIdStorage
 import com.tamj0rd2.skullking.domain.model.PlayerId
 import com.tamj0rd2.skullking.domain.model.auth.SessionId
 
-// TODO: move this to test fixtures once I have a real implementation
 class PlayerIdStorageInMemoryAdapter : PlayerIdStorage {
     private val playerIds = mutableMapOf<SessionId, PlayerId>()
 

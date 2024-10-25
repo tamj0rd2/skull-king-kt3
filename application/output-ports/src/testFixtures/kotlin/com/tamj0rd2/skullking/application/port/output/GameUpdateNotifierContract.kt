@@ -1,7 +1,7 @@
 package com.tamj0rd2.skullking.application.port.output
 
-import com.tamj0rd2.skullking.domain.GameArbs.gameIdArb
-import com.tamj0rd2.skullking.domain.GameUpdateArbs.gameUpdateArb
+import com.tamj0rd2.skullking.domain.GameArbs
+import com.tamj0rd2.skullking.domain.GameUpdateArbs
 import com.tamj0rd2.skullking.domain.listOfSize
 import com.tamj0rd2.skullking.domain.model.game.Game
 import com.tamj0rd2.skullking.domain.model.game.GameUpdate
@@ -24,12 +24,13 @@ abstract class GameUpdateNotifierContract {
         propertyTest {
             checkAll(
                 Arb.nonNegativeInt(max = Game.MAXIMUM_PLAYER_COUNT),
-                Arb.list(gameUpdateArb),
-                Arb.list(gameUpdateArb),
-                gameIdArb,
-                gameIdArb,
+                Arb.list(GameUpdateArbs.gameUpdateArb),
+                Arb.list(GameUpdateArbs.gameUpdateArb),
+                GameArbs.gameIdArb,
+                GameArbs.gameIdArb,
             ) { listenerCount, gameUpdates, gameUpdateForAnotherGame, thisGameId, anotherGameId ->
-                val spyListenersForThisGame = listOfSize(listenerCount, ::SpyGameUpdateListener).onEach { sut.subscribe(thisGameId, it) }
+                val spyListenersForThisGame =
+                    listOfSize(listenerCount, ::SpyGameUpdateListener).onEach { sut.subscribe(thisGameId, it) }
                 gameUpdates.forEach { sut.broadcast(thisGameId, it) }
                 gameUpdateForAnotherGame.forEach { sut.broadcast(anotherGameId, it) }
                 expectThat(spyListenersForThisGame).all { get { receivedUpdates }.isEqualTo(gameUpdates) }
@@ -41,10 +42,11 @@ abstract class GameUpdateNotifierContract {
         propertyTest {
             checkAll(
                 Arb.int(min = 1, max = Game.MAXIMUM_PLAYER_COUNT),
-                Arb.list(gameUpdateArb),
-                gameIdArb,
+                Arb.list(GameUpdateArbs.gameUpdateArb),
+                GameArbs.gameIdArb,
             ) { listenerCount, gameUpdates, gameId ->
-                val alreadySubscribedListeners = listOfSize(listenerCount, ::SpyGameUpdateListener).onEach { sut.subscribe(gameId, it) }
+                val alreadySubscribedListeners =
+                    listOfSize(listenerCount, ::SpyGameUpdateListener).onEach { sut.subscribe(gameId, it) }
                 gameUpdates.forEach { sut.broadcast(gameId, it) }
                 expectThat(alreadySubscribedListeners).all { get { receivedUpdates }.isEqualTo(gameUpdates) }
 
@@ -53,13 +55,13 @@ abstract class GameUpdateNotifierContract {
                 expectThat(lateSubscriber).get { receivedUpdates }.isEqualTo(gameUpdates)
             }
         }
-}
 
-private class SpyGameUpdateListener : GameUpdateListener {
-    private val _receivedUpdates = mutableListOf<GameUpdate>()
-    val receivedUpdates get() = _receivedUpdates.toList()
+    private class SpyGameUpdateListener : GameUpdateListener {
+        private val _receivedUpdates = mutableListOf<GameUpdate>()
+        val receivedUpdates get() = _receivedUpdates.toList()
 
-    override fun send(updates: List<GameUpdate>) {
-        _receivedUpdates += updates
+        override fun send(updates: List<GameUpdate>) {
+            _receivedUpdates += updates
+        }
     }
 }

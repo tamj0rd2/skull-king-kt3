@@ -5,6 +5,8 @@ plugins {
 dependencies {
     forImplementation(project(":domain:auth"), alsoUseForTesting = true)
     forImplementation(project(":domain:game"), alsoUseForTesting = true)
+    forImplementation(project(":application:output-ports"), alsoUseForTesting = true)
+    forImplementation(project(":adapters:in-memory"), alsoUseForTesting = true)
 
     forTesting(libs.konsist)
 }

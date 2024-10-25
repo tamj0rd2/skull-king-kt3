@@ -7,6 +7,7 @@ dependencies {
     forImplementation(libs.eventstoredb)
     forImplementation(project(":domain:game"))
     forImplementation(project(":application"), alsoUseForTesting = true)
+    forImplementation(project(":application:output-ports"), alsoUseForTesting = true)
 }
 
 private fun DependencyHandlerScope.forImplementation(
