@@ -4,6 +4,4 @@ plugins {
 
 dependencies {
     api(libs.values4k)
-    api(libs.result4k)
-    api(project(":lib:forkhandles-extensions"))
 }

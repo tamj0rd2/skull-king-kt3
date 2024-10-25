@@ -28,12 +28,12 @@ import com.ubertob.kondor.json.str
 import java.util.concurrent.ExecutionException
 import kotlin.text.Charsets.UTF_8
 
-class GameRepositoryEsdbAdapter(
+class GameRepositoryEsdbAdapter : GameRepository {
     private val client: EventStoreDBClient =
         EventStoreDBClient.create(
             EventStoreDBConnectionString.parseOrThrow("esdb://localhost:2113?tls=false"),
-        ),
-) : GameRepository {
+        )
+
     override fun load(gameId: GameId): Game {
         val events =
             readEvents(gameId.asStreamName())

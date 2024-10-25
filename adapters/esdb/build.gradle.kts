@@ -3,11 +3,26 @@ plugins {
 }
 
 dependencies {
-    api(libs.values4k)
-    api("com.eventstore:db-client-java:5.2.0")
-    implementation(project(":domain:game"))
-    implementation(project(":application"))
-    testImplementation(testFixtures(project(":application")))
-    testFixturesImplementation(testFixtures(project(":application")))
-    implementation(libs.bundles.json)
+    forImplementation(libs.bundles.json)
+    forImplementation(libs.eventstoredb)
+    forImplementation(project(":domain:game"))
+    forImplementation(project(":application"), alsoUseForTesting = true)
+}
+
+private fun DependencyHandlerScope.forImplementation(
+    dependency: Any,
+    alsoUseForTesting: Boolean = false,
+) {
+    implementation(dependency)
+    if (alsoUseForTesting) forTesting(dependency)
+}
+
+private fun DependencyHandlerScope.forTesting(dependency: Any) {
+    testImplementation(dependency)
+    testFixturesImplementation(dependency)
+
+    if (dependency is ProjectDependency) {
+        testImplementation(testFixtures(dependency))
+        testFixturesImplementation(testFixtures(dependency))
+    }
 }
