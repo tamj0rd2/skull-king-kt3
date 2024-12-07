@@ -52,8 +52,7 @@ abstract class StartGameUseCaseContract {
     @Test
     fun `a game cannot be started with less than 2 players`() {
         val player1 = scenario.newPlayer()
-        val gameId = player1.createsAGame()
-        player1.joinsAGame(gameId)
+        player1.createsAGame()
         expectThrows<TooFewPlayers> { player1.startsTheGame() }
     }
 }

@@ -2,10 +2,12 @@ package com.tamj0rd2.skullking.application.port.input
 
 import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.CreateNewGameCommand
 import com.tamj0rd2.skullking.application.port.input.JoinAGameUseCase.JoinGameCommand
+import com.tamj0rd2.skullking.application.port.input.PlayerRole.PlayerGameState.Companion.players
 import com.tamj0rd2.skullking.application.port.input.StartGameUseCase.StartGameCommand
 import com.tamj0rd2.skullking.application.port.output.GameUpdateListener
 import com.tamj0rd2.skullking.domain.auth.SessionId
 import com.tamj0rd2.skullking.domain.game.Card
+import com.tamj0rd2.skullking.domain.game.GameErrorCode
 import com.tamj0rd2.skullking.domain.game.GameId
 import com.tamj0rd2.skullking.domain.game.GameUpdate
 import com.tamj0rd2.skullking.domain.game.GameUpdate.CardDealt
@@ -17,7 +19,9 @@ import dev.forkhandles.result4k.orThrow
 import dev.forkhandles.values.random
 import strikt.api.Assertion.Builder
 import strikt.api.expectThat
+import strikt.assertions.contains
 import strikt.assertions.isNotEqualTo
+import strikt.assertions.isNotNull
 import java.time.Instant
 
 class PlayerRole(
@@ -39,10 +43,33 @@ class PlayerRole(
     override fun toString(): String = "$sessionId ($id)"
 
     private var gameId = GameId.NONE
+        get() {
+            expectThat(field).isNotEqualTo(GameId.NONE)
+            return field
+        }
 
     private val receivedGameUpdates = mutableListOf<GameUpdate>()
 
-    fun createsAGame(): GameId = driver(CreateNewGameCommand(sessionId)).gameId
+    fun `has created a game`() {
+        createsAGame()
+    }
+
+    fun createsAGame(): GameId {
+        val output =
+            driver(
+                CreateNewGameCommand(
+                    sessionId = sessionId,
+                    gameUpdateListener = this,
+                ),
+            )
+
+        expectThat(output.playerId).isNotEqualTo(PlayerId.NONE)
+        id = output.playerId
+
+        expectThat(output.gameId).isNotEqualTo(GameId.NONE)
+        this.gameId = output.gameId
+        return output.gameId
+    }
 
     fun joinsAGame(gameId: GameId): PlayerId {
         this.gameId = gameId
@@ -58,11 +85,32 @@ class PlayerRole(
         }
     }
 
+    private var latestErrorCode: GameErrorCode? = null
+
+    fun `tries to join the game again`() {
+        expectThat(gameId).isNotEqualTo(GameId.NONE)
+
+        try {
+            joinsAGame(gameId)
+        } catch (e: GameErrorCode) {
+            latestErrorCode = e
+        }
+    }
+
+    fun `gets the error`(expectedErrorCode: GameErrorCode) {
+        expectThat(latestErrorCode).isNotNull().isA(expectedErrorCode::class.java)
+        latestErrorCode = null
+    }
+
     fun startsTheGame() {
         driver(StartGameCommand(gameId, id)).orThrow()
     }
 
     private var state = PlayerGameState()
+
+    fun `sees them self in the game`() {
+        hasGameStateWhere { players.contains(id) }
+    }
 
     fun hasGameStateWhere(assertion: Builder<PlayerGameState>.() -> Unit) {
         eventually {
@@ -91,9 +139,9 @@ class PlayerRole(
         val players: List<PlayerId> = emptyList(),
     ) {
         companion object {
-            val Builder<PlayerGameState>.roundNumber get() = get { roundNumber }
-            val Builder<PlayerGameState>.hand get() = get { hand }
-            val Builder<PlayerGameState>.players get() = get { players }
+            val Builder<PlayerGameState>.roundNumber get() = get { roundNumber }.describedAs("round number")
+            val Builder<PlayerGameState>.hand get() = get { hand }.describedAs("hand")
+            val Builder<PlayerGameState>.players get() = get { players }.describedAs("players")
         }
     }
 
@@ -111,5 +159,15 @@ class PlayerRole(
 
             throw checkNotNull(lastError)
         }
+
+        @Suppress("UNCHECKED_CAST")
+        fun <T> Builder<*>.isA(clazz: Class<T>): Builder<T> =
+            assert("is an instance of %s", clazz) {
+                when {
+                    it == null -> fail(actual = null)
+                    it::class.java == clazz -> pass(actual = clazz)
+                    else -> fail(actual = it.javaClass)
+                }
+            } as Builder<T>
     }
 }

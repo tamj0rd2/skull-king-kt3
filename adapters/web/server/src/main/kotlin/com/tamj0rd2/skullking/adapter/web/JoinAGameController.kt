@@ -35,14 +35,14 @@ class JoinAGameController(
         return PlayerSession(ws = ws, gameId = gameId, playerId = output.playerId).asSuccess()
     }
 
-    private fun newGameUpdateListener(ws: Websocket) =
-        GameUpdateListener { updates ->
-            updates
-                .map { it.toMessage() }
-                .forEach { ws.send(it) }
-        }
-
     companion object {
+        internal fun newGameUpdateListener(ws: Websocket) =
+            GameUpdateListener { updates ->
+                updates
+                    .map { it.toMessage() }
+                    .forEach { ws.send(it) }
+            }
+
         private fun GameUpdate.toMessage(): WsMessage = messageToClient(GameUpdateMessage(this))
     }
 }

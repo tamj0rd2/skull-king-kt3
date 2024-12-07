@@ -110,10 +110,12 @@ class GameRepositoryEsdbAdapter : GameRepository {
 
         private object JGameCreated : JAny<GameCreatedEvent>() {
             private val gameId by str(JGameId, GameCreatedEvent::gameId)
+            private val createdBy by str(JPlayerId, GameCreatedEvent::createdBy)
 
             override fun JsonNodeObject.deserializeOrThrow() =
                 GameCreatedEvent(
                     gameId = +gameId,
+                    createdBy = +createdBy,
                 )
         }
 

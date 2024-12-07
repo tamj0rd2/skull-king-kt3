@@ -2,7 +2,9 @@ package com.tamj0rd2.skullking.adapter.web
 
 import com.tamj0rd2.skullking.domain.auth.SessionId
 import com.tamj0rd2.skullking.domain.game.GameId
+import com.tamj0rd2.skullking.domain.game.PlayerId
 import com.tamj0rd2.skullking.serialization.json.JGameId
+import com.tamj0rd2.skullking.serialization.json.JPlayerId
 import com.ubertob.kondor.json.JAny
 import com.ubertob.kondor.json.jsonnode.JsonNodeObject
 import com.ubertob.kondor.json.str
@@ -19,16 +21,21 @@ import org.http4k.lens.Header
 import org.http4k.lens.httpBodyRoot
 
 object CreateNewGameEndpoint {
+    // TODO: move this to live with the other ws messages
     data class GameCreatedMessage(
         val gameId: GameId,
-    )
+        val playerId: PlayerId,
+    ) : MessageToClient
 
-    private object JGameCreatedMessage : JAny<GameCreatedMessage>() {
+    // TODO: move this to MessageToClient.kt
+    internal object JGameCreatedMessage : JAny<GameCreatedMessage>() {
         private val gameId by str(JGameId, GameCreatedMessage::gameId)
+        private val createdBy by str(JPlayerId, GameCreatedMessage::playerId)
 
         override fun JsonNodeObject.deserializeOrThrow() =
             GameCreatedMessage(
                 gameId = +gameId,
+                playerId = +createdBy,
             )
     }
 
@@ -54,7 +61,7 @@ object CreateNewGameEndpoint {
             preFlightExtraction = PreFlightExtraction.IgnoreBody
             headers += sessionIdLens
 
-            val example = GameCreatedMessage(GameId.random())
+            val example = GameCreatedMessage(gameId = GameId.random(), playerId = PlayerId.random())
             returning(Status.CREATED, gameCreatedMessageLens to example)
         } bindContract POST
 }

@@ -47,9 +47,9 @@ sealed class GameAction {
  */
 
 class Game {
-    private constructor() {
+    private constructor(createdBy: PlayerId) {
         id = GameId.random()
-        appendEvents(GameCreatedEvent(id))
+        appendEvents(GameCreatedEvent(gameId = id, createdBy = createdBy))
         loadedVersion = Version.NONE
     }
 
@@ -103,7 +103,7 @@ class Game {
         const val MINIMUM_PLAYER_COUNT = 2
         const val MAXIMUM_PLAYER_COUNT = 6
 
-        fun new() = Game()
+        fun new(createdBy: PlayerId) = Game(createdBy)
 
         fun from(history: List<GameEvent>) = Game(history)
     }

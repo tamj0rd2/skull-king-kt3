@@ -1,5 +1,7 @@
 package com.tamj0rd2.skullking.adapter.web
 
+import com.tamj0rd2.skullking.adapter.web.CreateNewGameEndpoint.GameCreatedMessage
+import com.tamj0rd2.skullking.adapter.web.CreateNewGameEndpoint.JGameCreatedMessage
 import com.tamj0rd2.skullking.adapter.web.MessageToClient.ErrorMessage
 import com.tamj0rd2.skullking.adapter.web.MessageToClient.GameUpdateMessage
 import com.tamj0rd2.skullking.adapter.web.MessageToClient.JoinAcknowledgedMessage
@@ -50,6 +52,7 @@ private object JMessageToClient : JSealed<MessageToClient>() {
 
     override val subConverters: Map<String, ObjectNodeConverter<out MessageToClient>> =
         mapOf(
+            "game-created" to JGameCreatedMessage,
             "join-acknowledged" to JAcknowledged,
             "game-update" to JGameUpdateMessage,
             "error-message" to JErrorMessage,
@@ -57,6 +60,7 @@ private object JMessageToClient : JSealed<MessageToClient>() {
 
     override fun extractTypeName(obj: MessageToClient): String =
         when (obj) {
+            is GameCreatedMessage -> "game-created"
             is JoinAcknowledgedMessage -> "join-acknowledged"
             is GameUpdateMessage -> "game-update"
             is ErrorMessage -> "error-message"

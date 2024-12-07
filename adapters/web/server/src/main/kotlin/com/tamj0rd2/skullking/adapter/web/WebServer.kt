@@ -8,8 +8,10 @@ import com.tamj0rd2.skullking.adapter.web.MessageFromClient.StartGameMessage
 import com.tamj0rd2.skullking.adapter.web.MessageToClient.ErrorMessage
 import com.tamj0rd2.skullking.application.SkullKingApplication
 import com.tamj0rd2.skullking.domain.auth.SessionId
+import com.tamj0rd2.skullking.domain.game.GameErrorCode
 import com.tamj0rd2.skullking.domain.game.GameId
 import com.tamj0rd2.skullking.domain.game.PlayerId
+import dev.forkhandles.result4k.Result4k
 import dev.forkhandles.result4k.onFailure
 import org.http4k.contract.contract
 import org.http4k.core.Request
@@ -55,6 +57,34 @@ object WebServer {
         val joinGameController = JoinAGameController(application)
         val startGameController = StartGameController(application)
 
+        fun newWsHandler(
+            ws: Websocket,
+            sessionId: SessionId,
+            acquireSession: () -> Result4k<PlayerSession, GameErrorCode>,
+        ) {
+            println("server: $sessionId: connecting")
+            ws.onError { println("server: $sessionId: error - $it") }
+            ws.onClose { println("server: $sessionId: disconnecting") }
+
+            val session =
+                acquireSession().onFailure {
+                    ws.send(messageToClient(ErrorMessage(it.reason)))
+                    ws.close(WsStatus.REFUSE)
+                    return@newWsHandler
+                }
+
+            ws.onMessage {
+                val message = messageFromClient(it)
+                println("server: $sessionId: received $message")
+
+                when (message) {
+                    is StartGameMessage -> startGameController(session)
+                }
+            }
+
+            println("server: $sessionId: connected")
+        }
+
         val http =
             contract {
                 routes += createGameController.contractRoute
@@ -62,28 +92,21 @@ object WebServer {
 
         val ws =
             websockets(
+                "/game" bindWs { req: Request ->
+                    val sessionId = req.sessionId
+
+                    WsResponse { ws ->
+                        newWsHandler(ws, sessionId) {
+                            createGameController.createAGame(ws, sessionId)
+                        }
+                    }
+                },
                 "/game/{gameId}" bindWs { req: Request ->
                     val sessionId = req.sessionId
                     val gameId = GameId.parse(gameIdLens(req))
-
                     WsResponse { ws ->
-                        ws.onError { println("server: $sessionId: error - $it") }
-                        ws.onClose { println("server: $sessionId: disconnecting") }
-
-                        val session =
-                            joinGameController.joinGame(ws, sessionId, gameId).onFailure {
-                                ws.send(messageToClient(ErrorMessage(it.reason)))
-                                ws.close(WsStatus.REFUSE)
-                                return@WsResponse
-                            }
-
-                        ws.onMessage {
-                            val message = messageFromClient(it)
-                            println("server: $sessionId: received $message")
-
-                            when (message) {
-                                is StartGameMessage -> startGameController(session)
-                            }
+                        newWsHandler(ws, sessionId) {
+                            joinGameController.joinGame(ws, sessionId, gameId)
                         }
                     }
                 },

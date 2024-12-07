@@ -63,8 +63,9 @@ abstract class JoinAGameUseCaseContract {
 
     @Test
     fun `a player cannot join a game they're already in`() {
+        val (gameId, _) = scenario.newGame(playerCount = 1)
+
         val player = scenario.newPlayer()
-        val gameId = player.createsAGame()
         player.joinsAGame(gameId)
         expectThrows<PlayerHasAlreadyJoined> { player.joinsAGame(gameId) }
     }
@@ -72,7 +73,7 @@ abstract class JoinAGameUseCaseContract {
     @Test
     fun `a player cannot join a game that has already started`() =
         propertyTest {
-            checkAll(Arb.int(min = MINIMUM_PLAYER_COUNT, max = MAXIMUM_PLAYER_COUNT)) { playerCount ->
+            checkAll(Arb.int(min = MINIMUM_PLAYER_COUNT, max = MAXIMUM_PLAYER_COUNT - 1)) { playerCount ->
                 val (gameId, _) = scenario.newGame(playerCount = playerCount, startGame = true)
                 val lateJoiningPlayer = scenario.newPlayer()
                 expectThrows<GameHasAlreadyStarted> { lateJoiningPlayer.joinsAGame(gameId) }

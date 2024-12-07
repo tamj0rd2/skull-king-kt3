@@ -3,6 +3,7 @@ package com.tamj0rd2.skullking.application.port.output
 import com.tamj0rd2.skullking.domain.game.Game
 import com.tamj0rd2.skullking.domain.game.GameActionArbs
 import com.tamj0rd2.skullking.domain.game.GameId
+import com.tamj0rd2.skullking.domain.game.PlayerId
 import com.tamj0rd2.skullking.domain.game.Version
 import com.tamj0rd2.skullking.domain.game.mustExecute
 import com.tamj0rd2.skullking.domain.game.propertyTest
@@ -21,7 +22,7 @@ abstract class GameRepositoryContract {
     fun `modifying, saving and loading a game multiple times results in the same state as just modifying the game in memory`() =
         propertyTest {
             checkAll(GameActionArbs.validGameActionsArb) { actions ->
-                val gameModifiedInMemoryOnly = Game.new().also(gameRepository::save)
+                val gameModifiedInMemoryOnly = Game.new(PlayerId.random()).also(gameRepository::save)
                 val gameId = gameModifiedInMemoryOnly.id
 
                 actions.forEach { gameModifiedInMemoryOnly.mustExecute(it) }

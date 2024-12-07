@@ -6,6 +6,7 @@ sealed interface GameEvent {
 
 data class GameCreatedEvent(
     override val gameId: GameId,
+    val createdBy: PlayerId,
 ) : GameEvent
 
 data class PlayerJoinedEvent(

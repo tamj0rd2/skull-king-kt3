@@ -26,7 +26,12 @@ class SkullKingApplication private constructor(
         findPlayerIdPort: FindPlayerIdPort,
         savePlayerIdPort: SavePlayerIdPort,
     ) : this(
-        createNewGameUseCase = CreateNewGameService(gameRepository),
+        createNewGameUseCase =
+            CreateNewGameService(
+                gameRepository = gameRepository,
+                gameUpdateNotifier = gameUpdateNotifier,
+                savePlayerIdPort = savePlayerIdPort,
+            ),
         joinAGameUseCase =
             JoinAGameService(
                 gameRepository = gameRepository,

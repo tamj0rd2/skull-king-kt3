@@ -1,9 +1,7 @@
 package com.tamj0rd2.skullking.adapter.web
 
 import com.tamj0rd2.extensions.asSuccess
-import com.tamj0rd2.skullking.adapter.web.CreateNewGameEndpoint.contract
-import com.tamj0rd2.skullking.adapter.web.CreateNewGameEndpoint.gameCreatedMessageLens
-import com.tamj0rd2.skullking.adapter.web.CreateNewGameEndpoint.sessionIdLens
+import com.tamj0rd2.skullking.adapter.web.CreateNewGameEndpoint.GameCreatedMessage
 import com.tamj0rd2.skullking.adapter.web.MessageFromClient.StartGameMessage
 import com.tamj0rd2.skullking.adapter.web.MessageToClient.ErrorMessage
 import com.tamj0rd2.skullking.adapter.web.MessageToClient.GameUpdateMessage
@@ -23,12 +21,8 @@ import com.tamj0rd2.skullking.domain.game.GameUpdate
 import com.tamj0rd2.skullking.domain.game.GameUpdate.GameStarted
 import com.tamj0rd2.skullking.domain.game.PlayerId
 import dev.forkhandles.result4k.Result4k
-import org.http4k.client.ApacheClient
 import org.http4k.client.WebsocketClient
 import org.http4k.core.Uri
-import org.http4k.core.then
-import org.http4k.core.with
-import org.http4k.filter.ClientFilters
 import org.http4k.websocket.Websocket
 import java.time.Duration
 import java.util.concurrent.CountDownLatch
@@ -38,23 +32,38 @@ class SkullKingWebClient(
     private val baseUri: Uri,
     private val timeoutMs: Long = 500,
 ) : SkullKingUseCases {
-    private val httpClient = ClientFilters.SetBaseUriFrom(baseUri.scheme("http")).then(ApacheClient())
     private lateinit var ws: Websocket
-    private var playerId = PlayerId.NONE
 
     override fun invoke(command: CreateNewGameCommand): CreateNewGameOutput {
-        val request = contract.newRequest().with(sessionIdLens of command.sessionId)
-        return httpClient(request).use {
-            if (!it.status.successful) TODO("handle failure to create a new game")
-            CreateNewGameOutput(gameCreatedMessageLens(it).gameId)
-        }
+        ws =
+            connectToWs(
+                path = "/game",
+                sessionId = command.sessionId,
+                gameUpdateListener = command.gameUpdateListener,
+            )
+
+        val message = ws.waitForMessage<GameCreatedMessage>()
+        check(message.playerId != PlayerId.NONE) { "got a zero playerId" }
+        check(message.gameId != GameId.NONE) { "got a zero gameId" }
+
+        return CreateNewGameOutput(
+            gameId = message.gameId,
+            playerId = message.playerId,
+        )
     }
 
     override fun invoke(command: JoinGameCommand): Result4k<JoinGameOutput, GameErrorCode> {
-        ws = connectToWs(command.sessionId, command.gameId, command.gameUpdateListener)
-        playerId = ws.waitForMessage<JoinAcknowledgedMessage>().playerId
-        check(playerId != PlayerId.NONE) { "player id is zero still" }
-        return JoinGameOutput(playerId).asSuccess()
+        ws =
+            connectToWs(
+                path = "/game/${GameId.show(command.gameId)}",
+                sessionId = command.sessionId,
+                gameUpdateListener = command.gameUpdateListener,
+            )
+
+        val message = ws.waitForMessage<JoinAcknowledgedMessage>()
+        check(message.playerId != PlayerId.NONE) { "got a zero playerId" }
+
+        return JoinGameOutput(playerId = message.playerId).asSuccess()
     }
 
     override fun invoke(command: StartGameCommand): Result4k<StartGameOutput, GameErrorCode> {
@@ -87,17 +96,18 @@ class SkullKingWebClient(
 
         latch.await(timeoutMs, MILLISECONDS)
         failureReason?.let { throw it }
+
         return wantedMessage!!
     }
 
     private fun connectToWs(
+        path: String,
         sessionId: SessionId,
-        gameId: GameId,
         gameUpdateListener: GameUpdateListener,
     ): Websocket {
         val ws =
             WebsocketClient.nonBlocking(
-                uri = baseUri.scheme("ws").path("/game/${GameId.show(gameId)}"),
+                uri = baseUri.scheme("ws").path(path),
                 headers = listOf("session_id" to SessionId.show(sessionId)),
                 timeout = Duration.ofSeconds(1),
                 onConnect = { ws ->

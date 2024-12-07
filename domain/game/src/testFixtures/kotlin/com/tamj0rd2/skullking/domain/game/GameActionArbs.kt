@@ -32,7 +32,7 @@ object GameActionArbs {
     val validGameActionsArb =
         arbitrary {
             buildList {
-                addAll(Arb.set(addPlayerGameActionArb, Game.MINIMUM_PLAYER_COUNT..Game.MAXIMUM_PLAYER_COUNT).bind())
+                addAll(Arb.set(addPlayerGameActionArb, Game.MINIMUM_PLAYER_COUNT..<Game.MAXIMUM_PLAYER_COUNT).bind())
                 add(startGameActionArb.bind())
             }
         }

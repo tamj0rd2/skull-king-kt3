@@ -2,6 +2,7 @@ package com.tamj0rd2.skullking.domain.game
 
 import com.tamj0rd2.skullking.domain.game.Game.Companion.MAXIMUM_PLAYER_COUNT
 import com.tamj0rd2.skullking.domain.game.GameActionArbs.gameActionsArb
+import dev.forkhandles.values.random
 import io.kotest.property.Arb
 import io.kotest.property.checkAll
 import org.junit.jupiter.api.Disabled
@@ -93,7 +94,7 @@ internal fun invariant(
     checkInvariant: (Game, GameAction) -> Unit,
 ) = propertyTest {
     arb.checkAll(iterations) { gameActions ->
-        val game = Game.new()
+        val game = Game.new(PlayerId.random())
         gameActions.forEach { action ->
             checkInvariant(game, action)
         }

@@ -20,11 +20,13 @@ data class GameState private constructor(
 ) {
     internal fun apply(event: GameEvent): Result4k<GameState, GameErrorCode> =
         when (event) {
-            is GameCreatedEvent -> asSuccess()
+            is GameCreatedEvent -> apply(event)
             is PlayerJoinedEvent -> apply(event)
             is GameStartedEvent -> apply(event)
             is CardDealtEvent -> asSuccess()
         }
+
+    private fun apply(event: GameCreatedEvent): Result4k<GameState, GameErrorCode> = copy(players = players + event.createdBy).asSuccess()
 
     private fun apply(event: PlayerJoinedEvent): Result4k<GameState, AddPlayerErrorCode> {
         if (status == IN_PROGRESS) return GameHasAlreadyStarted().asFailure()
