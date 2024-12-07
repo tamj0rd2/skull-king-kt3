@@ -11,27 +11,19 @@ import com.tamj0rd2.skullking.domain.game.propertyTest
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.int
 import io.kotest.property.checkAll
+import io.kotest.property.exhaustive.exhaustive
 import org.junit.jupiter.api.Test
 import strikt.api.expectThrows
 import strikt.assertions.contains
-import strikt.assertions.isEqualTo
 
 abstract class JoinAGameUseCaseContract {
     protected abstract val scenario: TestScenario
 
     @Test
-    fun `can join a game`() {
-        val player = scenario.newPlayer()
-        val gameId = player.createsAGame()
-        val playerId = player.joinsAGame(gameId)
-        player.hasGameStateWhere { players.isEqualTo(listOf(playerId)) }
-    }
-
-    @Test
-    fun `a player who joins the game is able to see themself in the game`() =
+    fun `a player who joins the game can see themself in the game`() =
         propertyTest {
-            checkAll(Arb.int(min = 1, max = MAXIMUM_PLAYER_COUNT - 1)) { playerCount ->
-                val (gameId, _) = scenario.newGame(playerCount = playerCount)
+            checkAll((1..5).toList().exhaustive()) { alreadyJoinedPlayerCount ->
+                val (gameId, _) = scenario.newGame(playerCount = alreadyJoinedPlayerCount)
                 val newestPlayer = scenario.newPlayer()
                 newestPlayer.joinsAGame(gameId)
                 newestPlayer.hasGameStateWhere { players.contains(newestPlayer.id) }
@@ -39,10 +31,10 @@ abstract class JoinAGameUseCaseContract {
         }
 
     @Test
-    fun `a player who joins the game is able to see every player who had already joined before them`() =
+    fun `each player who joins the game can see players who joined before them`() =
         propertyTest {
-            checkAll(Arb.int(min = 1, max = MAXIMUM_PLAYER_COUNT - 1)) { playerCount ->
-                val (gameId, initialPlayers) = scenario.newGame(playerCount = playerCount)
+            checkAll((1..5).toList().exhaustive()) { alreadyJoinedPlayerCount ->
+                val (gameId, initialPlayers) = scenario.newGame(playerCount = alreadyJoinedPlayerCount)
                 val newestPlayer = scenario.newPlayer()
                 newestPlayer.joinsAGame(gameId)
                 newestPlayer.hasGameStateWhere { players.contains(initialPlayers.ids) }
@@ -50,21 +42,20 @@ abstract class JoinAGameUseCaseContract {
         }
 
     @Test
-    fun `a player who joins the game is able to see every player who joins after them`() =
+    fun `each player who joins the game can see players who joined after them`() =
         propertyTest {
-            checkAll(Arb.int(min = 1, max = MAXIMUM_PLAYER_COUNT - 1)) { playerCount ->
-                val initialPlayer = scenario.newPlayer()
-                val gameId = initialPlayer.createsAGame()
-                initialPlayer.joinsAGame(gameId)
+            checkAll((1..5).toList().exhaustive()) { alreadyJoinedPlayerCount ->
+                val (gameId, initialPlayers) = scenario.newGame(playerCount = alreadyJoinedPlayerCount)
 
-                val playersWhoJoinedAfter = listOfSize(playerCount, scenario::newPlayer).each { joinsAGame(gameId) }
+                val playerCountWhoWillJoinAfter = MAXIMUM_PLAYER_COUNT - alreadyJoinedPlayerCount
+                val playersWhoWillJoinedAfter = listOfSize(playerCountWhoWillJoinAfter, scenario::newPlayer).each { joinsAGame(gameId) }
 
-                initialPlayer.hasGameStateWhere { players.contains(playersWhoJoinedAfter.ids) }
+                initialPlayers.each { hasGameStateWhere { players.contains(initialPlayers.ids + playersWhoWillJoinedAfter.ids) } }
             }
         }
 
     @Test
-    fun `joining a full game is not possible`() {
+    fun `cannot join a full game`() {
         val (gameId, _) = scenario.newGame(playerCount = MAXIMUM_PLAYER_COUNT)
         val anotherPlayer = scenario.newPlayer()
         expectThrows<GameIsFull> { anotherPlayer.joinsAGame(gameId) }

@@ -25,6 +25,10 @@ class PlayerRole(
 ) : GameUpdateListener {
     var id = PlayerId.NONE
         private set
+        get() {
+            expectThat(field).isNotEqualTo(PlayerId.NONE)
+            return field
+        }
 
     // NOTE: for now I'm assuming the client generates the sessionId. I can have the server do this instead. The user can make an http request
     // to create a session, which is returned to the user. Then the user can send that along with the request to connect to the websocket.
