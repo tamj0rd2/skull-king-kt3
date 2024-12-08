@@ -15,6 +15,6 @@ internal class StartGameController(
                 playerId = session.playerId,
             )
 
-        startGameUseCase.invoke(command).peekFailure { session.ws.send(messageToClient(ErrorMessage(it))) }
+        startGameUseCase.invoke(command).peekFailure { session.ws.send(ErrorMessage(it)) }
     }
 }

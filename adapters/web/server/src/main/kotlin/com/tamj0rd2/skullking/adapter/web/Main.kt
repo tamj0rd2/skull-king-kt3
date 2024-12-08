@@ -1,7 +1,7 @@
 package com.tamj0rd2.skullking.adapter.web
 
 object Main {
-    private const val DEFAULT_PORT = 9000
+    internal const val DEFAULT_PORT = 9000
 
     @JvmStatic
     fun main(

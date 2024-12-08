@@ -1,36 +1,26 @@
 package com.tamj0rd2.skullking.adapter.web
 
-import com.tamj0rd2.extensions.asSuccess
 import com.tamj0rd2.skullking.adapter.web.JoinAGameController.Companion.newGameUpdateListener
 import com.tamj0rd2.skullking.adapter.web.MessageToClient.GameCreatedMessage
 import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase
 import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.CreateNewGameCommand
-import com.tamj0rd2.skullking.domain.auth.SessionId
-import com.tamj0rd2.skullking.domain.game.GameErrorCode
-import dev.forkhandles.result4k.Result4k
 import org.http4k.core.Request
-import org.http4k.core.Response
-import org.http4k.websocket.Websocket
 
 internal class CreateGameController(
     private val createNewGameUseCase: CreateNewGameUseCase,
-) {
-    fun createAGame(
-        ws: Websocket,
-        sessionId: SessionId,
-    ): Result4k<PlayerSession, GameErrorCode> {
+) : EstablishesAPlayerSession {
+    override fun establishPlayerSession(
+        req: Request,
+        ws: WsSession,
+    ): PlayerSession {
         val command =
             CreateNewGameCommand(
-                sessionId = sessionId,
+                sessionId = ws.sessionId,
                 gameUpdateListener = newGameUpdateListener(ws),
             )
 
         val (gameId, playerId) = createNewGameUseCase(command)
-        ws.send(messageToClient(GameCreatedMessage(gameId, playerId)))
-        return PlayerSession(ws, gameId, playerId).asSuccess()
-    }
-
-    private fun handle(request: Request): Response {
-        TODO("http thing is going away.")
+        ws.send(GameCreatedMessage(gameId, playerId))
+        return PlayerSession(ws, gameId, playerId)
     }
 }

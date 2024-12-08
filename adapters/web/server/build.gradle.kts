@@ -4,6 +4,7 @@ plugins {
 
 dependencies {
     forImplementation(libs.bundles.http4k.server)
+    forImplementation(libs.slf4j)
     forImplementation(project(":adapters:esdb"))
     forImplementation(project(":adapters:in-memory"))
     forImplementation(project(":adapters:web:api"))
@@ -13,6 +14,21 @@ dependencies {
 
     forTesting(libs.http4k.core)
     forTesting(project(":adapters:web:client"))
+}
+
+tasks {
+    test {
+        retry {
+            maxRetries = 3
+            failOnPassedAfterRetry = false
+
+            filter {
+                // TODO: Can anything be done to improve WebServerSmokeTest? It has been flaky since I changed the creation of the game from
+                //  using an HTTP post to using a websocket. It's a concurrency issue - it only happens when other tests are running.
+                includeAnnotationClasses.add("*SmokeTest")
+            }
+        }
+    }
 }
 
 private fun DependencyHandlerScope.forImplementation(

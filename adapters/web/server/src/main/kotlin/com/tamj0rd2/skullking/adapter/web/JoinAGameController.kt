@@ -1,48 +1,50 @@
 package com.tamj0rd2.skullking.adapter.web
 
-import com.tamj0rd2.extensions.asSuccess
+import com.tamj0rd2.skullking.adapter.web.MessageToClient.ErrorMessage
 import com.tamj0rd2.skullking.adapter.web.MessageToClient.GameUpdateMessage
 import com.tamj0rd2.skullking.adapter.web.MessageToClient.JoinAcknowledgedMessage
 import com.tamj0rd2.skullking.application.port.input.JoinAGameUseCase
 import com.tamj0rd2.skullking.application.port.input.JoinAGameUseCase.JoinGameCommand
 import com.tamj0rd2.skullking.application.port.output.GameUpdateListener
-import com.tamj0rd2.skullking.domain.auth.SessionId
-import com.tamj0rd2.skullking.domain.game.GameErrorCode
 import com.tamj0rd2.skullking.domain.game.GameId
-import com.tamj0rd2.skullking.domain.game.GameUpdate
-import dev.forkhandles.result4k.Result4k
 import dev.forkhandles.result4k.onFailure
-import org.http4k.websocket.Websocket
-import org.http4k.websocket.WsMessage
+import org.http4k.core.Request
+import org.http4k.lens.Path
 
 internal class JoinAGameController(
     private val joinAGameUseCase: JoinAGameUseCase,
-) {
-    fun joinGame(
-        ws: Websocket,
-        sessionId: SessionId,
-        gameId: GameId,
-    ): Result4k<PlayerSession, GameErrorCode> {
+) : EstablishesAPlayerSession {
+    override fun establishPlayerSession(
+        req: Request,
+        ws: WsSession,
+    ): PlayerSession {
+        val gameId = GameId.parse(gameIdLens(req))
+
         val command =
             JoinGameCommand(
-                sessionId = sessionId,
+                sessionId = ws.sessionId,
                 gameId = gameId,
                 gameUpdateListener = newGameUpdateListener(ws),
             )
 
-        val output = joinAGameUseCase.invoke(command).onFailure { return it }
-        ws.send(messageToClient(JoinAcknowledgedMessage(output.playerId)))
-        return PlayerSession(ws = ws, gameId = gameId, playerId = output.playerId).asSuccess()
+        val output =
+            joinAGameUseCase.invoke(command).onFailure {
+                ws.send(ErrorMessage(it.reason))
+                throw it.reason
+            }
+
+        ws.send(JoinAcknowledgedMessage(output.playerId))
+        return PlayerSession(ws = ws, gameId = gameId, playerId = output.playerId)
     }
 
     companion object {
-        internal fun newGameUpdateListener(ws: Websocket) =
+        // TODO: put this somewhere properly shared?
+        internal fun newGameUpdateListener(ws: WsSession) =
             GameUpdateListener { updates ->
-                updates
-                    .map { it.toMessage() }
-                    .forEach { ws.send(it) }
+                updates.map(::GameUpdateMessage).forEach(ws::send)
             }
 
-        private fun GameUpdate.toMessage(): WsMessage = messageToClient(GameUpdateMessage(this))
+        // TODO: how can I use this as part of the path in WebServer.kt?
+        private val gameIdLens = Path.of("gameId")
     }
 }

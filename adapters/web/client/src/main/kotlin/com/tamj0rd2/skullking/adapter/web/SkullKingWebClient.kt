@@ -79,9 +79,11 @@ class SkullKingWebClient(
         val latch = CountDownLatch(1)
         var failureReason: GameErrorCode? = null
         var wantedMessage: T? = null
+        val allSeenMessages = mutableListOf<MessageToClient>()
 
         onMessage {
             val message = messageToClient(it)
+            allSeenMessages.add(message)
 
             if (message is T && matcher(message)) {
                 wantedMessage = message
@@ -97,7 +99,13 @@ class SkullKingWebClient(
         latch.await(timeoutMs, MILLISECONDS)
         failureReason?.let { throw it }
 
-        return wantedMessage!!
+        check(allSeenMessages.isNotEmpty()) { "did not receive any messages within the given timeout." }
+        checkNotNull(wantedMessage) {
+            "did not receive the ${T::class.java.simpleName} message within the given timeout. Messages:\n${allSeenMessages.joinToString(
+                "\n- ",
+            )}"
+        }
+        return wantedMessage as T
     }
 
     private fun connectToWs(
