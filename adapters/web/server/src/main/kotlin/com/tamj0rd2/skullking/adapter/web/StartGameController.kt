@@ -5,7 +5,7 @@ import com.tamj0rd2.skullking.application.port.input.StartGameUseCase
 import com.tamj0rd2.skullking.application.port.input.StartGameUseCase.StartGameCommand
 import dev.forkhandles.result4k.peekFailure
 
-class StartGameController(
+internal class StartGameController(
     private val startGameUseCase: StartGameUseCase,
 ) {
     operator fun invoke(session: PlayerSession) {

@@ -15,7 +15,7 @@ import dev.forkhandles.result4k.onFailure
 import org.http4k.websocket.Websocket
 import org.http4k.websocket.WsMessage
 
-class JoinAGameController(
+internal class JoinAGameController(
     private val joinAGameUseCase: JoinAGameUseCase,
 ) {
     fun joinGame(

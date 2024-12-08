@@ -1,8 +1,7 @@
 package com.tamj0rd2.skullking.adapter.web
 
-import com.tamj0rd2.skullking.adapter.web.CreateNewGameEndpoint.GameCreatedMessage
-import com.tamj0rd2.skullking.adapter.web.CreateNewGameEndpoint.JGameCreatedMessage
 import com.tamj0rd2.skullking.adapter.web.MessageToClient.ErrorMessage
+import com.tamj0rd2.skullking.adapter.web.MessageToClient.GameCreatedMessage
 import com.tamj0rd2.skullking.adapter.web.MessageToClient.GameUpdateMessage
 import com.tamj0rd2.skullking.adapter.web.MessageToClient.JoinAcknowledgedMessage
 import com.tamj0rd2.skullking.domain.game.AddPlayerErrorCode.GameHasAlreadyStarted
@@ -10,12 +9,14 @@ import com.tamj0rd2.skullking.domain.game.AddPlayerErrorCode.GameIsFull
 import com.tamj0rd2.skullking.domain.game.AddPlayerErrorCode.PlayerHasAlreadyJoined
 import com.tamj0rd2.skullking.domain.game.Card
 import com.tamj0rd2.skullking.domain.game.GameErrorCode
+import com.tamj0rd2.skullking.domain.game.GameId
 import com.tamj0rd2.skullking.domain.game.GameUpdate
 import com.tamj0rd2.skullking.domain.game.GameUpdate.CardDealt
 import com.tamj0rd2.skullking.domain.game.GameUpdate.GameStarted
 import com.tamj0rd2.skullking.domain.game.GameUpdate.PlayerJoined
 import com.tamj0rd2.skullking.domain.game.PlayerId
 import com.tamj0rd2.skullking.domain.game.StartGameErrorCode.TooFewPlayers
+import com.tamj0rd2.skullking.serialization.json.JGameId
 import com.tamj0rd2.skullking.serialization.json.JPlayerId
 import com.tamj0rd2.skullking.serialization.json.JSingleton
 import com.ubertob.kondor.json.JAny
@@ -28,6 +29,11 @@ import org.http4k.lens.BiDiWsMessageLens
 import org.http4k.websocket.WsMessage
 
 sealed interface MessageToClient {
+    data class GameCreatedMessage(
+        val gameId: GameId,
+        val playerId: PlayerId,
+    ) : MessageToClient
+
     data class JoinAcknowledgedMessage(
         val playerId: PlayerId,
     ) : MessageToClient
@@ -46,6 +52,17 @@ val messageToClient =
         get = { wsMessage -> JMessageToClient.fromJson(wsMessage.bodyString()).orThrow() },
         setLens = { message, _ -> WsMessage(JMessageToClient.toJson(message)) },
     )
+
+private object JGameCreatedMessage : JAny<GameCreatedMessage>() {
+    private val gameId by str(JGameId, GameCreatedMessage::gameId)
+    private val createdBy by str(JPlayerId, GameCreatedMessage::playerId)
+
+    override fun JsonNodeObject.deserializeOrThrow() =
+        GameCreatedMessage(
+            gameId = +gameId,
+            playerId = +createdBy,
+        )
+}
 
 private object JMessageToClient : JSealed<MessageToClient>() {
     override val discriminatorFieldName: String = "type"

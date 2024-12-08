@@ -1,9 +1,9 @@
 package com.tamj0rd2.skullking.adapter.web
 
 import com.tamj0rd2.extensions.asSuccess
-import com.tamj0rd2.skullking.adapter.web.CreateNewGameEndpoint.GameCreatedMessage
 import com.tamj0rd2.skullking.adapter.web.MessageFromClient.StartGameMessage
 import com.tamj0rd2.skullking.adapter.web.MessageToClient.ErrorMessage
+import com.tamj0rd2.skullking.adapter.web.MessageToClient.GameCreatedMessage
 import com.tamj0rd2.skullking.adapter.web.MessageToClient.GameUpdateMessage
 import com.tamj0rd2.skullking.adapter.web.MessageToClient.JoinAcknowledgedMessage
 import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.CreateNewGameCommand
