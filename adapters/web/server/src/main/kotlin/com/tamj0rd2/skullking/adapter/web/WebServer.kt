@@ -16,7 +16,6 @@ import org.http4k.core.Request
 import org.http4k.lens.Header
 import org.http4k.lens.Path
 import org.http4k.routing.websockets
-import org.http4k.server.Http4kServer
 import org.http4k.server.Undertow
 import org.http4k.server.asServer
 import org.http4k.websocket.Websocket
@@ -25,109 +24,100 @@ import org.http4k.websocket.WsStatus
 import java.net.ServerSocket
 import org.http4k.routing.ws.bind as bindWs
 
-internal object WebServer {
-    private const val DEFAULT_PORT = 9000
+internal class WebServer(
+    application: SkullKingApplication = createApp(),
+    port: Int = getUnusedPort(),
+) {
+    private val createGameController = CreateGameController(application)
+    private val joinGameController = JoinAGameController(application)
+    private val startGameController = StartGameController(application)
 
-    @JvmStatic
-    fun main(
-        @Suppress("unused") args: Array<String>,
-    ) {
-        start(DEFAULT_PORT)
-    }
+    private val wsRouter =
+        websockets(
+            "/game" bindWs { req: Request ->
+                val sessionId = req.sessionId
 
-    fun start(port: Int = getUnusedPort()) = createServer(application = createApp(), port = port).start()
-
-    private fun createApp(): SkullKingApplication {
-        val playerIdStorage = PlayerIdStorageInMemoryAdapter()
-        return SkullKingApplication(
-            gameRepository = GameRepositoryEsdbAdapter(),
-            gameUpdateNotifier = GameUpdateNotifierInMemoryAdapter(),
-            findPlayerIdPort = playerIdStorage,
-            savePlayerIdPort = playerIdStorage,
+                WsResponse { ws ->
+                    newWsResponseHandler(ws, sessionId) {
+                        createGameController.createAGame(ws, sessionId)
+                    }
+                }
+            },
+            "/game/{gameId}" bindWs { req: Request ->
+                val sessionId = req.sessionId
+                val gameId = GameId.parse(gameIdLens(req))
+                WsResponse { ws ->
+                    newWsResponseHandler(ws, sessionId) {
+                        joinGameController.joinGame(ws, sessionId, gameId)
+                    }
+                }
+            },
         )
-    }
 
-    fun createServer(
-        application: SkullKingApplication,
-        port: Int = getUnusedPort(),
-    ): Http4kServer {
-        val createGameController = CreateGameController(application)
-        val joinGameController = JoinAGameController(application)
-        val startGameController = StartGameController(application)
+    private fun newWsResponseHandler(
+        ws: Websocket,
+        sessionId: SessionId,
+        acquireSession: () -> Result4k<PlayerSession, GameErrorCode>,
+    ) {
+        println("server: $sessionId: connecting")
+        ws.onError { println("server: $sessionId: error - $it") }
+        ws.onClose { println("server: $sessionId: disconnecting") }
 
-        fun newWsHandler(
-            ws: Websocket,
-            sessionId: SessionId,
-            acquireSession: () -> Result4k<PlayerSession, GameErrorCode>,
-        ) {
-            println("server: $sessionId: connecting")
-            ws.onError { println("server: $sessionId: error - $it") }
-            ws.onClose { println("server: $sessionId: disconnecting") }
-
-            val session =
-                acquireSession().onFailure {
-                    ws.send(messageToClient(ErrorMessage(it.reason)))
-                    ws.close(WsStatus.REFUSE)
-                    return@newWsHandler
-                }
-
-            ws.onMessage {
-                val message = messageFromClient(it)
-                println("server: $sessionId: received $message")
-
-                when (message) {
-                    is StartGameMessage -> startGameController(session)
-                }
+        val session =
+            acquireSession().onFailure {
+                ws.send(messageToClient(ErrorMessage(it.reason)))
+                ws.close(WsStatus.REFUSE)
+                return@newWsResponseHandler
             }
 
-            println("server: $sessionId: connected")
+        ws.onMessage {
+            val message = messageFromClient(it)
+            println("server: $sessionId: received $message")
+
+            when (message) {
+                is StartGameMessage -> startGameController(session)
+            }
         }
 
-        val ws =
-            websockets(
-                "/game" bindWs { req: Request ->
-                    val sessionId = req.sessionId
+        println("server: $sessionId: connected")
+    }
 
-                    WsResponse { ws ->
-                        newWsHandler(ws, sessionId) {
-                            createGameController.createAGame(ws, sessionId)
-                        }
-                    }
-                },
-                "/game/{gameId}" bindWs { req: Request ->
-                    val sessionId = req.sessionId
-                    val gameId = GameId.parse(gameIdLens(req))
-                    WsResponse { ws ->
-                        newWsHandler(ws, sessionId) {
-                            joinGameController.joinGame(ws, sessionId, gameId)
-                        }
-                    }
-                },
+    private val http4kServer = wsRouter.asServer(Undertow(port))
+
+    fun start() = http4kServer.start()
+
+    companion object {
+        private fun createApp(): SkullKingApplication {
+            val playerIdStorage = PlayerIdStorageInMemoryAdapter()
+            return SkullKingApplication(
+                gameRepository = GameRepositoryEsdbAdapter(),
+                gameUpdateNotifier = GameUpdateNotifierInMemoryAdapter(),
+                findPlayerIdPort = playerIdStorage,
+                savePlayerIdPort = playerIdStorage,
             )
+        }
 
-        return ws.asServer(Undertow(port))
+        private fun getUnusedPort(): Int {
+            val socket = ServerSocket(0)
+            val port = socket.localPort
+            socket.close()
+            return port
+        }
+
+        private val gameIdLens = Path.of("gameId")
+
+        private val sessionIdLens =
+            Header
+                .map(
+                    nextIn = { SessionId.parse(it) },
+                    nextOut = { SessionId.show(it) },
+                ).required("session_id")
+
+        private val Request.sessionId: SessionId get() = sessionIdLens.extract(this)
     }
-
-    private fun getUnusedPort(): Int {
-        val socket = ServerSocket(0)
-        val port = socket.localPort
-        socket.close()
-        return port
-    }
-
-    private val gameIdLens = Path.of("gameId")
-
-    private val sessionIdLens =
-        Header
-            .map(
-                nextIn = { SessionId.parse(it) },
-                nextOut = { SessionId.show(it) },
-            ).required("session_id")
-
-    private val Request.sessionId: SessionId get() = sessionIdLens.extract(this)
 }
 
-data class PlayerSession(
+internal data class PlayerSession(
     val ws: Websocket,
     val gameId: GameId,
     val playerId: PlayerId,

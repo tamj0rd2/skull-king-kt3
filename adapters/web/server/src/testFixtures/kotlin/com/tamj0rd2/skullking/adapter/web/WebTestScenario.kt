@@ -9,7 +9,7 @@ import org.junit.jupiter.api.AutoClose
 
 class WebTestScenario : TestScenario {
     @AutoClose
-    private val server = WebServer.createServer(SkullKingApplication.usingTestDoublesByDefault()).start()
+    private val server = WebServer(application = SkullKingApplication.usingTestDoublesByDefault()).start()
 
     override fun newPlayer() = PlayerRole(SkullKingWebClient(Uri.of("ws://localhost:${server.port()}")))
 }
