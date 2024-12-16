@@ -1,43 +1,53 @@
 package com.tamj0rd2.skullking.application.port.input
 
-import com.tamj0rd2.skullking.application.port.input.PlayerRole.PlayerGameState.Companion.players
 import com.tamj0rd2.skullking.domain.game.AddPlayerErrorCode.PlayerHasAlreadyJoined
-import com.tamj0rd2.skullking.domain.game.listOfSize
 import com.tamj0rd2.skullking.domain.game.propertyTest
 import io.kotest.property.checkAll
 import io.kotest.property.exhaustive.exhaustive
 import org.junit.jupiter.api.Test
-import strikt.assertions.contains
 
 abstract class CreateNewGameUseCaseContract {
     protected abstract val scenario: TestScenario
 
-    private val thePlayer by lazy { scenario.newPlayer() }
-
     @Test
     fun `the player who created the game automatically joins the game`() {
-        When { thePlayer.createsAGame() }
+        val theGameCreator = scenario.newPlayer()
 
-        Then { thePlayer.`sees them self in the game`() }
+        When { theGameCreator.createsAGame() }
+
+        Then { theGameCreator.`sees them self in the game`() }
     }
 
     @Test
     fun `the player who created the game cannot join the game a second time`() {
-        Given { thePlayer.`has created a game`() }
+        val theGameCreator = scenario.newPlayer()
 
-        When { thePlayer.`tries to join the game again`() }
+        Given { theGameCreator.`has created a game`() }
 
-        Then { thePlayer.`gets the error`(PlayerHasAlreadyJoined()) }
+        When { theGameCreator.`tries to join the game again`() }
+
+        Then { theGameCreator.`gets the error`(PlayerHasAlreadyJoined()) }
     }
 
     @Test
     fun `the player who created the game can see all players who joined after them`() =
         propertyTest {
-            checkAll((1..5).toList().exhaustive()) { playerCountWhoWillJoinAfter ->
-                val gameId = thePlayer.createsAGame()
+            checkAll((1..5).toList().exhaustive()) { additionalPlayerCount ->
+                val theGameCreator = scenario.newPlayer()
+                val otherPlayers = scenario.newPlayers(additionalPlayerCount)
 
-                val playersWhoJoinedAfter = listOfSize(playerCountWhoWillJoinAfter, scenario::newPlayer).each { joinsAGame(gameId) }
-                thePlayer.hasGameStateWhere { players.contains(playersWhoJoinedAfter.ids) }
+                Given {
+                    theGameCreator.`has created a game`()
+                    theGameCreator.invites(otherPlayers)
+                }
+
+                When {
+                    otherPlayers.each { `accept the game invite`() }
+                }
+
+                Then {
+                    theGameCreator.`sees each invited player in the game`()
+                }
             }
         }
 }

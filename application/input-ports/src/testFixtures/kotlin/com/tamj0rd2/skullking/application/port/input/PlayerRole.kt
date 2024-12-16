@@ -19,7 +19,10 @@ import dev.forkhandles.result4k.orThrow
 import dev.forkhandles.values.random
 import strikt.api.Assertion.Builder
 import strikt.api.expectThat
+import strikt.assertions.all
 import strikt.assertions.contains
+import strikt.assertions.containsExactlyInAnyOrder
+import strikt.assertions.hasSize
 import strikt.assertions.isNotEqualTo
 import strikt.assertions.isNotNull
 import java.time.Instant
@@ -34,7 +37,7 @@ class PlayerRole(
             return field
         }
 
-    // NOTE: for now I'm assuming the client generates the sessionId. I can have the server do this instead. The user can make an http request
+    // NOTE: for now I'm assuming the client generates the sessionId. I can have the server do this instead. The user can make an HTTP request
     // to create a session, which is returned to the user. Then the user can send that along with the request to connect to the websocket.
     // https://devcenter.heroku.com/articles/websocket-security#authentication-authorization
     // Essentially, in application terms, I need some kind of "command" to create and return a sessionId, before doing anything else.
@@ -50,9 +53,7 @@ class PlayerRole(
 
     private val receivedGameUpdates = mutableListOf<GameUpdate>()
 
-    fun `has created a game`() {
-        createsAGame()
-    }
+    fun `has created a game`() = createsAGame()
 
     fun createsAGame(): GameId {
         val output =
@@ -69,6 +70,22 @@ class PlayerRole(
         expectThat(output.gameId).isNotEqualTo(GameId.NONE)
         this.gameId = output.gameId
         return output.gameId
+    }
+
+    fun `accept the game invite`() {
+        expectThat(gameId).isNotEqualTo(GameId.NONE)
+
+        val command =
+            JoinGameCommand(
+                sessionId = sessionId,
+                gameId = gameId,
+                gameUpdateListener = this,
+            )
+
+        driver.invoke(command).orThrow().playerId.also {
+            expectThat(it).isNotEqualTo(PlayerId.NONE)
+            id = it
+        }
     }
 
     fun joinsAGame(gameId: GameId): PlayerId {
@@ -112,6 +129,14 @@ class PlayerRole(
         hasGameStateWhere { players.contains(id) }
     }
 
+    fun `sees each invited player in the game`() {
+        hasGameStateWhere {
+            players.hasSize(1 + invitedPlayers.size)
+            players.containsExactlyInAnyOrder(this@PlayerRole.id, *invitedPlayers.map { it.id }.toTypedArray())
+            players.all { isNotEqualTo(PlayerId.NONE) }
+        }
+    }
+
     fun hasGameStateWhere(assertion: Builder<PlayerGameState>.() -> Unit) {
         eventually {
             expectThat(this).get { state }.assertion()
@@ -130,6 +155,15 @@ class PlayerRole(
                         is PlayerJoined -> copy(players = players + it.playerId)
                     }
                 }
+        }
+    }
+
+    private val invitedPlayers = mutableListOf<PlayerRole>()
+
+    fun invites(players: List<PlayerRole>) {
+        players.forEach { player ->
+            player.gameId = this.gameId
+            invitedPlayers += player
         }
     }
 

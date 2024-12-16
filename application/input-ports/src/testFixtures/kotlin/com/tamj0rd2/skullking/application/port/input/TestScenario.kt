@@ -1,9 +1,12 @@
 package com.tamj0rd2.skullking.application.port.input
 
 import com.tamj0rd2.skullking.domain.game.GameId
+import com.tamj0rd2.skullking.domain.game.listOfSize
 
 interface TestScenario {
     fun newPlayer(): PlayerRole
+
+    fun newPlayers(count: Int): List<PlayerRole> = listOfSize(count, ::newPlayer)
 
     fun newGame(
         playerCount: Int,
