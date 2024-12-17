@@ -1,6 +1,6 @@
 @file:Suppress("TestFunctionName")
 
-package com.tamj0rd2.skullking.application.port.input
+package com.tamj0rd2.skullking.application.port.input.testsupport
 
 internal fun Given(block: () -> Unit) = block()
 

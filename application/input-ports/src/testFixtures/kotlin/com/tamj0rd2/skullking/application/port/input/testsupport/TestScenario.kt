@@ -1,4 +1,4 @@
-package com.tamj0rd2.skullking.application.port.input
+package com.tamj0rd2.skullking.application.port.input.testsupport
 
 import com.tamj0rd2.skullking.domain.game.listOfSize
 

@@ -1,14 +1,17 @@
 package com.tamj0rd2.skullking.application.port.input
 
+import com.tamj0rd2.skullking.application.port.input.testsupport.Given
+import com.tamj0rd2.skullking.application.port.input.testsupport.Then
+import com.tamj0rd2.skullking.application.port.input.testsupport.UseCaseContract
+import com.tamj0rd2.skullking.application.port.input.testsupport.When
+import com.tamj0rd2.skullking.application.port.input.testsupport.each
 import com.tamj0rd2.skullking.domain.game.AddPlayerErrorCode.PlayerHasAlreadyJoined
 import com.tamj0rd2.skullking.domain.game.propertyTest
 import io.kotest.property.checkAll
 import io.kotest.property.exhaustive.exhaustive
 import org.junit.jupiter.api.Test
 
-abstract class CreateNewGameUseCaseContract {
-    protected abstract val scenario: TestScenario
-
+interface CreateNewGameUseCaseContract : UseCaseContract {
     @Test
     fun `the player who created the game automatically joins the game`() {
         val theGameCreator = scenario.newPlayer()

@@ -1,7 +1,12 @@
 package com.tamj0rd2.skullking.application.port.input
 
-import com.tamj0rd2.skullking.application.port.input.PlayerRole.PlayerGameState.Companion.hand
-import com.tamj0rd2.skullking.application.port.input.PlayerRole.PlayerGameState.Companion.roundNumber
+import com.tamj0rd2.skullking.application.port.input.testsupport.Given
+import com.tamj0rd2.skullking.application.port.input.testsupport.PlayerRole.PlayerGameState.Companion.hand
+import com.tamj0rd2.skullking.application.port.input.testsupport.PlayerRole.PlayerGameState.Companion.roundNumber
+import com.tamj0rd2.skullking.application.port.input.testsupport.Then
+import com.tamj0rd2.skullking.application.port.input.testsupport.UseCaseContract
+import com.tamj0rd2.skullking.application.port.input.testsupport.When
+import com.tamj0rd2.skullking.application.port.input.testsupport.each
 import com.tamj0rd2.skullking.domain.game.GameArbs.validPlayerCountToStartAGame
 import com.tamj0rd2.skullking.domain.game.RoundNumber
 import com.tamj0rd2.skullking.domain.game.StartGameErrorCode.TooFewPlayers
@@ -13,9 +18,7 @@ import org.junit.jupiter.api.Test
 import strikt.assertions.hasSize
 import strikt.assertions.isEqualTo
 
-abstract class StartGameUseCaseContract {
-    protected abstract val scenario: TestScenario
-
+interface StartGameUseCaseContract : UseCaseContract {
     // TODO: after this, write a test for a BiddingUseCase. When the game is started, it should be possible to bid 0 or 1.
     @Test
     fun `starting the game begins round 1`() {

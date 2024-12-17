@@ -1,5 +1,10 @@
 package com.tamj0rd2.skullking.application.port.input
 
+import com.tamj0rd2.skullking.application.port.input.testsupport.Given
+import com.tamj0rd2.skullking.application.port.input.testsupport.Then
+import com.tamj0rd2.skullking.application.port.input.testsupport.UseCaseContract
+import com.tamj0rd2.skullking.application.port.input.testsupport.When
+import com.tamj0rd2.skullking.application.port.input.testsupport.each
 import com.tamj0rd2.skullking.domain.game.AddPlayerErrorCode.GameHasAlreadyStarted
 import com.tamj0rd2.skullking.domain.game.AddPlayerErrorCode.GameIsFull
 import com.tamj0rd2.skullking.domain.game.AddPlayerErrorCode.PlayerHasAlreadyJoined
@@ -11,9 +16,7 @@ import io.kotest.property.checkAll
 import io.kotest.property.exhaustive.exhaustive
 import org.junit.jupiter.api.Test
 
-abstract class JoinAGameUseCaseContract {
-    protected abstract val scenario: TestScenario
-
+interface JoinAGameUseCaseContract : UseCaseContract {
     @Test
     fun `each player who joins the game can see themself in the game`() =
         propertyTest {
