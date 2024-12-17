@@ -102,6 +102,7 @@ class PlayerRole(
         expectThat(latestErrorCode).isNull()
 
         try {
+            @Suppress("UNUSED_EXPRESSION")
             block()
         } catch (e: GameErrorCode) {
             latestErrorCode = e
