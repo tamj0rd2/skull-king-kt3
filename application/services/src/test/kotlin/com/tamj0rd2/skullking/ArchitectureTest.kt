@@ -10,7 +10,6 @@ import com.lemonappdev.konsist.api.verify.assertNotEmpty
 import com.lemonappdev.konsist.api.verify.assertTrue
 import org.junit.jupiter.api.Test
 
-// TODO: put these in their own module so that I can choose when to run them.
 class ArchitectureTest {
     private val domainLayer = Layer("Domain", "com.tamj0rd2.skullking.domain..")
     private val applicationLayer = Layer("Application", "com.tamj0rd2.skullking.application..")

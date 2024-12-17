@@ -1,7 +1,6 @@
 package com.tamj0rd2.skullking.adapter.web
 
 import com.tamj0rd2.skullking.adapter.web.MessageToClient.ErrorMessage
-import com.tamj0rd2.skullking.adapter.web.MessageToClient.GameUpdateMessage
 import com.tamj0rd2.skullking.adapter.web.MessageToClient.JoinAcknowledgedMessage
 import com.tamj0rd2.skullking.application.port.input.JoinAGameUseCase
 import com.tamj0rd2.skullking.application.port.input.JoinAGameUseCase.JoinGameCommand
@@ -17,6 +16,7 @@ internal class JoinAGameController(
     override fun establishPlayerSession(
         req: Request,
         ws: WsSession,
+        gameUpdateListener: GameUpdateListener,
     ): PlayerSession {
         val gameId = GameId.parse(gameIdLens(req))
 
@@ -24,7 +24,7 @@ internal class JoinAGameController(
             JoinGameCommand(
                 sessionId = ws.sessionId,
                 gameId = gameId,
-                gameUpdateListener = newGameUpdateListener(ws),
+                gameUpdateListener = gameUpdateListener,
             )
 
         val output =
@@ -38,13 +38,6 @@ internal class JoinAGameController(
     }
 
     companion object {
-        // TODO: put this somewhere properly shared?
-        internal fun newGameUpdateListener(ws: WsSession) =
-            GameUpdateListener { updates ->
-                updates.map(::GameUpdateMessage).forEach(ws::send)
-            }
-
-        // TODO: how can I use this as part of the path in WebServer.kt?
         private val gameIdLens = Path.of("gameId")
     }
 }

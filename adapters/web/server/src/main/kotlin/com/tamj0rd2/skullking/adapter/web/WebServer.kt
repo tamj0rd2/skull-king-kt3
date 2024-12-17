@@ -4,7 +4,9 @@ import com.tamj0rd2.skullking.adapter.esdb.GameRepositoryEsdbAdapter
 import com.tamj0rd2.skullking.adapter.inmemory.GameUpdateNotifierInMemoryAdapter
 import com.tamj0rd2.skullking.adapter.inmemory.PlayerIdStorageInMemoryAdapter
 import com.tamj0rd2.skullking.adapter.web.MessageFromClient.StartGameMessage
+import com.tamj0rd2.skullking.adapter.web.MessageToClient.GameUpdateMessage
 import com.tamj0rd2.skullking.application.SkullKingApplication
+import com.tamj0rd2.skullking.application.port.output.GameUpdateListener
 import com.tamj0rd2.skullking.domain.auth.SessionId
 import com.tamj0rd2.skullking.domain.game.GameId
 import com.tamj0rd2.skullking.domain.game.PlayerId
@@ -36,7 +38,12 @@ internal class WebServer(
             val sessionId = sessionIdLens.extract(req)
 
             WsSession.asWsResponse(sessionId) {
-                val playerSession = establishPlayerSession(req, this)
+                val playerSession =
+                    establishPlayerSession(
+                        req = req,
+                        ws = this,
+                        gameUpdateListener = { updates -> updates.map(::GameUpdateMessage).forEach(::send) },
+                    )
 
                 WsMessageHandler { wsMessage ->
                     when (messageFromClient(wsMessage)) {
@@ -87,5 +94,6 @@ internal fun interface EstablishesAPlayerSession {
     fun establishPlayerSession(
         req: Request,
         ws: WsSession,
+        gameUpdateListener: GameUpdateListener,
     ): PlayerSession
 }
