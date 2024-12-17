@@ -13,7 +13,7 @@ abstract class CreateNewGameUseCaseContract {
     fun `the player who created the game automatically joins the game`() {
         val theGameCreator = scenario.newPlayer()
 
-        When { theGameCreator.createsAGame() }
+        When { theGameCreator.`creates a game`() }
 
         Then { theGameCreator.`sees them self in the game`() }
     }
@@ -24,7 +24,7 @@ abstract class CreateNewGameUseCaseContract {
 
         Given { theGameCreator.`has created a game`() }
 
-        When { theGameCreator.`tries to join the game again`() }
+        When { theGameCreator.triesTo { `join the game again`() } }
 
         Then { theGameCreator.`gets the error`(PlayerHasAlreadyJoined()) }
     }

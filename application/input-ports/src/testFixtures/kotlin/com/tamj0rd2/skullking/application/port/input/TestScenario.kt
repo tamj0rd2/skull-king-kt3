@@ -1,6 +1,5 @@
 package com.tamj0rd2.skullking.application.port.input
 
-import com.tamj0rd2.skullking.domain.game.GameId
 import com.tamj0rd2.skullking.domain.game.listOfSize
 
 interface TestScenario {
@@ -11,12 +10,11 @@ interface TestScenario {
     fun newGame(
         playerCount: Int,
         startGame: Boolean = false,
-    ): Pair<GameId, List<PlayerRole>> {
+    ) {
         val setup = Setup(this)
         setup.withPlayerCount(playerCount)
 
         if (startGame) setup.start()
-        return setup.concludeSetup()
     }
 }
 
@@ -24,31 +22,27 @@ interface TestScenario {
 class Setup(
     private val scenario: TestScenario,
 ) {
-    private val players = mutableListOf<PlayerRole>()
-    private val gameId: GameId
+    private val gameCreator = scenario.newPlayer()
+    private val players = mutableListOf(gameCreator)
 
     init {
-        val creator = scenario.newPlayer()
-        players.add(creator)
-
-        gameId = creator.createsAGame()
+        gameCreator.`creates a game`()
     }
 
     fun withPlayerCount(count: Int) =
         apply {
             repeat(count - players.size) {
                 val player = scenario.newPlayer()
-                player.joinsAGame(gameId)
+                gameCreator.invites(player)
+                player.`accepts the game invite`()
                 players.add(player)
             }
         }
 
     fun start() =
         apply {
-            players.random().startsTheGame()
+            players.random().`starts the game`()
         }
-
-    fun concludeSetup() = gameId to players.toList()
 }
 
 fun List<PlayerRole>.each(block: PlayerRole.() -> Unit) = onEach(block)

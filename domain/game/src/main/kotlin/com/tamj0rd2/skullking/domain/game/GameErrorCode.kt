@@ -1,6 +1,6 @@
 package com.tamj0rd2.skullking.domain.game
 
-sealed class GameErrorCode : RuntimeException()
+sealed class GameErrorCode : RuntimeException("")
 
 sealed class AddPlayerErrorCode : GameErrorCode() {
     class GameHasAlreadyStarted : AddPlayerErrorCode()

@@ -25,6 +25,7 @@ import strikt.assertions.containsExactlyInAnyOrder
 import strikt.assertions.hasSize
 import strikt.assertions.isNotEqualTo
 import strikt.assertions.isNotNull
+import strikt.assertions.isNull
 import java.time.Instant
 
 class PlayerRole(
@@ -53,9 +54,9 @@ class PlayerRole(
 
     private val receivedGameUpdates = mutableListOf<GameUpdate>()
 
-    fun `has created a game`() = createsAGame()
+    fun `has created a game`() = `creates a game`()
 
-    fun createsAGame(): GameId {
+    fun `creates a game`(): GameId {
         val output =
             driver(
                 CreateNewGameCommand(
@@ -71,6 +72,8 @@ class PlayerRole(
         this.gameId = output.gameId
         return output.gameId
     }
+
+    fun `accepts the game invite`() = `accept the game invite`()
 
     fun `accept the game invite`() {
         expectThat(gameId).isNotEqualTo(GameId.NONE)
@@ -88,27 +91,18 @@ class PlayerRole(
         }
     }
 
-    fun joinsAGame(gameId: GameId): PlayerId {
-        this.gameId = gameId
-        val command =
-            JoinGameCommand(
-                sessionId = sessionId,
-                gameId = gameId,
-                gameUpdateListener = this,
-            )
-        return driver.invoke(command).orThrow().playerId.also {
-            expectThat(it).isNotEqualTo(PlayerId.NONE)
-            id = it
-        }
+    fun `join the game again`() {
+        expectThat(gameId).isNotEqualTo(GameId.NONE)
+        `accept the game invite`()
     }
 
     private var latestErrorCode: GameErrorCode? = null
 
-    fun `tries to join the game again`() {
-        expectThat(gameId).isNotEqualTo(GameId.NONE)
+    fun triesTo(block: PlayerRole.() -> Unit) {
+        expectThat(latestErrorCode).isNull()
 
         try {
-            joinsAGame(gameId)
+            block()
         } catch (e: GameErrorCode) {
             latestErrorCode = e
         }
@@ -119,7 +113,7 @@ class PlayerRole(
         latestErrorCode = null
     }
 
-    fun startsTheGame() {
+    fun `starts the game`() {
         driver(StartGameCommand(gameId, id)).orThrow()
     }
 
@@ -130,9 +124,14 @@ class PlayerRole(
     }
 
     fun `sees each invited player in the game`() {
+        expectThat(invitedPlayers.isNotEmpty())
+        `sees exact players in the game`(this + invitedPlayers)
+    }
+
+    fun `sees exact players in the game`(expected: List<PlayerRole>) {
         hasGameStateWhere {
-            players.hasSize(1 + invitedPlayers.size)
-            players.containsExactlyInAnyOrder(this@PlayerRole.id, *invitedPlayers.map { it.id }.toTypedArray())
+            players.hasSize(expected.size)
+            players.containsExactlyInAnyOrder(expected.map { it.id })
             players.all { isNotEqualTo(PlayerId.NONE) }
         }
     }
@@ -166,6 +165,13 @@ class PlayerRole(
             invitedPlayers += player
         }
     }
+
+    fun invites(vararg players: PlayerRole) {
+        require(players.isNotEmpty()) { "Must invite 1 or more players." }
+        invites(players.toList())
+    }
+
+    operator fun plus(otherPlayers: List<PlayerRole>) = listOf(this) + otherPlayers
 
     data class PlayerGameState(
         val roundNumber: RoundNumber = RoundNumber.none,

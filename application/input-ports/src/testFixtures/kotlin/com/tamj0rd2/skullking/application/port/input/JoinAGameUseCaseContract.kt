@@ -1,82 +1,121 @@
 package com.tamj0rd2.skullking.application.port.input
 
-import com.tamj0rd2.skullking.application.port.input.PlayerRole.PlayerGameState.Companion.players
 import com.tamj0rd2.skullking.domain.game.AddPlayerErrorCode.GameHasAlreadyStarted
 import com.tamj0rd2.skullking.domain.game.AddPlayerErrorCode.GameIsFull
 import com.tamj0rd2.skullking.domain.game.AddPlayerErrorCode.PlayerHasAlreadyJoined
 import com.tamj0rd2.skullking.domain.game.Game.Companion.MAXIMUM_PLAYER_COUNT
-import com.tamj0rd2.skullking.domain.game.Game.Companion.MINIMUM_PLAYER_COUNT
-import com.tamj0rd2.skullking.domain.game.listOfSize
 import com.tamj0rd2.skullking.domain.game.propertyTest
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.int
 import io.kotest.property.checkAll
 import io.kotest.property.exhaustive.exhaustive
 import org.junit.jupiter.api.Test
-import strikt.api.expectThrows
-import strikt.assertions.contains
 
 abstract class JoinAGameUseCaseContract {
     protected abstract val scenario: TestScenario
 
     @Test
-    fun `a player who joins the game can see themself in the game`() =
+    fun `each player who joins the game can see themself in the game`() =
         propertyTest {
-            checkAll((1..5).toList().exhaustive()) { alreadyJoinedPlayerCount ->
-                val (gameId, _) = scenario.newGame(playerCount = alreadyJoinedPlayerCount)
-                val newestPlayer = scenario.newPlayer()
-                newestPlayer.joinsAGame(gameId)
-                newestPlayer.hasGameStateWhere { players.contains(newestPlayer.id) }
+            checkAll((1..5).toList().exhaustive()) { playerCount ->
+                val gameCreator = scenario.newPlayer()
+                val thisPlayer = scenario.newPlayer()
+                val otherPlayers = scenario.newPlayers(playerCount - 1)
+
+                Given {
+                    gameCreator.`creates a game`()
+                    gameCreator.invites(otherPlayers + thisPlayer)
+                }
+
+                When { thisPlayer.`accepts the game invite`() }
+
+                Then { thisPlayer.`sees them self in the game`() }
             }
         }
 
     @Test
-    fun `each player who joins the game can see players who joined before them`() =
+    fun `each player who joins the game can see the other players who have joined`() =
         propertyTest {
-            checkAll((1..5).toList().exhaustive()) { alreadyJoinedPlayerCount ->
-                val (gameId, initialPlayers) = scenario.newGame(playerCount = alreadyJoinedPlayerCount)
-                val newestPlayer = scenario.newPlayer()
-                newestPlayer.joinsAGame(gameId)
-                newestPlayer.hasGameStateWhere { players.contains(initialPlayers.ids) }
-            }
-        }
+            checkAll((1..5).toList().exhaustive()) { otherPlayerCount ->
+                val gameCreator = scenario.newPlayer()
+                val otherPlayers = scenario.newPlayers(otherPlayerCount)
 
-    @Test
-    fun `each player who joins the game can see players who joined after them`() =
-        propertyTest {
-            checkAll((1..5).toList().exhaustive()) { alreadyJoinedPlayerCount ->
-                val (gameId, initialPlayers) = scenario.newGame(playerCount = alreadyJoinedPlayerCount)
+                Given {
+                    gameCreator.`has created a game`()
+                    gameCreator.invites(otherPlayers)
+                }
 
-                val playerCountWhoWillJoinAfter = MAXIMUM_PLAYER_COUNT - alreadyJoinedPlayerCount
-                val playersWhoWillJoinedAfter = listOfSize(playerCountWhoWillJoinAfter, scenario::newPlayer).each { joinsAGame(gameId) }
+                When {
+                    otherPlayers.each { `accept the game invite`() }
+                }
 
-                initialPlayers.each { hasGameStateWhere { players.contains(initialPlayers.ids + playersWhoWillJoinedAfter.ids) } }
+                Then {
+                    otherPlayers.each { `sees exact players in the game`(gameCreator + otherPlayers) }
+                }
             }
         }
 
     @Test
     fun `cannot join a full game`() {
-        val (gameId, _) = scenario.newGame(playerCount = MAXIMUM_PLAYER_COUNT)
-        val anotherPlayer = scenario.newPlayer()
-        expectThrows<GameIsFull> { anotherPlayer.joinsAGame(gameId) }
+        val gameCreator = scenario.newPlayer()
+        val playersWhoWillJoinFirst = scenario.newPlayers(MAXIMUM_PLAYER_COUNT - 1)
+        val latePlayer = scenario.newPlayer()
+
+        Given {
+            gameCreator.`has created a game`()
+            gameCreator.invites(playersWhoWillJoinFirst + latePlayer)
+            playersWhoWillJoinFirst.each { `accept the game invite`() }
+        }
+
+        When {
+            latePlayer.triesTo { `accept the game invite`() }
+        }
+
+        Then {
+            latePlayer.`gets the error`(GameIsFull())
+        }
     }
 
     @Test
     fun `a player cannot join a game they're already in`() {
-        val (gameId, _) = scenario.newGame(playerCount = 1)
+        val theGameCreator = scenario.newPlayer()
+        val thisPlayer = scenario.newPlayer()
 
-        val player = scenario.newPlayer()
-        player.joinsAGame(gameId)
-        expectThrows<PlayerHasAlreadyJoined> { player.joinsAGame(gameId) }
+        Given {
+            theGameCreator.`has created a game`()
+            theGameCreator.invites(thisPlayer)
+            thisPlayer.`accepts the game invite`()
+        }
+
+        When {
+            thisPlayer.triesTo { `accept the game invite`() }
+        }
+
+        Then { thisPlayer.`gets the error`(PlayerHasAlreadyJoined()) }
     }
 
     @Test
     fun `a player cannot join a game that has already started`() =
         propertyTest {
-            checkAll(Arb.int(min = MINIMUM_PLAYER_COUNT, max = MAXIMUM_PLAYER_COUNT - 1)) { playerCount ->
-                val (gameId, _) = scenario.newGame(playerCount = playerCount, startGame = true)
+            checkAll(Arb.int(min = 1, max = MAXIMUM_PLAYER_COUNT - 1)) { playerCount ->
+                val theGameCreator = scenario.newPlayer()
+                val otherPlayers = scenario.newPlayers(playerCount)
                 val lateJoiningPlayer = scenario.newPlayer()
-                expectThrows<GameHasAlreadyStarted> { lateJoiningPlayer.joinsAGame(gameId) }
+
+                Given {
+                    theGameCreator.`has created a game`()
+                    theGameCreator.invites(otherPlayers + lateJoiningPlayer)
+                    otherPlayers.each { `accept the game invite`() }
+                    theGameCreator.`starts the game`()
+                }
+
+                When {
+                    lateJoiningPlayer.triesTo { `accept the game invite`() }
+                }
+
+                Then {
+                    lateJoiningPlayer.`gets the error`(GameHasAlreadyStarted())
+                }
             }
         }
 }
