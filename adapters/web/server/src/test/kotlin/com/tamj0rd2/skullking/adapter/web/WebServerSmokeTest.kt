@@ -11,7 +11,6 @@ import org.junit.jupiter.api.parallel.ExecutionMode.SAME_THREAD
 class WebServerSmokeTest {
     @Test
     fun `can start a 2 player game`() {
-        // TODO: this should test Main instead. Figure out how to do it.
         WebServer(port = Main.DEFAULT_PORT).start().use {
             val baseUri = Uri.of("ws://localhost:${it.port()}")
 
