@@ -3,6 +3,7 @@ package com.tamj0rd2.skullking.adapter.web
 import com.tamj0rd2.skullking.adapter.esdb.GameRepositoryEsdbAdapter
 import com.tamj0rd2.skullking.adapter.inmemory.GameUpdateNotifierInMemoryAdapter
 import com.tamj0rd2.skullking.adapter.inmemory.PlayerIdStorageInMemoryAdapter
+import com.tamj0rd2.skullking.adapter.web.MessageFromClient.MakeABidMessage
 import com.tamj0rd2.skullking.adapter.web.MessageFromClient.StartGameMessage
 import com.tamj0rd2.skullking.adapter.web.MessageToClient.GameUpdateMessage
 import com.tamj0rd2.skullking.application.SkullKingApplication
@@ -26,6 +27,7 @@ internal class WebServer(
     private val createGameController = CreateGameController(application)
     private val joinGameController = JoinAGameController(application)
     private val startGameController = StartGameController(application)
+    private val makeABidController = MakeABidController(application)
 
     private val wsRouter =
         websockets(
@@ -46,8 +48,9 @@ internal class WebServer(
                     )
 
                 WsMessageHandler { wsMessage ->
-                    when (messageFromClient(wsMessage)) {
+                    when (val message = messageFromClient(wsMessage)) {
                         is StartGameMessage -> startGameController(playerSession)
+                        is MakeABidMessage -> makeABidController(playerSession, message.bid)
                     }
                 }
             }

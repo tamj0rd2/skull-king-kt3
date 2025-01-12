@@ -1,12 +1,14 @@
 package com.tamj0rd2.skullking.adapter.web
 
 import com.tamj0rd2.extensions.asSuccess
+import com.tamj0rd2.skullking.adapter.web.MessageFromClient.MakeABidMessage
 import com.tamj0rd2.skullking.adapter.web.MessageFromClient.StartGameMessage
 import com.tamj0rd2.skullking.adapter.web.MessageToClient.ErrorMessage
 import com.tamj0rd2.skullking.adapter.web.MessageToClient.GameCreatedMessage
 import com.tamj0rd2.skullking.adapter.web.MessageToClient.GameUpdateMessage
 import com.tamj0rd2.skullking.adapter.web.MessageToClient.JoinAcknowledgedMessage
 import com.tamj0rd2.skullking.application.port.inandout.GameUpdate
+import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.BidMade
 import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.GameStarted
 import com.tamj0rd2.skullking.application.port.inandout.GameUpdateListener
 import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.CreateNewGameCommand
@@ -68,14 +70,16 @@ class SkullKingWebClient(
         return JoinGameOutput(playerId = message.playerId).asSuccess()
     }
 
-    override fun invoke(command: MakeABidCommand): Result4k<MakeABidOutput, GameErrorCode> {
-        TODO("Not yet implemented")
-    }
-
     override fun invoke(command: StartGameCommand): Result4k<StartGameOutput, GameErrorCode> {
         ws.send(messageFromClient(StartGameMessage))
         ws.waitForGameUpdate<GameStarted>()
         return StartGameOutput.asSuccess()
+    }
+
+    override fun invoke(command: MakeABidCommand): Result4k<MakeABidOutput, GameErrorCode> {
+        ws.send(messageFromClient(MakeABidMessage(command.bid)))
+        ws.waitForGameUpdate<BidMade>()
+        return MakeABidOutput.asSuccess()
     }
 
     private inline fun <reified T : GameUpdate> Websocket.waitForGameUpdate(): T =

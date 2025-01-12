@@ -109,6 +109,7 @@ private object JGameUpdate : JSealed<GameUpdate>() {
                 "player-joined" to JPlayerJoined,
                 "game-started" to JSingleton(GameStarted),
                 "card-dealt" to JCardDealt,
+                "bid-made" to JBidMade,
             )
 
     override fun extractTypeName(obj: GameUpdate): String =
@@ -116,7 +117,7 @@ private object JGameUpdate : JSealed<GameUpdate>() {
             is PlayerJoined -> "player-joined"
             is GameStarted -> "game-started"
             is CardDealt -> "card-dealt"
-            is BidMade -> TODO()
+            is BidMade -> "bid-made"
         }
 }
 
@@ -130,6 +131,12 @@ private object JCardDealt : JAny<CardDealt>() {
     private val card by obj(JSingleton(Card), CardDealt::card)
 
     override fun JsonNodeObject.deserializeOrThrow() = CardDealt(card = +card)
+}
+
+private object JBidMade : JAny<BidMade>() {
+    private val playerId by str(JPlayerId, BidMade::playerId)
+
+    override fun JsonNodeObject.deserializeOrThrow() = BidMade(playerId = +playerId)
 }
 
 private object JErrorMessage : JAny<ErrorMessage>() {
