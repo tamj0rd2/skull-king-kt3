@@ -5,6 +5,7 @@ plugins {
 dependencies {
     forImplementation(project(":domain:auth"), transitive = true, alsoUseForTesting = true)
     forImplementation(project(":domain:game"), transitive = true, alsoUseForTesting = true)
+    forImplementation(project(":application:inandout-ports"), transitive = true, alsoUseForTesting = true)
 }
 
 private fun DependencyHandlerScope.forImplementation(

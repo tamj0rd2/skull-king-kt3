@@ -1,6 +1,6 @@
 package com.tamj0rd2.skullking.adapter.inmemory
 
-import com.tamj0rd2.skullking.application.port.output.GameUpdateListener
+import com.tamj0rd2.skullking.application.port.inandout.GameUpdateListener
 import com.tamj0rd2.skullking.application.port.output.GameUpdateNotifier
 import com.tamj0rd2.skullking.domain.game.GameId
 import com.tamj0rd2.skullking.domain.game.GameUpdate

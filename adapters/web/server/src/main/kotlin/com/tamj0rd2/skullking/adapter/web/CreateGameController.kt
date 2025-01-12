@@ -1,9 +1,9 @@
 package com.tamj0rd2.skullking.adapter.web
 
 import com.tamj0rd2.skullking.adapter.web.MessageToClient.GameCreatedMessage
+import com.tamj0rd2.skullking.application.port.inandout.GameUpdateListener
 import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase
 import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.CreateNewGameCommand
-import com.tamj0rd2.skullking.application.port.output.GameUpdateListener
 import org.http4k.core.Request
 
 internal class CreateGameController(

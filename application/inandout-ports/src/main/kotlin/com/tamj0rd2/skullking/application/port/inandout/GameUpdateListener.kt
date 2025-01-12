@@ -1,4 +1,4 @@
-package com.tamj0rd2.skullking.application.port.output
+package com.tamj0rd2.skullking.application.port.inandout
 
 import com.tamj0rd2.skullking.domain.game.GameUpdate
 

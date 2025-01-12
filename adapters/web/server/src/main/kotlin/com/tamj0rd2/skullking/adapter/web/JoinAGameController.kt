@@ -2,9 +2,9 @@ package com.tamj0rd2.skullking.adapter.web
 
 import com.tamj0rd2.skullking.adapter.web.MessageToClient.ErrorMessage
 import com.tamj0rd2.skullking.adapter.web.MessageToClient.JoinAcknowledgedMessage
+import com.tamj0rd2.skullking.application.port.inandout.GameUpdateListener
 import com.tamj0rd2.skullking.application.port.input.JoinAGameUseCase
 import com.tamj0rd2.skullking.application.port.input.JoinAGameUseCase.JoinGameCommand
-import com.tamj0rd2.skullking.application.port.output.GameUpdateListener
 import com.tamj0rd2.skullking.domain.game.GameId
 import dev.forkhandles.result4k.onFailure
 import org.http4k.core.Request

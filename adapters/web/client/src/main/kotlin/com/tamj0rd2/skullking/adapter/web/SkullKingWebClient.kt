@@ -6,6 +6,7 @@ import com.tamj0rd2.skullking.adapter.web.MessageToClient.ErrorMessage
 import com.tamj0rd2.skullking.adapter.web.MessageToClient.GameCreatedMessage
 import com.tamj0rd2.skullking.adapter.web.MessageToClient.GameUpdateMessage
 import com.tamj0rd2.skullking.adapter.web.MessageToClient.JoinAcknowledgedMessage
+import com.tamj0rd2.skullking.application.port.inandout.GameUpdateListener
 import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.CreateNewGameCommand
 import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.CreateNewGameOutput
 import com.tamj0rd2.skullking.application.port.input.JoinAGameUseCase.JoinGameCommand
@@ -13,7 +14,6 @@ import com.tamj0rd2.skullking.application.port.input.JoinAGameUseCase.JoinGameOu
 import com.tamj0rd2.skullking.application.port.input.SkullKingUseCases
 import com.tamj0rd2.skullking.application.port.input.StartGameUseCase.StartGameCommand
 import com.tamj0rd2.skullking.application.port.input.StartGameUseCase.StartGameOutput
-import com.tamj0rd2.skullking.application.port.output.GameUpdateListener
 import com.tamj0rd2.skullking.domain.auth.SessionId
 import com.tamj0rd2.skullking.domain.game.GameErrorCode
 import com.tamj0rd2.skullking.domain.game.GameId
