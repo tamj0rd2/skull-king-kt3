@@ -12,17 +12,17 @@ class GameUpdateNotifierInMemoryAdapter : GameUpdateNotifier {
         gameId: GameId,
         listener: GameUpdateListener,
     ) {
-        getStorageForGame(gameId).addListenerAndSendMissedUpdates(listener)
+        getNotifierForGame(gameId).addListenerAndSendMissedUpdates(listener)
     }
 
     override fun broadcast(
         gameId: GameId,
         updates: List<GameUpdate>,
     ) {
-        getStorageForGame(gameId).broadcast(updates)
+        getNotifierForGame(gameId).broadcast(updates)
     }
 
-    private fun getStorageForGame(gameId: GameId) = notifiers[gameId] ?: GameSpecificNotifier().also { notifiers[gameId] = it }
+    private fun getNotifierForGame(gameId: GameId) = notifiers[gameId] ?: GameSpecificNotifier().also { notifiers[gameId] = it }
 
     private class GameSpecificNotifier {
         private val listeners = mutableListOf<GameUpdateListener>()
