@@ -6,7 +6,7 @@ import com.tamj0rd2.skullking.domain.game.GameId
 import com.tamj0rd2.skullking.domain.game.GameUpdate
 
 class GameUpdateNotifierInMemoryAdapter : GameUpdateNotifier {
-    private val storagePerGame = mutableMapOf<GameId, GameSpecificNotifier>()
+    private val notifiers = mutableMapOf<GameId, GameSpecificNotifier>()
 
     override fun subscribe(
         gameId: GameId,
@@ -22,7 +22,7 @@ class GameUpdateNotifierInMemoryAdapter : GameUpdateNotifier {
         getStorageForGame(gameId).broadcast(updates)
     }
 
-    private fun getStorageForGame(gameId: GameId) = storagePerGame[gameId] ?: GameSpecificNotifier().also { storagePerGame[gameId] = it }
+    private fun getStorageForGame(gameId: GameId) = notifiers[gameId] ?: GameSpecificNotifier().also { notifiers[gameId] = it }
 
     private class GameSpecificNotifier {
         private val listeners = mutableListOf<GameUpdateListener>()
