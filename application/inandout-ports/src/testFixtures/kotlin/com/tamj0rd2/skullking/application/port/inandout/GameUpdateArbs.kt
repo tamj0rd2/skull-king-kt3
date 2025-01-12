@@ -1,6 +1,6 @@
-package com.tamj0rd2.skullking.domain.game
+package com.tamj0rd2.skullking.application.port.inandout
 
-import com.tamj0rd2.skullking.domain.game.GameArbs.playerIdArb
+import com.tamj0rd2.skullking.domain.game.GameArbs
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.arbitrary
 import io.kotest.property.arbitrary.choice
@@ -8,7 +8,7 @@ import io.kotest.property.arbitrary.choice
 object GameUpdateArbs {
     private val playerJoinedGameUpdateArb =
         arbitrary {
-            val playerId = playerIdArb.bind()
+            val playerId = GameArbs.playerIdArb.bind()
             GameUpdate.PlayerJoined(playerId)
         }
 

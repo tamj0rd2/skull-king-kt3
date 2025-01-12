@@ -1,5 +1,9 @@
 package com.tamj0rd2.skullking.application.port.input.testsupport
 
+import com.tamj0rd2.skullking.application.port.inandout.GameUpdate
+import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.CardDealt
+import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.GameStarted
+import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.PlayerJoined
 import com.tamj0rd2.skullking.application.port.inandout.GameUpdateListener
 import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.CreateNewGameCommand
 import com.tamj0rd2.skullking.application.port.input.JoinAGameUseCase.JoinGameCommand
@@ -10,10 +14,6 @@ import com.tamj0rd2.skullking.domain.auth.SessionId
 import com.tamj0rd2.skullking.domain.game.Card
 import com.tamj0rd2.skullking.domain.game.GameErrorCode
 import com.tamj0rd2.skullking.domain.game.GameId
-import com.tamj0rd2.skullking.domain.game.GameUpdate
-import com.tamj0rd2.skullking.domain.game.GameUpdate.CardDealt
-import com.tamj0rd2.skullking.domain.game.GameUpdate.GameStarted
-import com.tamj0rd2.skullking.domain.game.GameUpdate.PlayerJoined
 import com.tamj0rd2.skullking.domain.game.PlayerId
 import com.tamj0rd2.skullking.domain.game.RoundNumber
 import dev.forkhandles.result4k.orThrow

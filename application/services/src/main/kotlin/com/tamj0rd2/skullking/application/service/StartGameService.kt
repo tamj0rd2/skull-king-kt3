@@ -1,6 +1,7 @@
 package com.tamj0rd2.skullking.application.service
 
 import com.tamj0rd2.extensions.asSuccess
+import com.tamj0rd2.skullking.application.port.inandout.GameUpdate
 import com.tamj0rd2.skullking.application.port.input.StartGameUseCase
 import com.tamj0rd2.skullking.application.port.input.StartGameUseCase.StartGameCommand
 import com.tamj0rd2.skullking.application.port.input.StartGameUseCase.StartGameOutput
@@ -13,7 +14,6 @@ import com.tamj0rd2.skullking.domain.game.GameCreatedEvent
 import com.tamj0rd2.skullking.domain.game.GameErrorCode
 import com.tamj0rd2.skullking.domain.game.GameEvent
 import com.tamj0rd2.skullking.domain.game.GameStartedEvent
-import com.tamj0rd2.skullking.domain.game.GameUpdate
 import com.tamj0rd2.skullking.domain.game.PlayerJoinedEvent
 import dev.forkhandles.result4k.Result4k
 import dev.forkhandles.result4k.onFailure

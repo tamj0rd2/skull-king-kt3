@@ -1,5 +1,6 @@
 package com.tamj0rd2.skullking.application.service
 
+import com.tamj0rd2.skullking.application.port.inandout.GameUpdate
 import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase
 import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.CreateNewGameCommand
 import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.CreateNewGameOutput
@@ -7,7 +8,6 @@ import com.tamj0rd2.skullking.application.port.output.GameRepository
 import com.tamj0rd2.skullking.application.port.output.GameUpdateNotifier
 import com.tamj0rd2.skullking.application.port.output.SavePlayerIdPort
 import com.tamj0rd2.skullking.domain.game.Game
-import com.tamj0rd2.skullking.domain.game.GameUpdate
 import com.tamj0rd2.skullking.domain.game.PlayerId
 import dev.forkhandles.values.random
 

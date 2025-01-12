@@ -6,6 +6,8 @@ import com.tamj0rd2.skullking.adapter.web.MessageToClient.ErrorMessage
 import com.tamj0rd2.skullking.adapter.web.MessageToClient.GameCreatedMessage
 import com.tamj0rd2.skullking.adapter.web.MessageToClient.GameUpdateMessage
 import com.tamj0rd2.skullking.adapter.web.MessageToClient.JoinAcknowledgedMessage
+import com.tamj0rd2.skullking.application.port.inandout.GameUpdate
+import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.GameStarted
 import com.tamj0rd2.skullking.application.port.inandout.GameUpdateListener
 import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.CreateNewGameCommand
 import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.CreateNewGameOutput
@@ -17,8 +19,6 @@ import com.tamj0rd2.skullking.application.port.input.StartGameUseCase.StartGameO
 import com.tamj0rd2.skullking.domain.auth.SessionId
 import com.tamj0rd2.skullking.domain.game.GameErrorCode
 import com.tamj0rd2.skullking.domain.game.GameId
-import com.tamj0rd2.skullking.domain.game.GameUpdate
-import com.tamj0rd2.skullking.domain.game.GameUpdate.GameStarted
 import com.tamj0rd2.skullking.domain.game.PlayerId
 import dev.forkhandles.result4k.Result4k
 import org.http4k.client.WebsocketClient

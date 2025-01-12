@@ -1,6 +1,7 @@
 package com.tamj0rd2.skullking.application.service
 
 import com.tamj0rd2.extensions.asSuccess
+import com.tamj0rd2.skullking.application.port.inandout.GameUpdate
 import com.tamj0rd2.skullking.application.port.input.JoinAGameUseCase
 import com.tamj0rd2.skullking.application.port.input.JoinAGameUseCase.JoinGameCommand
 import com.tamj0rd2.skullking.application.port.input.JoinAGameUseCase.JoinGameOutput
@@ -11,7 +12,6 @@ import com.tamj0rd2.skullking.application.port.output.SavePlayerIdPort
 import com.tamj0rd2.skullking.domain.auth.SessionId
 import com.tamj0rd2.skullking.domain.game.GameAction
 import com.tamj0rd2.skullking.domain.game.GameErrorCode
-import com.tamj0rd2.skullking.domain.game.GameUpdate
 import com.tamj0rd2.skullking.domain.game.PlayerId
 import dev.forkhandles.result4k.Result4k
 import dev.forkhandles.result4k.onFailure
