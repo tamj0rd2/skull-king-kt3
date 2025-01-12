@@ -13,6 +13,8 @@ import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.Create
 import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.CreateNewGameOutput
 import com.tamj0rd2.skullking.application.port.input.JoinAGameUseCase.JoinGameCommand
 import com.tamj0rd2.skullking.application.port.input.JoinAGameUseCase.JoinGameOutput
+import com.tamj0rd2.skullking.application.port.input.MakeABidUseCase.MakeABidCommand
+import com.tamj0rd2.skullking.application.port.input.MakeABidUseCase.MakeABidOutput
 import com.tamj0rd2.skullking.application.port.input.SkullKingUseCases
 import com.tamj0rd2.skullking.application.port.input.StartGameUseCase.StartGameCommand
 import com.tamj0rd2.skullking.application.port.input.StartGameUseCase.StartGameOutput
@@ -64,6 +66,10 @@ class SkullKingWebClient(
         check(message.playerId != PlayerId.NONE) { "got a zero playerId" }
 
         return JoinGameOutput(playerId = message.playerId).asSuccess()
+    }
+
+    override fun invoke(command: MakeABidCommand): Result4k<MakeABidOutput, GameErrorCode> {
+        TODO("Not yet implemented")
     }
 
     override fun invoke(command: StartGameCommand): Result4k<StartGameOutput, GameErrorCode> {

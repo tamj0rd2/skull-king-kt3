@@ -1,16 +1,22 @@
 package com.tamj0rd2.skullking.application.port.input.testsupport
 
 import com.tamj0rd2.skullking.application.port.inandout.GameUpdate
+import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.BidMade
 import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.CardDealt
 import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.GameStarted
 import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.PlayerJoined
 import com.tamj0rd2.skullking.application.port.inandout.GameUpdateListener
 import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.CreateNewGameCommand
 import com.tamj0rd2.skullking.application.port.input.JoinAGameUseCase.JoinGameCommand
+import com.tamj0rd2.skullking.application.port.input.MakeABidUseCase.MakeABidCommand
+import com.tamj0rd2.skullking.application.port.input.PlacedBid
+import com.tamj0rd2.skullking.application.port.input.PlacedBid.UnknownBid
 import com.tamj0rd2.skullking.application.port.input.SkullKingUseCases
 import com.tamj0rd2.skullking.application.port.input.StartGameUseCase.StartGameCommand
+import com.tamj0rd2.skullking.application.port.input.testsupport.PlayerRole.PlayerGameState.Companion.placedBids
 import com.tamj0rd2.skullking.application.port.input.testsupport.PlayerRole.PlayerGameState.Companion.players
 import com.tamj0rd2.skullking.domain.auth.SessionId
+import com.tamj0rd2.skullking.domain.game.Bid
 import com.tamj0rd2.skullking.domain.game.Card
 import com.tamj0rd2.skullking.domain.game.GameErrorCode
 import com.tamj0rd2.skullking.domain.game.GameId
@@ -154,6 +160,7 @@ class PlayerRole(
                         is CardDealt -> copy(hand = hand + it.card)
                         is GameStarted -> copy(roundNumber = roundNumber.next())
                         is PlayerJoined -> copy(players = players + it.playerId)
+                        is BidMade -> copy(placedBids = placedBids + UnknownBid(it.playerId))
                     }
                 }
         }
@@ -175,15 +182,27 @@ class PlayerRole(
 
     operator fun plus(otherPlayers: List<PlayerRole>) = listOf(this) + otherPlayers
 
+    fun `makes a bid`(bid: Bid) {
+        driver(MakeABidCommand(gameId, id, bid)).orThrow()
+    }
+
+    fun `sees bid`(bid: PlacedBid) {
+        hasGameStateWhere {
+            placedBids.contains(bid)
+        }
+    }
+
     data class PlayerGameState(
         val roundNumber: RoundNumber = RoundNumber.none,
         val hand: List<Card> = emptyList(),
         val players: List<PlayerId> = emptyList(),
+        val placedBids: List<PlacedBid> = emptyList(),
     ) {
         companion object {
             val Builder<PlayerGameState>.roundNumber get() = get { roundNumber }.describedAs("round number")
             val Builder<PlayerGameState>.hand get() = get { hand }.describedAs("hand")
             val Builder<PlayerGameState>.players get() = get { players }.describedAs("players")
+            val Builder<PlayerGameState>.placedBids get() = get { placedBids }.describedAs("placed bids")
         }
     }
 

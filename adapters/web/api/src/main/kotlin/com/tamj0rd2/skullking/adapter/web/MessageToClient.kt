@@ -5,6 +5,7 @@ import com.tamj0rd2.skullking.adapter.web.MessageToClient.GameCreatedMessage
 import com.tamj0rd2.skullking.adapter.web.MessageToClient.GameUpdateMessage
 import com.tamj0rd2.skullking.adapter.web.MessageToClient.JoinAcknowledgedMessage
 import com.tamj0rd2.skullking.application.port.inandout.GameUpdate
+import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.BidMade
 import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.CardDealt
 import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.GameStarted
 import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.PlayerJoined
@@ -115,6 +116,7 @@ private object JGameUpdate : JSealed<GameUpdate>() {
             is PlayerJoined -> "player-joined"
             is GameStarted -> "game-started"
             is CardDealt -> "card-dealt"
+            is BidMade -> TODO()
         }
 }
 

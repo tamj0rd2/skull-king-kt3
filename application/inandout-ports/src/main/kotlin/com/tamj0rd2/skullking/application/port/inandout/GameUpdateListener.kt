@@ -22,4 +22,8 @@ sealed interface GameUpdate {
     data class CardDealt(
         val card: Card,
     ) : GameUpdate
+
+    data class BidMade(
+        val playerId: PlayerId,
+    ) : GameUpdate
 }
