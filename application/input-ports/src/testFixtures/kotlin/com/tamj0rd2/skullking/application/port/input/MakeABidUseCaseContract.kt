@@ -5,7 +5,9 @@ import com.tamj0rd2.skullking.application.port.input.testsupport.Given
 import com.tamj0rd2.skullking.application.port.input.testsupport.Then
 import com.tamj0rd2.skullking.application.port.input.testsupport.UseCaseContract
 import com.tamj0rd2.skullking.application.port.input.testsupport.When
-import com.tamj0rd2.skullking.domain.game.Bid
+import com.tamj0rd2.skullking.domain.game.GameArbs.validBid
+import io.kotest.property.Arb
+import io.kotest.property.arbitrary.single
 import org.junit.jupiter.api.Test
 
 interface MakeABidUseCaseContract : UseCaseContract {
@@ -22,7 +24,7 @@ interface MakeABidUseCaseContract : UseCaseContract {
         }
 
         When {
-            gameCreator.`makes a bid`(Bid(1))
+            gameCreator.`makes a bid`(Arb.validBid.single())
         }
 
         Then {
