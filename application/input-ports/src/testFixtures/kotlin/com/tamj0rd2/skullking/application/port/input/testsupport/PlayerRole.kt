@@ -144,7 +144,7 @@ class PlayerRole(
         }
     }
 
-    override fun send(updates: List<GameUpdate>) {
+    override fun receive(updates: List<GameUpdate>) {
         receivedGameUpdates += updates
 
         updates.forEach {

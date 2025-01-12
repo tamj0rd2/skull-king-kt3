@@ -30,12 +30,12 @@ class GameUpdateNotifierInMemoryAdapter : GameUpdateNotifier {
 
         fun addListenerAndSendMissedUpdates(listener: GameUpdateListener) {
             listeners += listener
-            if (updates.isNotEmpty()) listener.send(updates)
+            if (updates.isNotEmpty()) listener.receive(updates)
         }
 
         fun broadcast(newUpdates: List<GameUpdate>) {
             updates.addAll(newUpdates)
-            listeners.forEach { it.send(newUpdates) }
+            listeners.forEach { it.receive(newUpdates) }
         }
     }
 }

@@ -60,7 +60,7 @@ abstract class GameUpdateNotifierContract {
         private val _receivedUpdates = mutableListOf<GameUpdate>()
         val receivedUpdates get() = _receivedUpdates.toList()
 
-        override fun send(updates: List<GameUpdate>) {
+        override fun receive(updates: List<GameUpdate>) {
             _receivedUpdates += updates
         }
     }

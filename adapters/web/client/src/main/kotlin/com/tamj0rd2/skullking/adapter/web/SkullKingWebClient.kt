@@ -125,7 +125,7 @@ class SkullKingWebClient(
                         println("client: $sessionId: received: $message")
 
                         if (message is GameUpdateMessage) {
-                            gameUpdateListener.send(message.gameUpdate)
+                            gameUpdateListener.receive(message.gameUpdate)
                         }
                     }
                 },
