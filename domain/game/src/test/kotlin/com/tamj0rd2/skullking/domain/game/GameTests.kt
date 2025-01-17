@@ -71,22 +71,20 @@ class GameTests {
             }
         }
 
-    // TODO: confusingly, an unsaved game starts at version -1. I don't like that. Make unsaved games 0 to make it easier to understand
-    //  that would mean that the minimum version for a restored game would be 1 (if it was saved right after it was created.)
     @Test
     fun `a game that has been restored using a history of events has a loaded version corresponding to the number of events`() {
-        invariant { game ->
-            val restoredGame = Game.from(game.events)
-            expectThat(restoredGame.loadedAtVersion).isEqualTo(Version.of(game.events.size - 1))
-        }
-
         example {
             val game = Game.new(PlayerId.random())
             game.execute(GameAction.AddPlayer(PlayerId.random()))
             expectThat(game.newEventsSinceGameWasLoaded).hasSize(2) // the inherent game created event + the add player event.
 
             val restoredGame = Game.from(game.events)
-            expectThat(restoredGame.loadedAtVersion).isEqualTo(Version.of(1))
+            expectThat(restoredGame.loadedAtVersion).isEqualTo(Version.of(2))
+        }
+
+        invariant { game ->
+            val restoredGame = Game.from(game.events)
+            expectThat(restoredGame.loadedAtVersion).isEqualTo(Version.of(game.events.size))
         }
     }
 

@@ -24,7 +24,7 @@ class Game private constructor(
 
     private val _events = mutableListOf<GameEvent>()
     val events: List<GameEvent> get() = _events.toList()
-    val newEventsSinceGameWasLoaded get() = _events.drop(loadedAtVersion.value + 1)
+    val newEventsSinceGameWasLoaded get() = _events.drop(loadedAtVersion.value)
 
     private constructor(createdBy: PlayerId) : this(
         id = GameId.random(),
@@ -35,7 +35,7 @@ class Game private constructor(
 
     private constructor(history: List<GameEvent>) : this(
         id = history.first().gameId,
-        loadedAtVersion = Version.of(history.size - 1),
+        loadedAtVersion = Version.of(history.size),
     ) {
         check(history.all { it.gameId == id }) { "GameId mismatch" }
         check(history.count { it is GameCreatedEvent } == 1) { "There was more than 1 game created event" }

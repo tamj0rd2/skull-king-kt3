@@ -89,7 +89,7 @@ class GameRepositoryEsdbAdapter : GameRepository {
                 if (loadedAtVersion == Version.NONE) {
                     ExpectedRevision.noStream()
                 } else {
-                    ExpectedRevision.expectedRevision(loadedAtVersion.value.toLong())
+                    ExpectedRevision.expectedRevision(loadedAtVersion.value.toLong() - 1)
                 }
 
         private object JGameEvent : JSealed<GameEvent>() {
