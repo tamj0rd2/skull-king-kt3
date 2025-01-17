@@ -9,6 +9,4 @@ value class Bid private constructor(
     override val value: Int,
 ) : Value<Int> {
     companion object : IntValueFactory<Bid>(::Bid, (0..10).between)
-
-    // TODO: a bit can only be from 0-10
 }
