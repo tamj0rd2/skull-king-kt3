@@ -3,8 +3,8 @@ package com.tamj0rd2.skullking.application.port.output
 import com.tamj0rd2.skullking.domain.game.Game
 import com.tamj0rd2.skullking.domain.game.GameActionArbs
 import com.tamj0rd2.skullking.domain.game.GameId
-import com.tamj0rd2.skullking.domain.game.LoadedGameVersion
 import com.tamj0rd2.skullking.domain.game.PlayerId
+import com.tamj0rd2.skullking.domain.game.Version
 import com.tamj0rd2.skullking.domain.game.mustExecute
 import com.tamj0rd2.skullking.domain.game.propertyTest
 import dev.forkhandles.values.random
@@ -38,8 +38,8 @@ abstract class GameRepositoryContract {
                 expectThat(gameThatWasSavedAndLoaded.state).isEqualTo(gameModifiedInMemoryOnly.state)
                 // TODO: these 2 assertions deserve their own test.
                 // TODO: also, this is now very sketchy. As a single game action can result in multiple events.
-                expectThat(gameThatWasSavedAndLoaded.loadedVersion.value).isGreaterThanOrEqualTo(actions.size)
-                expectThat(gameModifiedInMemoryOnly.loadedVersion).isEqualTo(LoadedGameVersion.NONE)
+                expectThat(gameThatWasSavedAndLoaded.loadedAtVersion.value).isGreaterThanOrEqualTo(actions.size)
+                expectThat(gameModifiedInMemoryOnly.loadedAtVersion).isEqualTo(Version.NONE)
             }
         }
 

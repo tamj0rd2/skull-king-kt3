@@ -21,7 +21,7 @@ class Game {
     private constructor(createdBy: PlayerId) {
         id = GameId.random()
         appendEvents(GameCreatedEvent(gameId = id, createdBy = createdBy))
-        loadedVersion = LoadedGameVersion.NONE
+        loadedAtVersion = Version.NONE
     }
 
     private constructor(history: List<GameEvent>) {
@@ -29,7 +29,7 @@ class Game {
         check(history.all { it.gameId == id }) { "GameId mismatch" }
         check(history.count { it is GameCreatedEvent } == 1) { "There was more than 1 game created event" }
         appendEvents(*history.toTypedArray()).orThrow()
-        loadedVersion = LoadedGameVersion.of(history.size - 1)
+        loadedAtVersion = Version.of(history.size - 1)
     }
 
     val id: GameId
@@ -39,8 +39,8 @@ class Game {
     private val _events = mutableListOf<GameEvent>()
     val events: List<GameEvent> get() = _events.toList()
 
-    val loadedVersion: LoadedGameVersion
-    val newEventsSinceGameWasLoaded get() = _events.drop(loadedVersion.value + 1)
+    val loadedAtVersion: Version
+    val newEventsSinceGameWasLoaded get() = _events.drop(loadedAtVersion.value + 1)
 
     fun execute(vararg actions: GameAction): Result4k<Unit, GameErrorCode> {
         require(actions.isNotEmpty()) { "Cannot execute empty actions." }
