@@ -21,6 +21,16 @@ interface MakeABidUseCase {
 sealed interface PlacedBid {
     val madeBy: PlayerId
 
+    // TODO: this doesn't really belong with the use case. These should probably just be 2 separate types
+    data class RevealedBid(
+        override val madeBy: PlayerId,
+        val bid: Bid,
+    ) : PlacedBid {
+        companion object {
+            fun Bid.madeBy(playerId: PlayerId) = RevealedBid(playerId, this)
+        }
+    }
+
     data class UnknownBid(
         override val madeBy: PlayerId,
     ) : PlacedBid

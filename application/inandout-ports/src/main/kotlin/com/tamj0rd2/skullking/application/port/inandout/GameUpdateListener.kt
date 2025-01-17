@@ -1,5 +1,6 @@
 package com.tamj0rd2.skullking.application.port.inandout
 
+import com.tamj0rd2.skullking.domain.game.Bid
 import com.tamj0rd2.skullking.domain.game.Card
 import com.tamj0rd2.skullking.domain.game.PlayerId
 
@@ -25,5 +26,9 @@ sealed interface GameUpdate {
 
     data class BidMade(
         val playerId: PlayerId,
+    ) : GameUpdate
+
+    data class AllBidsMade(
+        val bids: Map<PlayerId, Bid>,
     ) : GameUpdate
 }

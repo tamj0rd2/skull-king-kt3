@@ -17,13 +17,17 @@ import dev.forkhandles.values.Value
 data class GameState private constructor(
     val players: List<PlayerId>,
     val status: Status,
+    val bids: Map<PlayerId, Bid>,
 ) {
+    val allBidsHaveBeenPlaced = bids.keys == players.toSet()
+
     internal fun apply(event: GameEvent): Result4k<GameState, GameErrorCode> =
         when (event) {
             is GameCreatedEvent -> apply(event)
             is PlayerJoinedEvent -> apply(event)
             is GameStartedEvent -> apply(event)
             is CardDealtEvent -> asSuccess()
+            is BidPlacedEvent -> apply(event)
         }
 
     private fun apply(event: GameCreatedEvent): Result4k<GameState, GameErrorCode> = copy(players = players + event.createdBy).asSuccess()
@@ -42,11 +46,16 @@ data class GameState private constructor(
         return copy(status = IN_PROGRESS).asSuccess()
     }
 
+    private fun apply(event: BidPlacedEvent): Result4k<GameState, AddPlayerErrorCode> {
+        return copy(bids = bids + Pair(event.playerId, event.bid)).asSuccess()
+    }
+
     companion object {
         internal fun new() =
             GameState(
                 players = emptyList(),
                 status = IN_LOBBY,
+                bids = emptyMap(),
             )
     }
 }

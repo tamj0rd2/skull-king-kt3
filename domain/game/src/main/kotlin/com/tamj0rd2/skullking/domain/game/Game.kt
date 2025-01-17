@@ -2,6 +2,7 @@ package com.tamj0rd2.skullking.domain.game
 
 import com.tamj0rd2.extensions.asSuccess
 import com.tamj0rd2.skullking.domain.game.GameAction.AddPlayer
+import com.tamj0rd2.skullking.domain.game.GameAction.PlaceBid
 import com.tamj0rd2.skullking.domain.game.GameAction.Start
 import dev.forkhandles.result4k.Result4k
 import dev.forkhandles.result4k.onFailure
@@ -37,15 +38,20 @@ sealed class GameAction {
     ) : GameAction()
 
     data object Start : GameAction()
+
+    data class PlaceBid(
+        val playerId: PlayerId,
+        val bid: Bid,
+    ) : GameAction()
 }
 
+// TODO: this is a mess. Tidy it!
 /**
  * Game is a DDD aggregate
  * It has a lifecycle - it starts when it is created, and ends when the game is completed.
  * It is a transactional boundary - all changes to any entities used by game must be ACID
  * It is a consistency boundary - all changes must either happen, or not.
  */
-
 class Game {
     private constructor(createdBy: PlayerId) {
         id = GameId.random()
@@ -77,6 +83,7 @@ class Game {
             when (action) {
                 is AddPlayer -> addPlayer(action.playerId)
                 is Start -> start()
+                is PlaceBid -> placeBid(action)
             }.onFailure { return it }
         }
         return Unit.asSuccess()
@@ -87,6 +94,11 @@ class Game {
     private fun start(): Result4k<Unit, GameErrorCode> {
         appendEvents(GameStartedEvent(id)).onFailure { return it }
         appendEvents(CardDealtEvent(id)).onFailure { return it }
+        return Unit.asSuccess()
+    }
+
+    private fun placeBid(action: PlaceBid): Result4k<Unit, GameErrorCode> {
+        appendEvents(BidPlacedEvent(id, action.playerId, action.bid)).onFailure { return it }
         return Unit.asSuccess()
     }
 

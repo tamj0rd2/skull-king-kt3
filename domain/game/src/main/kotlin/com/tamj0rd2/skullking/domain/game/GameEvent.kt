@@ -21,3 +21,9 @@ data class GameStartedEvent(
 data class CardDealtEvent(
     override val gameId: GameId,
 ) : GameEvent
+
+data class BidPlacedEvent(
+    override val gameId: GameId,
+    val playerId: PlayerId,
+    val bid: Bid,
+) : GameEvent

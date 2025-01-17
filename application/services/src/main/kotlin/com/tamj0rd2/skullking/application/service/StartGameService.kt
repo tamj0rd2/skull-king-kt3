@@ -1,12 +1,14 @@
 package com.tamj0rd2.skullking.application.service
 
 import com.tamj0rd2.extensions.asSuccess
-import com.tamj0rd2.skullking.application.port.inandout.GameUpdate
+import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.CardDealt
+import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.GameStarted
 import com.tamj0rd2.skullking.application.port.input.StartGameUseCase
 import com.tamj0rd2.skullking.application.port.input.StartGameUseCase.StartGameCommand
 import com.tamj0rd2.skullking.application.port.input.StartGameUseCase.StartGameOutput
 import com.tamj0rd2.skullking.application.port.output.GameRepository
 import com.tamj0rd2.skullking.application.port.output.GameUpdateNotifier
+import com.tamj0rd2.skullking.domain.game.BidPlacedEvent
 import com.tamj0rd2.skullking.domain.game.Card
 import com.tamj0rd2.skullking.domain.game.CardDealtEvent
 import com.tamj0rd2.skullking.domain.game.GameAction
@@ -31,13 +33,15 @@ class StartGameService(
         return StartGameOutput.asSuccess()
     }
 
+    // TODO: wat.
     private fun List<GameEvent>.toGameUpdates() =
         map {
             when (it) {
                 is GameCreatedEvent -> TODO()
-                is GameStartedEvent -> GameUpdate.GameStarted
+                is GameStartedEvent -> GameStarted
                 is PlayerJoinedEvent -> TODO()
-                is CardDealtEvent -> GameUpdate.CardDealt(Card)
+                is CardDealtEvent -> CardDealt(Card)
+                is BidPlacedEvent -> TODO()
             }
         }
 }

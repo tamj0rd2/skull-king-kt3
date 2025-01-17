@@ -47,6 +47,7 @@ class SkullKingApplication private constructor(
         makeABidUseCase =
             MakeABidService(
                 gameUpdateNotifier = gameUpdateNotifier,
+                gameRepository = gameRepository,
             ),
     )
 

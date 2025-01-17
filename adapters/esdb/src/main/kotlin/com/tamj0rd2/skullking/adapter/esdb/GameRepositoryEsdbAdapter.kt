@@ -10,6 +10,7 @@ import com.eventstore.dbclient.ResolvedEvent
 import com.eventstore.dbclient.StreamNotFoundException
 import com.tamj0rd2.skullking.application.port.output.GameDoesNotExist
 import com.tamj0rd2.skullking.application.port.output.GameRepository
+import com.tamj0rd2.skullking.domain.game.BidPlacedEvent
 import com.tamj0rd2.skullking.domain.game.CardDealtEvent
 import com.tamj0rd2.skullking.domain.game.Game
 import com.tamj0rd2.skullking.domain.game.GameCreatedEvent
@@ -18,12 +19,14 @@ import com.tamj0rd2.skullking.domain.game.GameId
 import com.tamj0rd2.skullking.domain.game.GameStartedEvent
 import com.tamj0rd2.skullking.domain.game.PlayerJoinedEvent
 import com.tamj0rd2.skullking.domain.game.Version
+import com.tamj0rd2.skullking.serialization.json.JBid
 import com.tamj0rd2.skullking.serialization.json.JGameId
 import com.tamj0rd2.skullking.serialization.json.JPlayerId
 import com.ubertob.kondor.json.JAny
 import com.ubertob.kondor.json.JSealed
 import com.ubertob.kondor.json.ObjectNodeConverter
 import com.ubertob.kondor.json.jsonnode.JsonNodeObject
+import com.ubertob.kondor.json.num
 import com.ubertob.kondor.json.str
 import java.util.concurrent.ExecutionException
 
@@ -96,6 +99,7 @@ class GameRepositoryEsdbAdapter : GameRepository {
                     Triple(PlayerJoinedEvent::class, "player-joined", JPlayerJoined),
                     Triple(GameStartedEvent::class, "game-started", JGameStarted),
                     Triple(CardDealtEvent::class, "card-dealt-event", JCardDealt),
+                    Triple(BidPlacedEvent::class, "bid-placed", JBidPlaced),
                 )
 
             override val subConverters: Map<String, ObjectNodeConverter<out GameEvent>>
@@ -145,6 +149,19 @@ class GameRepositoryEsdbAdapter : GameRepository {
             override fun JsonNodeObject.deserializeOrThrow() =
                 CardDealtEvent(
                     gameId = +gameId,
+                )
+        }
+
+        private object JBidPlaced : JAny<BidPlacedEvent>() {
+            private val gameId by str(JGameId, BidPlacedEvent::gameId)
+            private val playerId by str(JPlayerId, BidPlacedEvent::playerId)
+            private val bid by num(JBid, BidPlacedEvent::bid)
+
+            override fun JsonNodeObject.deserializeOrThrow() =
+                BidPlacedEvent(
+                    gameId = +gameId,
+                    playerId = +playerId,
+                    bid = +bid,
                 )
         }
     }

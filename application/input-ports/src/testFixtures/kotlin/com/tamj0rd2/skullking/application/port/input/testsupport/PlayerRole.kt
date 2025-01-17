@@ -1,6 +1,7 @@
 package com.tamj0rd2.skullking.application.port.input.testsupport
 
 import com.tamj0rd2.skullking.application.port.inandout.GameUpdate
+import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.AllBidsMade
 import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.BidMade
 import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.CardDealt
 import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.GameStarted
@@ -10,6 +11,7 @@ import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.Create
 import com.tamj0rd2.skullking.application.port.input.JoinAGameUseCase.JoinGameCommand
 import com.tamj0rd2.skullking.application.port.input.MakeABidUseCase.MakeABidCommand
 import com.tamj0rd2.skullking.application.port.input.PlacedBid
+import com.tamj0rd2.skullking.application.port.input.PlacedBid.RevealedBid
 import com.tamj0rd2.skullking.application.port.input.PlacedBid.UnknownBid
 import com.tamj0rd2.skullking.application.port.input.SkullKingUseCases
 import com.tamj0rd2.skullking.application.port.input.StartGameUseCase.StartGameCommand
@@ -30,6 +32,7 @@ import strikt.assertions.all
 import strikt.assertions.contains
 import strikt.assertions.containsExactlyInAnyOrder
 import strikt.assertions.hasSize
+import strikt.assertions.isNotEmpty
 import strikt.assertions.isNotEqualTo
 import strikt.assertions.isNotNull
 import strikt.assertions.isNull
@@ -161,6 +164,8 @@ class PlayerRole(
                         is GameStarted -> copy(roundNumber = roundNumber.next())
                         is PlayerJoined -> copy(players = players + it.playerId)
                         is BidMade -> copy(placedBids = placedBids + UnknownBid(it.playerId))
+                        // TODO: just create a separate revealedBids property. Rename above to - unknownBids
+                        is AllBidsMade -> copy(placedBids = it.bids.map { RevealedBid(it.key, it.value) })
                     }
                 }
         }
@@ -186,9 +191,10 @@ class PlayerRole(
         driver(MakeABidCommand(gameId, id, bid)).orThrow()
     }
 
+    fun `see a bid`(bid: PlacedBid) = `sees bid`(bid)
     fun `sees bid`(bid: PlacedBid) {
         hasGameStateWhere {
-            placedBids.contains(bid)
+            placedBids.isNotEmpty().contains(bid)
         }
     }
 
