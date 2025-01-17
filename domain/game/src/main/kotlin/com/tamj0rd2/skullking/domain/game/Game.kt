@@ -19,6 +19,13 @@ class Game private constructor(
     val id: GameId,
     val loadedAtVersion: Version,
 ) {
+    var state = GameState.new()
+        private set
+
+    private val _events = mutableListOf<GameEvent>()
+    val events: List<GameEvent> get() = _events.toList()
+    val newEventsSinceGameWasLoaded get() = _events.drop(loadedAtVersion.value + 1)
+
     private constructor(createdBy: PlayerId) : this(
         id = GameId.random(),
         loadedAtVersion = Version.NONE,
@@ -35,16 +42,17 @@ class Game private constructor(
         appendEvents(*history.toTypedArray()).orThrow()
     }
 
-    var state = GameState.new()
-        private set
-
-    private val _events = mutableListOf<GameEvent>()
-    val events: List<GameEvent> get() = _events.toList()
-
-    val newEventsSinceGameWasLoaded get() = _events.drop(loadedAtVersion.value + 1)
+    private fun appendEvents(vararg events: GameEvent): Result4k<Unit, GameErrorCode> {
+        state =
+            events.fold(state) { state, event ->
+                state.apply(event).onFailure { return it }
+            }
+        _events.addAll(events)
+        return Unit.asSuccess()
+    }
 
     fun execute(vararg actions: GameAction): Result4k<Unit, GameErrorCode> {
-        require(actions.isNotEmpty()) { "Cannot execute empty actions." }
+        require(actions.isNotEmpty()) { "you need to execute at least 1 action" }
         actions.forEach { action ->
             when (action) {
                 is AddPlayer -> addPlayer(action.playerId)
@@ -64,15 +72,6 @@ class Game private constructor(
         )
 
     private fun placeBid(action: PlaceBid): Result4k<Unit, GameErrorCode> = appendEvents(BidPlacedEvent(id, action.playerId, action.bid))
-
-    private fun appendEvents(vararg events: GameEvent): Result4k<Unit, GameErrorCode> {
-        state =
-            events.fold(state) { state, event ->
-                state.apply(event).onFailure { return it }
-            }
-        _events.addAll(events)
-        return Unit.asSuccess()
-    }
 
     companion object {
         const val MINIMUM_PLAYER_COUNT = 2
