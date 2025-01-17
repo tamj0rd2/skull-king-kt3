@@ -5,10 +5,10 @@ import dev.forkhandles.values.Value
 import dev.forkhandles.values.minValue
 
 @JvmInline
-value class Version private constructor(
+value class LoadedGameVersion private constructor(
     override val value: Int,
 ) : Value<Int> {
-    companion object : IntValueFactory<Version>(::Version, 0.minValue) {
-        val NONE = Version(-1)
+    companion object : IntValueFactory<LoadedGameVersion>(::LoadedGameVersion, 0.minValue) {
+        val NONE = LoadedGameVersion(-1)
     }
 }

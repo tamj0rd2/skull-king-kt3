@@ -17,8 +17,8 @@ import com.tamj0rd2.skullking.domain.game.GameCreatedEvent
 import com.tamj0rd2.skullking.domain.game.GameEvent
 import com.tamj0rd2.skullking.domain.game.GameId
 import com.tamj0rd2.skullking.domain.game.GameStartedEvent
+import com.tamj0rd2.skullking.domain.game.LoadedGameVersion
 import com.tamj0rd2.skullking.domain.game.PlayerJoinedEvent
-import com.tamj0rd2.skullking.domain.game.Version
 import com.tamj0rd2.skullking.serialization.json.JBid
 import com.tamj0rd2.skullking.serialization.json.JGameId
 import com.tamj0rd2.skullking.serialization.json.JPlayerId
@@ -86,7 +86,7 @@ class GameRepositoryEsdbAdapter : GameRepository {
 
         private val Game.expectedRevision
             get() =
-                if (loadedVersion == Version.NONE) {
+                if (loadedVersion == LoadedGameVersion.NONE) {
                     ExpectedRevision.noStream()
                 } else {
                     ExpectedRevision.expectedRevision(loadedVersion.value.toLong())
