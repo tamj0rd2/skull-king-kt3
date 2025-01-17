@@ -6,14 +6,14 @@ import com.tamj0rd2.skullking.domain.game.GameId
 import com.tamj0rd2.skullking.domain.game.PlayerId
 import dev.forkhandles.result4k.Result4k
 
-interface MakeABidUseCase {
-    data class MakeABidCommand(
+interface PlaceABidUseCase {
+    data class PlaceABidCommand(
         val gameId: GameId,
         val playerId: PlayerId,
         val bid: Bid,
     )
 
-    data object MakeABidOutput
+    data object PlaceABidOutput
 
-    operator fun invoke(command: MakeABidCommand): Result4k<MakeABidOutput, GameErrorCode>
+    operator fun invoke(command: PlaceABidCommand): Result4k<PlaceABidOutput, GameErrorCode>
 }

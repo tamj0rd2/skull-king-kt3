@@ -3,9 +3,9 @@ package com.tamj0rd2.skullking.application.service
 import com.tamj0rd2.extensions.asSuccess
 import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.AllBidsMade
 import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.BidMade
-import com.tamj0rd2.skullking.application.port.input.MakeABidUseCase
-import com.tamj0rd2.skullking.application.port.input.MakeABidUseCase.MakeABidCommand
-import com.tamj0rd2.skullking.application.port.input.MakeABidUseCase.MakeABidOutput
+import com.tamj0rd2.skullking.application.port.input.PlaceABidUseCase
+import com.tamj0rd2.skullking.application.port.input.PlaceABidUseCase.PlaceABidCommand
+import com.tamj0rd2.skullking.application.port.input.PlaceABidUseCase.PlaceABidOutput
 import com.tamj0rd2.skullking.application.port.output.GameRepository
 import com.tamj0rd2.skullking.application.port.output.GameUpdateNotifier
 import com.tamj0rd2.skullking.domain.game.GameAction
@@ -13,11 +13,11 @@ import com.tamj0rd2.skullking.domain.game.GameErrorCode
 import dev.forkhandles.result4k.Result4k
 import dev.forkhandles.result4k.orThrow
 
-class MakeABidService(
+class PlaceABidService(
     private val gameUpdateNotifier: GameUpdateNotifier,
     private val gameRepository: GameRepository,
-) : MakeABidUseCase {
-    override fun invoke(command: MakeABidCommand): Result4k<MakeABidOutput, GameErrorCode> {
+) : PlaceABidUseCase {
+    override fun invoke(command: PlaceABidCommand): Result4k<PlaceABidOutput, GameErrorCode> {
         val game = gameRepository.load(command.gameId)
         game.execute(GameAction.PlaceBid(command.playerId, command.bid)).orThrow()
         gameRepository.save(game)
@@ -28,6 +28,6 @@ class MakeABidService(
             gameUpdateNotifier.broadcast(command.gameId, AllBidsMade(game.state.bids))
         }
 
-        return MakeABidOutput.asSuccess()
+        return PlaceABidOutput.asSuccess()
     }
 }

@@ -1,7 +1,7 @@
 package com.tamj0rd2.skullking.adapter.web
 
 import com.tamj0rd2.extensions.asSuccess
-import com.tamj0rd2.skullking.adapter.web.MessageFromClient.MakeABidMessage
+import com.tamj0rd2.skullking.adapter.web.MessageFromClient.PlaceABidMessage
 import com.tamj0rd2.skullking.adapter.web.MessageFromClient.StartGameMessage
 import com.tamj0rd2.skullking.adapter.web.MessageToClient.ErrorMessage
 import com.tamj0rd2.skullking.adapter.web.MessageToClient.GameCreatedMessage
@@ -15,8 +15,8 @@ import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.Create
 import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.CreateNewGameOutput
 import com.tamj0rd2.skullking.application.port.input.JoinAGameUseCase.JoinGameCommand
 import com.tamj0rd2.skullking.application.port.input.JoinAGameUseCase.JoinGameOutput
-import com.tamj0rd2.skullking.application.port.input.MakeABidUseCase.MakeABidCommand
-import com.tamj0rd2.skullking.application.port.input.MakeABidUseCase.MakeABidOutput
+import com.tamj0rd2.skullking.application.port.input.PlaceABidUseCase.PlaceABidCommand
+import com.tamj0rd2.skullking.application.port.input.PlaceABidUseCase.PlaceABidOutput
 import com.tamj0rd2.skullking.application.port.input.SkullKingUseCases
 import com.tamj0rd2.skullking.application.port.input.StartGameUseCase.StartGameCommand
 import com.tamj0rd2.skullking.application.port.input.StartGameUseCase.StartGameOutput
@@ -76,10 +76,10 @@ class SkullKingWebClient(
         return StartGameOutput.asSuccess()
     }
 
-    override fun invoke(command: MakeABidCommand): Result4k<MakeABidOutput, GameErrorCode> {
-        ws.send(messageFromClient(MakeABidMessage(command.bid)))
+    override fun invoke(command: PlaceABidCommand): Result4k<PlaceABidOutput, GameErrorCode> {
+        ws.send(messageFromClient(PlaceABidMessage(command.bid)))
         ws.waitForGameUpdate<BidMade>()
-        return MakeABidOutput.asSuccess()
+        return PlaceABidOutput.asSuccess()
     }
 
     private inline fun <reified T : GameUpdate> Websocket.waitForGameUpdate(): T =

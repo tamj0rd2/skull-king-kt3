@@ -9,7 +9,7 @@ import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.PlayerJoined
 import com.tamj0rd2.skullking.application.port.inandout.GameUpdateListener
 import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.CreateNewGameCommand
 import com.tamj0rd2.skullking.application.port.input.JoinAGameUseCase.JoinGameCommand
-import com.tamj0rd2.skullking.application.port.input.MakeABidUseCase.MakeABidCommand
+import com.tamj0rd2.skullking.application.port.input.PlaceABidUseCase.PlaceABidCommand
 import com.tamj0rd2.skullking.application.port.input.SkullKingUseCases
 import com.tamj0rd2.skullking.application.port.input.StartGameUseCase.StartGameCommand
 import com.tamj0rd2.skullking.application.port.input.testsupport.PlayerRole.PlayerGameState.Companion.bids
@@ -185,7 +185,7 @@ class PlayerRole(
     operator fun plus(otherPlayers: List<PlayerRole>) = listOf(this) + otherPlayers
 
     fun `makes a bid`(bid: Bid) {
-        driver(MakeABidCommand(gameId, id, bid)).orThrow()
+        driver(PlaceABidCommand(gameId, id, bid)).orThrow()
     }
 
     fun `sees that a bid has been made by`(playerId: PlayerId) {

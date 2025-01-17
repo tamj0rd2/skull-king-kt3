@@ -11,7 +11,7 @@ import io.kotest.property.Arb
 import io.kotest.property.arbitrary.single
 import org.junit.jupiter.api.Test
 
-interface MakeABidUseCaseContract : UseCaseContract {
+interface PlaceABidUseCaseContract : UseCaseContract {
     @Test
     fun `when a player bids, other players can see that they have bid, but not what it is`() {
         val gameCreator = scenario.newPlayer()
