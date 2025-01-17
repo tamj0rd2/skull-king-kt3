@@ -10,12 +10,9 @@ import com.tamj0rd2.skullking.application.port.inandout.GameUpdateListener
 import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.CreateNewGameCommand
 import com.tamj0rd2.skullking.application.port.input.JoinAGameUseCase.JoinGameCommand
 import com.tamj0rd2.skullking.application.port.input.MakeABidUseCase.MakeABidCommand
-import com.tamj0rd2.skullking.application.port.input.PlacedBid
-import com.tamj0rd2.skullking.application.port.input.PlacedBid.RevealedBid
-import com.tamj0rd2.skullking.application.port.input.PlacedBid.UnknownBid
 import com.tamj0rd2.skullking.application.port.input.SkullKingUseCases
 import com.tamj0rd2.skullking.application.port.input.StartGameUseCase.StartGameCommand
-import com.tamj0rd2.skullking.application.port.input.testsupport.PlayerRole.PlayerGameState.Companion.placedBids
+import com.tamj0rd2.skullking.application.port.input.testsupport.PlayerRole.PlayerGameState.Companion.bids
 import com.tamj0rd2.skullking.application.port.input.testsupport.PlayerRole.PlayerGameState.Companion.players
 import com.tamj0rd2.skullking.domain.auth.SessionId
 import com.tamj0rd2.skullking.domain.game.Bid
@@ -31,6 +28,7 @@ import strikt.api.expectThat
 import strikt.assertions.all
 import strikt.assertions.contains
 import strikt.assertions.containsExactlyInAnyOrder
+import strikt.assertions.hasEntry
 import strikt.assertions.hasSize
 import strikt.assertions.isNotEmpty
 import strikt.assertions.isNotEqualTo
@@ -163,9 +161,8 @@ class PlayerRole(
                         is CardDealt -> copy(hand = hand + it.card)
                         is GameStarted -> copy(roundNumber = roundNumber.next())
                         is PlayerJoined -> copy(players = players + it.playerId)
-                        is BidMade -> copy(placedBids = placedBids + UnknownBid(it.playerId))
-                        // TODO: just create a separate revealedBids property. Rename above to - unknownBids
-                        is AllBidsMade -> copy(placedBids = it.bids.map { RevealedBid(it.key, it.value) })
+                        is BidMade -> copy(bids = bids + Pair(it.playerId, null))
+                        is AllBidsMade -> copy(bids = it.bids)
                     }
                 }
         }
@@ -191,11 +188,18 @@ class PlayerRole(
         driver(MakeABidCommand(gameId, id, bid)).orThrow()
     }
 
-    fun `see a bid`(bid: PlacedBid) = `sees bid`(bid)
-
-    fun `sees bid`(bid: PlacedBid) {
+    fun `sees that a bid has been made by`(playerId: PlayerId) {
         hasGameStateWhere {
-            placedBids.isNotEmpty().contains(bid)
+            bids.isNotEmpty().hasEntry(playerId, null)
+        }
+    }
+
+    fun `see a bid`(
+        bid: Bid,
+        madeBy: PlayerId,
+    ) {
+        hasGameStateWhere {
+            bids.isNotEmpty().hasEntry(madeBy, bid)
         }
     }
 
@@ -203,13 +207,13 @@ class PlayerRole(
         val roundNumber: RoundNumber = RoundNumber.none,
         val hand: List<Card> = emptyList(),
         val players: List<PlayerId> = emptyList(),
-        val placedBids: List<PlacedBid> = emptyList(),
+        val bids: Map<PlayerId, Bid?> = emptyMap(),
     ) {
         companion object {
             val Builder<PlayerGameState>.roundNumber get() = get { roundNumber }.describedAs("round number")
             val Builder<PlayerGameState>.hand get() = get { hand }.describedAs("hand")
             val Builder<PlayerGameState>.players get() = get { players }.describedAs("players")
-            val Builder<PlayerGameState>.placedBids get() = get { placedBids }.describedAs("placed bids")
+            val Builder<PlayerGameState>.bids get() = get { bids }.describedAs("bids")
         }
     }
 

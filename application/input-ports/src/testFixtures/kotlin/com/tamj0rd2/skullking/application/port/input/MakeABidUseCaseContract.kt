@@ -1,7 +1,5 @@
 package com.tamj0rd2.skullking.application.port.input
 
-import com.tamj0rd2.skullking.application.port.input.PlacedBid.RevealedBid.Companion.madeBy
-import com.tamj0rd2.skullking.application.port.input.PlacedBid.UnknownBid
 import com.tamj0rd2.skullking.application.port.input.testsupport.Given
 import com.tamj0rd2.skullking.application.port.input.testsupport.Then
 import com.tamj0rd2.skullking.application.port.input.testsupport.UseCaseContract
@@ -31,7 +29,7 @@ interface MakeABidUseCaseContract : UseCaseContract {
         }
 
         Then {
-            anotherPlayer.`sees bid`(UnknownBid(madeBy = gameCreator.id))
+            anotherPlayer.`sees that a bid has been made by`(gameCreator.id)
         }
     }
 
@@ -55,8 +53,8 @@ interface MakeABidUseCaseContract : UseCaseContract {
 
         Then {
             thePlayers.each {
-                `see a bid`(Bid.of(1).madeBy(gameCreator.id))
-                `see a bid`(Bid.of(0).madeBy(anotherPlayer.id))
+                `see a bid`(Bid.of(1), madeBy = gameCreator.id)
+                `see a bid`(Bid.of(0), madeBy = anotherPlayer.id)
             }
         }
     }
