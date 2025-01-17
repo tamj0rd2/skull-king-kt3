@@ -7,43 +7,7 @@ import com.tamj0rd2.skullking.domain.game.GameAction.Start
 import dev.forkhandles.result4k.Result4k
 import dev.forkhandles.result4k.onFailure
 import dev.forkhandles.result4k.orThrow
-import dev.forkhandles.values.IntValueFactory
-import dev.forkhandles.values.UUIDValueFactory
-import dev.forkhandles.values.Value
-import dev.forkhandles.values.minValue
 import dev.forkhandles.values.random
-import java.util.UUID
-
-@JvmInline
-value class GameId private constructor(
-    override val value: UUID,
-) : Value<UUID> {
-    companion object : UUIDValueFactory<GameId>(::GameId, validation = { it != UUID(0, 0) }) {
-        val NONE = GameId(UUID(0, 0))
-    }
-}
-
-@JvmInline
-value class Version private constructor(
-    override val value: Int,
-) : Value<Int> {
-    companion object : IntValueFactory<Version>(::Version, 0.minValue) {
-        val NONE = Version(-1)
-    }
-}
-
-sealed class GameAction {
-    data class AddPlayer(
-        val playerId: PlayerId,
-    ) : GameAction()
-
-    data object Start : GameAction()
-
-    data class PlaceBid(
-        val playerId: PlayerId,
-        val bid: Bid,
-    ) : GameAction()
-}
 
 // TODO: this is a mess. Tidy it!
 
