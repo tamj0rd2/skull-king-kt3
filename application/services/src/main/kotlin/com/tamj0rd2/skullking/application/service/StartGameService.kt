@@ -26,7 +26,7 @@ class StartGameService(
         game.execute(GameAction.Start).onFailure { return it }
         gameRepository.save(game)
 
-        gameUpdateNotifier.broadcast(game.id, game.newEvents.toGameUpdates())
+        gameUpdateNotifier.broadcast(game.id, game.newEventsSinceGameWasLoaded.toGameUpdates())
         return StartGameOutput.asSuccess()
     }
 

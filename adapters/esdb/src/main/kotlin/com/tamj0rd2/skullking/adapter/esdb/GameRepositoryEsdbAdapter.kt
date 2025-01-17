@@ -52,7 +52,7 @@ class GameRepositoryEsdbAdapter : GameRepository {
 
     override fun save(game: Game) {
         val eventData =
-            game.newEvents.map {
+            game.newEventsSinceGameWasLoaded.map {
                 EventDataBuilder
                     .json(
                         JGameEvent.extractTypeName(it),

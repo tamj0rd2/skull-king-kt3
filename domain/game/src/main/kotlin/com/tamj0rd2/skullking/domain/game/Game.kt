@@ -9,7 +9,7 @@ import dev.forkhandles.result4k.onFailure
 import dev.forkhandles.result4k.orThrow
 import dev.forkhandles.values.random
 
-// TODO: this is a mess. Tidy it!
+// TODO: I feel like this class could be better factored.
 
 /**
  * Game is a DDD aggregate
@@ -40,7 +40,7 @@ class Game {
     val events: List<GameEvent> get() = _events.toList()
 
     val loadedVersion: LoadedGameVersion
-    val newEvents get() = _events.drop(loadedVersion.value + 1)
+    val newEventsSinceGameWasLoaded get() = _events.drop(loadedVersion.value + 1)
 
     fun execute(vararg actions: GameAction): Result4k<Unit, GameErrorCode> {
         require(actions.isNotEmpty()) { "Cannot execute empty actions." }

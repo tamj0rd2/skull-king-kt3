@@ -28,7 +28,7 @@ data class GameState private constructor(
             is BidPlacedEvent -> apply(event)
         }
 
-    private fun apply(event: GameCreatedEvent): Result4k<GameState, GameErrorCode> = copy(players = players + event.createdBy).asSuccess()
+    private fun apply(event: GameCreatedEvent): Result4k<GameState, GameErrorCode> = copy(players = listOf(event.createdBy)).asSuccess()
 
     private fun apply(event: PlayerJoinedEvent): Result4k<GameState, AddPlayerErrorCode> {
         if (status == IN_PROGRESS) return GameHasAlreadyStarted().asFailure()
