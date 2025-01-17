@@ -4,4 +4,5 @@ interface SkullKingUseCases :
     CreateNewGameUseCase,
     JoinAGameUseCase,
     PlaceABidUseCase,
-    StartGameUseCase
+    StartGameUseCase,
+    PlayACardUseCase

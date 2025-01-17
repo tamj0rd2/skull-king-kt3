@@ -10,6 +10,7 @@ import com.tamj0rd2.skullking.application.port.inandout.GameUpdateListener
 import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.CreateNewGameCommand
 import com.tamj0rd2.skullking.application.port.input.JoinAGameUseCase.JoinGameCommand
 import com.tamj0rd2.skullking.application.port.input.PlaceABidUseCase.PlaceABidCommand
+import com.tamj0rd2.skullking.application.port.input.PlayACardUseCase.PlayACardCommand
 import com.tamj0rd2.skullking.application.port.input.SkullKingUseCases
 import com.tamj0rd2.skullking.application.port.input.StartGameUseCase.StartGameCommand
 import com.tamj0rd2.skullking.application.port.input.testsupport.PlayerRole.PlayerGameState.Companion.bids
@@ -201,6 +202,16 @@ class PlayerRole(
         hasGameStateWhere {
             bids.isNotEmpty().hasEntry(placedBy, bid)
         }
+    }
+
+    fun `plays a card`(card: Card) {
+        driver(PlayACardCommand(gameId, id, card))
+
+        TODO("blep")
+    }
+
+    fun `see a card`(card: Card, playedBy: PlayerId) {
+        TODO("blep")
     }
 
     data class PlayerGameState(

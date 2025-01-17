@@ -17,6 +17,8 @@ import com.tamj0rd2.skullking.application.port.input.JoinAGameUseCase.JoinGameCo
 import com.tamj0rd2.skullking.application.port.input.JoinAGameUseCase.JoinGameOutput
 import com.tamj0rd2.skullking.application.port.input.PlaceABidUseCase.PlaceABidCommand
 import com.tamj0rd2.skullking.application.port.input.PlaceABidUseCase.PlaceABidOutput
+import com.tamj0rd2.skullking.application.port.input.PlayACardUseCase.PlayACardCommand
+import com.tamj0rd2.skullking.application.port.input.PlayACardUseCase.PlayACardOutput
 import com.tamj0rd2.skullking.application.port.input.SkullKingUseCases
 import com.tamj0rd2.skullking.application.port.input.StartGameUseCase.StartGameCommand
 import com.tamj0rd2.skullking.application.port.input.StartGameUseCase.StartGameOutput
@@ -74,6 +76,10 @@ class SkullKingWebClient(
         ws.send(messageFromClient(StartGameMessage))
         ws.waitForGameUpdate<GameStarted>()
         return StartGameOutput.asSuccess()
+    }
+
+    override fun invoke(command: PlayACardCommand): Result4k<PlayACardOutput, GameErrorCode> {
+        TODO("Not yet implemented")
     }
 
     override fun invoke(command: PlaceABidCommand): Result4k<PlaceABidOutput, GameErrorCode> {
