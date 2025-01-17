@@ -9,37 +9,38 @@ import dev.forkhandles.result4k.onFailure
 import dev.forkhandles.result4k.orThrow
 import dev.forkhandles.values.random
 
-// TODO: I feel like this class could be better factored.
-
 /**
  * Game is a DDD aggregate
  * It has a lifecycle - it starts when it is created, and ends when the game is completed.
  * It is a transactional boundary - all changes to any entities used by game must be ACID
  * It is a consistency boundary - all changes must either happen, or not.
  */
-class Game {
-    private constructor(createdBy: PlayerId) {
-        id = GameId.random()
+class Game private constructor(
+    val id: GameId,
+    val loadedAtVersion: Version,
+) {
+    private constructor(createdBy: PlayerId) : this(
+        id = GameId.random(),
+        loadedAtVersion = Version.NONE,
+    ) {
         appendEvents(GameCreatedEvent(gameId = id, createdBy = createdBy))
-        loadedAtVersion = Version.NONE
     }
 
-    private constructor(history: List<GameEvent>) {
-        id = history.first().gameId
+    private constructor(history: List<GameEvent>) : this(
+        id = history.first().gameId,
+        loadedAtVersion = Version.of(history.size - 1),
+    ) {
         check(history.all { it.gameId == id }) { "GameId mismatch" }
         check(history.count { it is GameCreatedEvent } == 1) { "There was more than 1 game created event" }
         appendEvents(*history.toTypedArray()).orThrow()
-        loadedAtVersion = Version.of(history.size - 1)
     }
 
-    val id: GameId
     var state = GameState.new()
         private set
 
     private val _events = mutableListOf<GameEvent>()
     val events: List<GameEvent> get() = _events.toList()
 
-    val loadedAtVersion: Version
     val newEventsSinceGameWasLoaded get() = _events.drop(loadedAtVersion.value + 1)
 
     fun execute(vararg actions: GameAction): Result4k<Unit, GameErrorCode> {
@@ -56,16 +57,13 @@ class Game {
 
     private fun addPlayer(playerId: PlayerId): Result4k<Unit, GameErrorCode> = appendEvents(PlayerJoinedEvent(id, playerId))
 
-    private fun start(): Result4k<Unit, GameErrorCode> {
-        appendEvents(GameStartedEvent(id)).onFailure { return it }
-        appendEvents(CardDealtEvent(id)).onFailure { return it }
-        return Unit.asSuccess()
-    }
+    private fun start(): Result4k<Unit, GameErrorCode> =
+        appendEvents(
+            GameStartedEvent(id),
+            CardDealtEvent(id),
+        )
 
-    private fun placeBid(action: PlaceBid): Result4k<Unit, GameErrorCode> {
-        appendEvents(BidPlacedEvent(id, action.playerId, action.bid)).onFailure { return it }
-        return Unit.asSuccess()
-    }
+    private fun placeBid(action: PlaceBid): Result4k<Unit, GameErrorCode> = appendEvents(BidPlacedEvent(id, action.playerId, action.bid))
 
     private fun appendEvents(vararg events: GameEvent): Result4k<Unit, GameErrorCode> {
         state =
