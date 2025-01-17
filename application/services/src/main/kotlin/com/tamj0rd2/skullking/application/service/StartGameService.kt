@@ -35,7 +35,7 @@ class StartGameService(
             when (it) {
                 is GameStartedEvent -> GameStarted
                 is CardDealtEvent -> CardDealt(Card)
-                else -> TODO("unexpected game event at this point in time.")
+                else -> error("unexpected game event at this point in time.")
             }
         }
 }
