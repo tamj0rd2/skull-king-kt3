@@ -46,9 +46,8 @@ data class GameState private constructor(
         return copy(status = IN_PROGRESS).asSuccess()
     }
 
-    private fun apply(event: BidPlacedEvent): Result4k<GameState, AddPlayerErrorCode> {
-        return copy(bids = bids + Pair(event.playerId, event.bid)).asSuccess()
-    }
+    private fun apply(event: BidPlacedEvent): Result4k<GameState, AddPlayerErrorCode> =
+        copy(bids = bids + Pair(event.playerId, event.bid)).asSuccess()
 
     companion object {
         internal fun new() =

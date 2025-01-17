@@ -18,10 +18,12 @@ import com.tamj0rd2.skullking.domain.game.GameErrorCode
 import com.tamj0rd2.skullking.domain.game.GameId
 import com.tamj0rd2.skullking.domain.game.PlayerId
 import com.tamj0rd2.skullking.domain.game.StartGameErrorCode.TooFewPlayers
+import com.tamj0rd2.skullking.serialization.json.JBid
 import com.tamj0rd2.skullking.serialization.json.JGameId
 import com.tamj0rd2.skullking.serialization.json.JPlayerId
 import com.tamj0rd2.skullking.serialization.json.JSingleton
 import com.ubertob.kondor.json.JAny
+import com.ubertob.kondor.json.JMap
 import com.ubertob.kondor.json.JSealed
 import com.ubertob.kondor.json.ObjectNodeConverter
 import com.ubertob.kondor.json.jsonnode.JsonNodeObject
@@ -111,6 +113,7 @@ private object JGameUpdate : JSealed<GameUpdate>() {
                 "game-started" to JSingleton(GameStarted),
                 "card-dealt" to JCardDealt,
                 "bid-made" to JBidMade,
+                "all-bids-made" to JAllBidsMade,
             )
 
     override fun extractTypeName(obj: GameUpdate): String =
@@ -119,7 +122,7 @@ private object JGameUpdate : JSealed<GameUpdate>() {
             is GameStarted -> "game-started"
             is CardDealt -> "card-dealt"
             is BidMade -> "bid-made"
-            is AllBidsMade -> TODO()
+            is AllBidsMade -> "all-bids-made"
         }
 }
 
@@ -139,6 +142,12 @@ private object JBidMade : JAny<BidMade>() {
     private val playerId by str(JPlayerId, BidMade::playerId)
 
     override fun JsonNodeObject.deserializeOrThrow() = BidMade(playerId = +playerId)
+}
+
+private object JAllBidsMade : JAny<AllBidsMade>() {
+    private val bids by obj(JMap(JPlayerId, JBid), AllBidsMade::bids)
+
+    override fun JsonNodeObject.deserializeOrThrow() = AllBidsMade(bids = +bids)
 }
 
 private object JErrorMessage : JAny<ErrorMessage>() {

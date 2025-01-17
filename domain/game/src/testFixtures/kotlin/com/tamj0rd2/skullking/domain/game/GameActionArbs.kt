@@ -22,12 +22,10 @@ object GameActionArbs {
             GameAction.Start
         }
 
-
     private val placeBidGameActionArb =
         arbitrary {
             GameAction.PlaceBid(GameArbs.playerIdArb.bind(), Arb.validBid.bind())
         }
-
 
     private val gameActionArb =
         Arb.choice(
@@ -47,9 +45,12 @@ object GameActionArbs {
                 add(startGameActionArb.bind())
 
                 // FIXME: this action stuff sucks now :(
-                val bidPlacedActions = Arb.set(placeBidGameActionArb, addPlayerActions.size, addPlayerActions.size).bind()
-                    .zip(addPlayerActions)
-                    .map { (a, b) -> a.copy(playerId = b.playerId) }
+                val bidPlacedActions =
+                    Arb
+                        .set(placeBidGameActionArb, addPlayerActions.size, addPlayerActions.size)
+                        .bind()
+                        .zip(addPlayerActions)
+                        .map { (a, b) -> a.copy(playerId = b.playerId) }
                 addAll(bidPlacedActions)
             }
         }

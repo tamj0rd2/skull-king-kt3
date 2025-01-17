@@ -46,6 +46,7 @@ sealed class GameAction {
 }
 
 // TODO: this is a mess. Tidy it!
+
 /**
  * Game is a DDD aggregate
  * It has a lifecycle - it starts when it is created, and ends when the game is completed.

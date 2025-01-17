@@ -192,6 +192,7 @@ class PlayerRole(
     }
 
     fun `see a bid`(bid: PlacedBid) = `sees bid`(bid)
+
     fun `sees bid`(bid: PlacedBid) {
         hasGameStateWhere {
             placedBids.isNotEmpty().contains(bid)
