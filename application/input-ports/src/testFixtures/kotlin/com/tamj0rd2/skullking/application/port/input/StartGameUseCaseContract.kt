@@ -19,7 +19,6 @@ import strikt.assertions.hasSize
 import strikt.assertions.isEqualTo
 
 interface StartGameUseCaseContract : UseCaseContract {
-    // TODO: after this, write a test for a BiddingUseCase. When the game is started, it should be possible to bid 0 or 1.
     @Test
     fun `starting the game begins round 1`() {
         propertyTest {
@@ -69,7 +68,7 @@ interface StartGameUseCaseContract : UseCaseContract {
 
     @Test
     @Disabled
-    fun `OLD - only the player who created the game can start the game`() {
+    fun `only the player who created the game can start the game`() {
         TODO()
     }
 
