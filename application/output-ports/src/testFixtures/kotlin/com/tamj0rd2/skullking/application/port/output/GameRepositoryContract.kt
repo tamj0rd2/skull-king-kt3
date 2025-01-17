@@ -32,7 +32,7 @@ abstract class GameRepositoryContract {
 
                 val gameThatWasSavedAndLoaded = gameRepository.load(gameId)
                 expectThat(gameThatWasSavedAndLoaded.id).isEqualTo(gameModifiedInMemoryOnly.id)
-                expectThat(gameThatWasSavedAndLoaded.events).isEqualTo(gameModifiedInMemoryOnly.events)
+                expectThat(gameThatWasSavedAndLoaded.allEvents).isEqualTo(gameModifiedInMemoryOnly.allEvents)
                 expectThat(gameThatWasSavedAndLoaded.state).isEqualTo(gameModifiedInMemoryOnly.state)
             }
         }

@@ -15,6 +15,6 @@ class GameRepositoryInMemoryAdapter : GameRepository {
     }
 
     override fun save(game: Game) {
-        savedEvents[game.id] = game.events
+        savedEvents[game.id] = game.allEvents
     }
 }

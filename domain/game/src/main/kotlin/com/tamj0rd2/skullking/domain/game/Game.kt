@@ -22,9 +22,9 @@ class Game private constructor(
     var state = GameState.new()
         private set
 
-    private val _events = mutableListOf<GameEvent>()
-    val events: List<GameEvent> get() = _events.toList()
-    val newEventsSinceGameWasLoaded get() = _events.drop(loadedAtVersion.value)
+    private val _allEvents = mutableListOf<GameEvent>()
+    val allEvents: List<GameEvent> get() = _allEvents.toList()
+    val newEventsSinceGameWasLoaded get() = _allEvents.drop(loadedAtVersion.value)
 
     private constructor(createdBy: PlayerId) : this(
         id = GameId.random(),
@@ -47,7 +47,7 @@ class Game private constructor(
             events.fold(state) { state, event ->
                 state.apply(event).onFailure { return it }
             }
-        _events.addAll(events)
+        _allEvents.addAll(events)
         return Unit.asSuccess()
     }
 

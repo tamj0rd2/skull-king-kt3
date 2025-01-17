@@ -27,20 +27,20 @@ class GameTests {
     @Test
     fun `games always start with a GameCreated event`() =
         invariant { game ->
-            expectThat(game.events).first().isA<GameCreatedEvent>()
+            expectThat(game.allEvents).first().isA<GameCreatedEvent>()
         }
 
     @Test
     fun `games always have a single GameCreated event`() =
         invariant { game ->
-            expectThat(game.events).one { isA<GameCreatedEvent>() }
+            expectThat(game.allEvents).one { isA<GameCreatedEvent>() }
         }
 
     @Test
     fun `all events within a game relate to that specific game`() =
         // specifying the iterations because 1000 iterations * 100 events is just too many to run the tests in a reasonable timeframe.
         invariant(iterations = 200) { game ->
-            expectThat(game.events).all { get { gameId }.isEqualTo(game.id) }
+            expectThat(game.allEvents).all { get { gameId }.isEqualTo(game.id) }
         }
 
     @Test
@@ -64,9 +64,9 @@ class GameTests {
     @Test
     fun `a game can be restored using its history of events`() =
         invariant { game ->
-            val restoredGame = Game.from(game.events)
+            val restoredGame = Game.from(game.allEvents)
             expectThat(restoredGame) {
-                get { events }.isEqualTo(game.events)
+                get { allEvents }.isEqualTo(game.allEvents)
                 get { state }.isEqualTo(game.state)
             }
         }
@@ -78,13 +78,13 @@ class GameTests {
             game.execute(GameAction.AddPlayer(PlayerId.random()))
             expectThat(game.newEventsSinceGameWasLoaded).hasSize(2) // the inherent game created event + the add player event.
 
-            val restoredGame = Game.from(game.events)
+            val restoredGame = Game.from(game.allEvents)
             expectThat(restoredGame.loadedAtVersion).isEqualTo(Version.of(2))
         }
 
         invariant { game ->
-            val restoredGame = Game.from(game.events)
-            expectThat(restoredGame.loadedAtVersion).isEqualTo(Version.of(game.events.size))
+            val restoredGame = Game.from(game.allEvents)
+            expectThat(restoredGame.loadedAtVersion).isEqualTo(Version.of(game.allEvents.size))
         }
     }
 
