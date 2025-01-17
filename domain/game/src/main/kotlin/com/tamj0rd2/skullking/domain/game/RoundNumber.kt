@@ -4,8 +4,6 @@ import dev.forkhandles.values.IntValueFactory
 import dev.forkhandles.values.Value
 import dev.forkhandles.values.between
 
-// TODO: the round number can never be greater than 10
-// TODO: Also, make a value to present, No Round or something
 @JvmInline
 value class RoundNumber private constructor(
     override val value: Int,
