@@ -184,7 +184,7 @@ class PlayerRole(
 
     operator fun plus(otherPlayers: List<PlayerRole>) = listOf(this) + otherPlayers
 
-    fun `makes a bid`(bid: Bid) {
+    fun `places a bid`(bid: Bid) {
         driver(PlaceABidCommand(gameId, id, bid)).orThrow()
     }
 

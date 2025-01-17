@@ -25,7 +25,7 @@ interface PlaceABidUseCaseContract : UseCaseContract {
         }
 
         When {
-            gameCreator.`makes a bid`(randomBid())
+            gameCreator.`places a bid`(randomBid())
         }
 
         Then {
@@ -47,8 +47,8 @@ interface PlaceABidUseCaseContract : UseCaseContract {
         }
 
         When {
-            gameCreator.`makes a bid`(Bid.of(1))
-            anotherPlayer.`makes a bid`(Bid.of(0))
+            gameCreator.`places a bid`(Bid.of(1))
+            anotherPlayer.`places a bid`(Bid.of(0))
         }
 
         Then {
