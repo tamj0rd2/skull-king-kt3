@@ -17,4 +17,3 @@ interface PlaceABidUseCase {
 
     operator fun invoke(command: PlaceABidCommand): Result4k<PlaceABidOutput, GameErrorCode>
 }
-

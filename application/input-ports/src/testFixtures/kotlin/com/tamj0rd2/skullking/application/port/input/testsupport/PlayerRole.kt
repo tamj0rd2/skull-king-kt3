@@ -210,7 +210,10 @@ class PlayerRole(
         TODO("blep")
     }
 
-    fun `see a card`(card: Card, playedBy: PlayerId) {
+    fun `see a card`(
+        card: Card,
+        playedBy: PlayerId,
+    ) {
         TODO("blep")
     }
 

@@ -7,13 +7,10 @@ import com.tamj0rd2.skullking.application.port.input.testsupport.When
 import com.tamj0rd2.skullking.application.port.input.testsupport.each
 import com.tamj0rd2.skullking.domain.game.Bid
 import com.tamj0rd2.skullking.domain.game.Card
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 interface PlayACardUseCaseContract : UseCaseContract {
-
     @Test
-    @Disabled
     fun `can play a card once all bids have been placed`() {
         val player1 = scenario.newPlayer()
         val player2 = scenario.newPlayer()

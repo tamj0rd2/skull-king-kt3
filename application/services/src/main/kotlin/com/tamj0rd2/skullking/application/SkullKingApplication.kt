@@ -28,7 +28,6 @@ class SkullKingApplication private constructor(
     PlaceABidUseCase by placeABidUseCase,
     StartGameUseCase by startGameUseCase,
     PlayACardUseCase by playACardUseCase {
-
     constructor(
         gameRepository: GameRepository,
         gameUpdateNotifier: GameUpdateNotifier,
@@ -55,7 +54,6 @@ class SkullKingApplication private constructor(
                 gameRepository = gameRepository,
             ),
         playACardUseCase = PlayACardService(),
-
     )
 
     companion object
