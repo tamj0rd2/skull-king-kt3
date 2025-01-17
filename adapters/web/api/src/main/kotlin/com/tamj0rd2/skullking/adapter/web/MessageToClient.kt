@@ -5,8 +5,8 @@ import com.tamj0rd2.skullking.adapter.web.MessageToClient.GameCreatedMessage
 import com.tamj0rd2.skullking.adapter.web.MessageToClient.GameUpdateMessage
 import com.tamj0rd2.skullking.adapter.web.MessageToClient.JoinAcknowledgedMessage
 import com.tamj0rd2.skullking.application.port.inandout.GameUpdate
-import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.AllBidsMade
-import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.BidMade
+import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.AllBidsPlaced
+import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.BidPlaced
 import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.CardDealt
 import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.GameStarted
 import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.PlayerJoined
@@ -112,8 +112,8 @@ private object JGameUpdate : JSealed<GameUpdate>() {
                 "player-joined" to JPlayerJoined,
                 "game-started" to JSingleton(GameStarted),
                 "card-dealt" to JCardDealt,
-                "bid-made" to JBidMade,
-                "all-bids-made" to JAllBidsMade,
+                "bid-placed" to JBidPlaced,
+                "all-bids-placed" to JAllBidsPlaced,
             )
 
     override fun extractTypeName(obj: GameUpdate): String =
@@ -121,8 +121,8 @@ private object JGameUpdate : JSealed<GameUpdate>() {
             is PlayerJoined -> "player-joined"
             is GameStarted -> "game-started"
             is CardDealt -> "card-dealt"
-            is BidMade -> "bid-made"
-            is AllBidsMade -> "all-bids-made"
+            is BidPlaced -> "bid-placed"
+            is AllBidsPlaced -> "all-bids-placed"
         }
 }
 
@@ -138,16 +138,16 @@ private object JCardDealt : JAny<CardDealt>() {
     override fun JsonNodeObject.deserializeOrThrow() = CardDealt(card = +card)
 }
 
-private object JBidMade : JAny<BidMade>() {
-    private val playerId by str(JPlayerId, BidMade::playerId)
+private object JBidPlaced : JAny<BidPlaced>() {
+    private val playerId by str(JPlayerId, BidPlaced::playerId)
 
-    override fun JsonNodeObject.deserializeOrThrow() = BidMade(playerId = +playerId)
+    override fun JsonNodeObject.deserializeOrThrow() = BidPlaced(playerId = +playerId)
 }
 
-private object JAllBidsMade : JAny<AllBidsMade>() {
-    private val bids by obj(JMap(JPlayerId, JBid), AllBidsMade::bids)
+private object JAllBidsPlaced : JAny<AllBidsPlaced>() {
+    private val bids by obj(JMap(JPlayerId, JBid), AllBidsPlaced::bids)
 
-    override fun JsonNodeObject.deserializeOrThrow() = AllBidsMade(bids = +bids)
+    override fun JsonNodeObject.deserializeOrThrow() = AllBidsPlaced(bids = +bids)
 }
 
 private object JErrorMessage : JAny<ErrorMessage>() {

@@ -29,12 +29,12 @@ interface PlaceABidUseCaseContract : UseCaseContract {
         }
 
         Then {
-            anotherPlayer.`sees that a bid has been made by`(gameCreator.id)
+            anotherPlayer.`sees that a bid has been placed by`(gameCreator.id)
         }
     }
 
     @Test
-    fun `bid values are revealed once everyone has made their bids`() {
+    fun `bid values are revealed once everyone has placed their bids`() {
         val gameCreator = scenario.newPlayer()
         val anotherPlayer = scenario.newPlayer()
         val thePlayers = listOf(gameCreator, anotherPlayer)
@@ -53,8 +53,8 @@ interface PlaceABidUseCaseContract : UseCaseContract {
 
         Then {
             thePlayers.each {
-                `see a bid`(Bid.of(1), madeBy = gameCreator.id)
-                `see a bid`(Bid.of(0), madeBy = anotherPlayer.id)
+                `see a bid`(Bid.of(1), placedBy = gameCreator.id)
+                `see a bid`(Bid.of(0), placedBy = anotherPlayer.id)
             }
         }
     }

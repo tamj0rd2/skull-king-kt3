@@ -24,11 +24,11 @@ sealed interface GameUpdate {
         val card: Card,
     ) : GameUpdate
 
-    data class BidMade(
+    data class BidPlaced(
         val playerId: PlayerId,
     ) : GameUpdate
 
-    data class AllBidsMade(
+    data class AllBidsPlaced(
         val bids: Map<PlayerId, Bid>,
     ) : GameUpdate
 }

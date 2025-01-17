@@ -1,8 +1,8 @@
 package com.tamj0rd2.skullking.application.port.input.testsupport
 
 import com.tamj0rd2.skullking.application.port.inandout.GameUpdate
-import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.AllBidsMade
-import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.BidMade
+import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.AllBidsPlaced
+import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.BidPlaced
 import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.CardDealt
 import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.GameStarted
 import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.PlayerJoined
@@ -161,8 +161,8 @@ class PlayerRole(
                         is CardDealt -> copy(hand = hand + it.card)
                         is GameStarted -> copy(roundNumber = roundNumber.next())
                         is PlayerJoined -> copy(players = players + it.playerId)
-                        is BidMade -> copy(bids = bids + Pair(it.playerId, null))
-                        is AllBidsMade -> copy(bids = it.bids)
+                        is BidPlaced -> copy(bids = bids + Pair(it.playerId, null))
+                        is AllBidsPlaced -> copy(bids = it.bids)
                     }
                 }
         }
@@ -188,7 +188,7 @@ class PlayerRole(
         driver(PlaceABidCommand(gameId, id, bid)).orThrow()
     }
 
-    fun `sees that a bid has been made by`(playerId: PlayerId) {
+    fun `sees that a bid has been placed by`(playerId: PlayerId) {
         hasGameStateWhere {
             bids.isNotEmpty().hasEntry(playerId, null)
         }
@@ -196,10 +196,10 @@ class PlayerRole(
 
     fun `see a bid`(
         bid: Bid,
-        madeBy: PlayerId,
+        placedBy: PlayerId,
     ) {
         hasGameStateWhere {
-            bids.isNotEmpty().hasEntry(madeBy, bid)
+            bids.isNotEmpty().hasEntry(placedBy, bid)
         }
     }
 

@@ -1,8 +1,8 @@
 package com.tamj0rd2.skullking.application.service
 
 import com.tamj0rd2.extensions.asSuccess
-import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.AllBidsMade
-import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.BidMade
+import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.AllBidsPlaced
+import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.BidPlaced
 import com.tamj0rd2.skullking.application.port.input.PlaceABidUseCase
 import com.tamj0rd2.skullking.application.port.input.PlaceABidUseCase.PlaceABidCommand
 import com.tamj0rd2.skullking.application.port.input.PlaceABidUseCase.PlaceABidOutput
@@ -22,10 +22,10 @@ class PlaceABidService(
         game.execute(GameAction.PlaceBid(command.playerId, command.bid)).orThrow()
         gameRepository.save(game)
 
-        gameUpdateNotifier.broadcast(command.gameId, BidMade(command.playerId))
+        gameUpdateNotifier.broadcast(command.gameId, BidPlaced(command.playerId))
 
         if (game.state.allBidsHaveBeenPlaced) {
-            gameUpdateNotifier.broadcast(command.gameId, AllBidsMade(game.state.bids))
+            gameUpdateNotifier.broadcast(command.gameId, AllBidsPlaced(game.state.bids))
         }
 
         return PlaceABidOutput.asSuccess()

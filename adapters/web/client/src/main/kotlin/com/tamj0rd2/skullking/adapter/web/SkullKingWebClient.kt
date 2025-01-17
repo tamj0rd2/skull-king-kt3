@@ -8,7 +8,7 @@ import com.tamj0rd2.skullking.adapter.web.MessageToClient.GameCreatedMessage
 import com.tamj0rd2.skullking.adapter.web.MessageToClient.GameUpdateMessage
 import com.tamj0rd2.skullking.adapter.web.MessageToClient.JoinAcknowledgedMessage
 import com.tamj0rd2.skullking.application.port.inandout.GameUpdate
-import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.BidMade
+import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.BidPlaced
 import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.GameStarted
 import com.tamj0rd2.skullking.application.port.inandout.GameUpdateListener
 import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.CreateNewGameCommand
@@ -78,7 +78,7 @@ class SkullKingWebClient(
 
     override fun invoke(command: PlaceABidCommand): Result4k<PlaceABidOutput, GameErrorCode> {
         ws.send(messageFromClient(PlaceABidMessage(command.bid)))
-        ws.waitForGameUpdate<BidMade>()
+        ws.waitForGameUpdate<BidPlaced>()
         return PlaceABidOutput.asSuccess()
     }
 
