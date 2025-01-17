@@ -8,15 +8,12 @@ import com.tamj0rd2.skullking.application.port.input.StartGameUseCase.StartGameC
 import com.tamj0rd2.skullking.application.port.input.StartGameUseCase.StartGameOutput
 import com.tamj0rd2.skullking.application.port.output.GameRepository
 import com.tamj0rd2.skullking.application.port.output.GameUpdateNotifier
-import com.tamj0rd2.skullking.domain.game.BidPlacedEvent
 import com.tamj0rd2.skullking.domain.game.Card
 import com.tamj0rd2.skullking.domain.game.CardDealtEvent
 import com.tamj0rd2.skullking.domain.game.GameAction
-import com.tamj0rd2.skullking.domain.game.GameCreatedEvent
 import com.tamj0rd2.skullking.domain.game.GameErrorCode
 import com.tamj0rd2.skullking.domain.game.GameEvent
 import com.tamj0rd2.skullking.domain.game.GameStartedEvent
-import com.tamj0rd2.skullking.domain.game.PlayerJoinedEvent
 import dev.forkhandles.result4k.Result4k
 import dev.forkhandles.result4k.onFailure
 
@@ -33,15 +30,12 @@ class StartGameService(
         return StartGameOutput.asSuccess()
     }
 
-    // TODO: wat.
     private fun List<GameEvent>.toGameUpdates() =
         map {
             when (it) {
-                is GameCreatedEvent -> TODO()
                 is GameStartedEvent -> GameStarted
-                is PlayerJoinedEvent -> TODO()
                 is CardDealtEvent -> CardDealt(Card)
-                is BidPlacedEvent -> TODO()
+                else -> TODO("unexpected game event at this point in time.")
             }
         }
 }
