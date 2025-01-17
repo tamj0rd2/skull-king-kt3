@@ -13,6 +13,7 @@ import strikt.api.expectThat
 import strikt.assertions.all
 import strikt.assertions.containsExactlyInAnyOrder
 import strikt.assertions.first
+import strikt.assertions.hasSize
 import strikt.assertions.isA
 import strikt.assertions.isEqualTo
 import strikt.assertions.isLessThanOrEqualTo
@@ -33,16 +34,6 @@ class GameTests {
     fun `games always have a single GameCreated event`() =
         invariant { game ->
             expectThat(game.events).one { isA<GameCreatedEvent>() }
-        }
-
-    @Test
-    fun `a game can be restored using its history of events`() =
-        invariant { game ->
-            val restoredGame = Game.from(game.events)
-            expectThat(restoredGame) {
-                get { events }.isEqualTo(game.events)
-                get { state }.isEqualTo(game.state)
-            }
         }
 
     @Test
@@ -70,6 +61,42 @@ class GameTests {
             expectThat(game.state.players).all { isNotEqualTo(PlayerId.NONE) }
         }
 
+    @Test
+    fun `a game can be restored using its history of events`() =
+        invariant { game ->
+            val restoredGame = Game.from(game.events)
+            expectThat(restoredGame) {
+                get { events }.isEqualTo(game.events)
+                get { state }.isEqualTo(game.state)
+            }
+        }
+
+    // TODO: confusingly, an unsaved game starts at version -1. I don't like that. Make unsaved games 0 to make it easier to understand
+    //  that would mean that the minimum version for a restored game would be 1 (if it was saved right after it was created.)
+    @Test
+    fun `a game that has been restored using a history of events has a loaded version corresponding to the number of events`() {
+        invariant { game ->
+            val restoredGame = Game.from(game.events)
+            expectThat(restoredGame.loadedAtVersion).isEqualTo(Version.of(game.events.size - 1))
+        }
+
+        example {
+            val game = Game.new(PlayerId.random())
+            game.execute(GameAction.AddPlayer(PlayerId.random()))
+            expectThat(game.newEventsSinceGameWasLoaded).hasSize(2) // the inherent game created event + the add player event.
+
+            val restoredGame = Game.from(game.events)
+            expectThat(restoredGame.loadedAtVersion).isEqualTo(Version.of(1))
+        }
+    }
+
+    @Test
+    fun `games that were not restored from a history of events don't have a loaded version`() {
+        invariant { game ->
+            expectThat(game.loadedAtVersion).isEqualTo(Version.NONE)
+        }
+    }
+
     // TODO: this seems like it should be an invariant of a Hand model.
     @Test
     @Disabled
@@ -84,7 +111,7 @@ internal fun invariant(
 ) = invariant(iterations) { game, action ->
     // I don't care whether the action succeeds.
     // I just want to ensure the invariants are always upheld regardless.
-    runCatching { game.mustExecute(action) }
+    game.execute(action)
     checkInvariant(game)
 }
 
@@ -100,6 +127,8 @@ internal fun invariant(
         }
     }
 }
+
+internal fun example(block: () -> Unit) = block()
 
 private fun <T> Assertion.Builder<List<T>>.doesNotContainAnyDuplicateValues() =
     apply {
