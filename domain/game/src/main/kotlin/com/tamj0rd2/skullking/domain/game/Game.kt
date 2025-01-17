@@ -51,27 +51,24 @@ class Game private constructor(
         return Unit.asSuccess()
     }
 
-    fun execute(vararg actions: GameAction): Result4k<Unit, GameErrorCode> {
-        require(actions.isNotEmpty()) { "you need to execute at least 1 action" }
-        actions.forEach { action ->
-            when (action) {
-                is AddPlayer -> addPlayer(action.playerId)
-                is Start -> start()
-                is PlaceBid -> placeBid(action)
-            }.onFailure { return it }
+    fun execute(action: GameAction): Result4k<Unit, GameErrorCode> =
+        when (action) {
+            is AddPlayer ->
+                appendEvents(
+                    PlayerJoinedEvent(id, action.playerId),
+                )
+
+            is Start ->
+                appendEvents(
+                    GameStartedEvent(id),
+                    CardDealtEvent(id),
+                )
+
+            is PlaceBid ->
+                appendEvents(
+                    BidPlacedEvent(id, action.playerId, action.bid),
+                )
         }
-        return Unit.asSuccess()
-    }
-
-    private fun addPlayer(playerId: PlayerId): Result4k<Unit, GameErrorCode> = appendEvents(PlayerJoinedEvent(id, playerId))
-
-    private fun start(): Result4k<Unit, GameErrorCode> =
-        appendEvents(
-            GameStartedEvent(id),
-            CardDealtEvent(id),
-        )
-
-    private fun placeBid(action: PlaceBid): Result4k<Unit, GameErrorCode> = appendEvents(BidPlacedEvent(id, action.playerId, action.bid))
 
     companion object {
         const val MINIMUM_PLAYER_COUNT = 2
