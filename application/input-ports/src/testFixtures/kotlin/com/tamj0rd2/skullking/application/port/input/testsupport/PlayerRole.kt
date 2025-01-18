@@ -7,6 +7,7 @@ import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.CardDealt
 import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.CardPlayed
 import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.GameStarted
 import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.PlayerJoined
+import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.TrickEnded
 import com.tamj0rd2.skullking.application.port.inandout.GameUpdateListener
 import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.CreateNewGameCommand
 import com.tamj0rd2.skullking.application.port.input.JoinAGameUseCase.JoinGameCommand
@@ -17,6 +18,7 @@ import com.tamj0rd2.skullking.application.port.input.StartGameUseCase.StartGameC
 import com.tamj0rd2.skullking.application.port.input.testsupport.PlayerRole.PlayerGameState.Companion.bids
 import com.tamj0rd2.skullking.application.port.input.testsupport.PlayerRole.PlayerGameState.Companion.cardsInTrick
 import com.tamj0rd2.skullking.application.port.input.testsupport.PlayerRole.PlayerGameState.Companion.players
+import com.tamj0rd2.skullking.application.port.input.testsupport.PlayerRole.PlayerGameState.Companion.trickWinner
 import com.tamj0rd2.skullking.domain.auth.SessionId
 import com.tamj0rd2.skullking.domain.game.Bid
 import com.tamj0rd2.skullking.domain.game.Card
@@ -170,6 +172,7 @@ class PlayerRole(
                         is BidPlaced -> copy(bids = bids + Pair(it.playerId, null))
                         is AllBidsPlaced -> copy(bids = it.bids)
                         is CardPlayed -> copy(cardsInTrick = cardsInTrick + it.playedCard)
+                        is TrickEnded -> copy(trickWinner = it.winner)
                     }
                 }
         }
@@ -210,8 +213,16 @@ class PlayerRole(
         }
     }
 
-    fun `plays a card`(card: Card) {
-        driver(PlayACardCommand(gameId, id, card)).orThrow()
+    fun `plays a card in their hand`() = `play a card in their hand`()
+
+    fun `play a card in their hand`() {
+        driver(PlayACardCommand(gameId, id, state.hand.first())).orThrow()
+    }
+
+    fun `see that the trick winner has been chosen`() {
+        hasGameStateWhere {
+            trickWinner.isNotNull()
+        }
     }
 
     fun `see a card`(
@@ -232,6 +243,7 @@ class PlayerRole(
         val players: List<PlayerId> = emptyList(),
         val bids: Map<PlayerId, Bid?> = emptyMap(),
         val cardsInTrick: List<PlayedCard> = emptyList(),
+        val trickWinner: PlayerId? = null,
     ) {
         companion object {
             val Builder<PlayerGameState>.roundNumber get() = get { roundNumber }.describedAs("round number")
@@ -239,6 +251,7 @@ class PlayerRole(
             val Builder<PlayerGameState>.players get() = get { players }.describedAs("players")
             val Builder<PlayerGameState>.bids get() = get { bids }.describedAs("bids")
             val Builder<PlayerGameState>.cardsInTrick get() = get { cardsInTrick }
+            val Builder<PlayerGameState>.trickWinner get() = get { trickWinner }
         }
     }
 

@@ -8,6 +8,7 @@ import com.tamj0rd2.skullking.application.port.input.PlayACardUseCase.PlayACardO
 import com.tamj0rd2.skullking.application.port.output.GameUpdateNotifier
 import com.tamj0rd2.skullking.domain.game.GameErrorCode
 import com.tamj0rd2.skullking.domain.game.PlayedCard
+import com.tamj0rd2.skullking.domain.game.PlayerId
 import dev.forkhandles.result4k.Result4k
 
 class PlayACardService(
@@ -16,6 +17,7 @@ class PlayACardService(
     override fun invoke(command: PlayACardCommand): Result4k<PlayACardOutput, GameErrorCode> {
         val playedCard = PlayedCard(command.card, command.playerId)
         gameUpdateNotifier.broadcast(command.gameId, GameUpdate.CardPlayed(playedCard))
+        gameUpdateNotifier.broadcast(command.gameId, GameUpdate.TrickEnded(winner = PlayerId.NONE))
 
         return PlayACardOutput.asSuccess()
     }

@@ -36,4 +36,8 @@ sealed interface GameUpdate {
     data class CardPlayed(
         val playedCard: PlayedCard,
     ) : GameUpdate
+
+    data class TrickEnded(
+        val winner: PlayerId,
+    ) : GameUpdate
 }

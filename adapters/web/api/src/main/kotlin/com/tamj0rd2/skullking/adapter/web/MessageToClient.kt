@@ -11,6 +11,7 @@ import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.CardDealt
 import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.CardPlayed
 import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.GameStarted
 import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.PlayerJoined
+import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.TrickEnded
 import com.tamj0rd2.skullking.domain.game.AddPlayerErrorCode.GameHasAlreadyStarted
 import com.tamj0rd2.skullking.domain.game.AddPlayerErrorCode.GameIsFull
 import com.tamj0rd2.skullking.domain.game.AddPlayerErrorCode.PlayerHasAlreadyJoined
@@ -127,6 +128,7 @@ private object JGameUpdate : JSealed<GameUpdate>() {
             is BidPlaced -> "bid-placed"
             is AllBidsPlaced -> "all-bids-placed"
             is CardPlayed -> "card-played"
+            is TrickEnded -> TODO()
         }
 }
 
