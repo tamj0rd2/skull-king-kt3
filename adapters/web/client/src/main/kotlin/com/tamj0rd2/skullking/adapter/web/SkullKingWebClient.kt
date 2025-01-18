@@ -2,6 +2,7 @@ package com.tamj0rd2.skullking.adapter.web
 
 import com.tamj0rd2.extensions.asSuccess
 import com.tamj0rd2.skullking.adapter.web.MessageFromClient.PlaceABidMessage
+import com.tamj0rd2.skullking.adapter.web.MessageFromClient.PlayACardMessage
 import com.tamj0rd2.skullking.adapter.web.MessageFromClient.StartGameMessage
 import com.tamj0rd2.skullking.adapter.web.MessageToClient.ErrorMessage
 import com.tamj0rd2.skullking.adapter.web.MessageToClient.GameCreatedMessage
@@ -9,6 +10,7 @@ import com.tamj0rd2.skullking.adapter.web.MessageToClient.GameUpdateMessage
 import com.tamj0rd2.skullking.adapter.web.MessageToClient.JoinAcknowledgedMessage
 import com.tamj0rd2.skullking.application.port.inandout.GameUpdate
 import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.BidPlaced
+import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.CardPlayed
 import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.GameStarted
 import com.tamj0rd2.skullking.application.port.inandout.GameUpdateListener
 import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.CreateNewGameCommand
@@ -79,7 +81,9 @@ class SkullKingWebClient(
     }
 
     override fun invoke(command: PlayACardCommand): Result4k<PlayACardOutput, GameErrorCode> {
-        TODO("Not yet implemented")
+        ws.send(messageFromClient(PlayACardMessage(command.card)))
+        ws.waitForGameUpdate<CardPlayed>()
+        return PlayACardOutput.asSuccess()
     }
 
     override fun invoke(command: PlaceABidCommand): Result4k<PlaceABidOutput, GameErrorCode> {

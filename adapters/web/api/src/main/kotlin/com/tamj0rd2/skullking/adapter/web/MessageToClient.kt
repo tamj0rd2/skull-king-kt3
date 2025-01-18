@@ -17,6 +17,7 @@ import com.tamj0rd2.skullking.domain.game.AddPlayerErrorCode.PlayerHasAlreadyJoi
 import com.tamj0rd2.skullking.domain.game.Card
 import com.tamj0rd2.skullking.domain.game.GameErrorCode
 import com.tamj0rd2.skullking.domain.game.GameId
+import com.tamj0rd2.skullking.domain.game.PlayedCard
 import com.tamj0rd2.skullking.domain.game.PlayerId
 import com.tamj0rd2.skullking.domain.game.StartGameErrorCode.TooFewPlayers
 import com.tamj0rd2.skullking.serialization.json.JBid
@@ -115,6 +116,7 @@ private object JGameUpdate : JSealed<GameUpdate>() {
                 "card-dealt" to JCardDealt,
                 "bid-placed" to JBidPlaced,
                 "all-bids-placed" to JAllBidsPlaced,
+                "card-played" to JCardPlayed,
             )
 
     override fun extractTypeName(obj: GameUpdate): String =
@@ -124,7 +126,7 @@ private object JGameUpdate : JSealed<GameUpdate>() {
             is CardDealt -> "card-dealt"
             is BidPlaced -> "bid-placed"
             is AllBidsPlaced -> "all-bids-placed"
-            is CardPlayed -> TODO()
+            is CardPlayed -> "card-played"
         }
 }
 
@@ -150,6 +152,23 @@ private object JAllBidsPlaced : JAny<AllBidsPlaced>() {
     private val bids by obj(JMap(JPlayerId, JBid), AllBidsPlaced::bids)
 
     override fun JsonNodeObject.deserializeOrThrow() = AllBidsPlaced(bids = +bids)
+}
+
+private object JCardPlayed : JAny<CardPlayed>() {
+    private val playedCard by obj(JPlayedCard, CardPlayed::playedCard)
+
+    override fun JsonNodeObject.deserializeOrThrow() = CardPlayed(playedCard = +playedCard)
+}
+
+private object JPlayedCard : JAny<PlayedCard>() {
+    private val playedBy by obj(JPlayerId, PlayedCard::playedBy)
+    private val card by obj(JSingleton(Card), PlayedCard::card)
+
+    override fun JsonNodeObject.deserializeOrThrow() =
+        PlayedCard(
+            card = +card,
+            playedBy = +playedBy,
+        )
 }
 
 private object JErrorMessage : JAny<ErrorMessage>() {
