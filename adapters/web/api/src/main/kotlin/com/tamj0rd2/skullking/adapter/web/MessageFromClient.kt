@@ -1,6 +1,5 @@
 package com.tamj0rd2.skullking.adapter.web
 
-import com.tamj0rd2.skullking.adapter.web.JPlaceABidMessage.bid
 import com.tamj0rd2.skullking.adapter.web.MessageFromClient.PlaceABidMessage
 import com.tamj0rd2.skullking.adapter.web.MessageFromClient.PlayACardMessage
 import com.tamj0rd2.skullking.adapter.web.MessageFromClient.StartGameMessage
