@@ -39,8 +39,13 @@ import java.util.concurrent.TimeUnit.MILLISECONDS
 class SkullKingWebClient(
     private val baseUri: Uri,
     private val timeoutMs: Long = 500,
-) : SkullKingUseCases {
+) : SkullKingUseCases,
+    AutoCloseable {
     private lateinit var ws: Websocket
+
+    override fun close() {
+        if (this::ws.isInitialized) ws.close()
+    }
 
     override fun invoke(command: CreateNewGameCommand): CreateNewGameOutput {
         ws =
