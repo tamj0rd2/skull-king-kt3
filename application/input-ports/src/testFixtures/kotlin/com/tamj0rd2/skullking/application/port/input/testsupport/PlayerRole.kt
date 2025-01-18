@@ -4,6 +4,7 @@ import com.tamj0rd2.skullking.application.port.inandout.GameUpdate
 import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.AllBidsPlaced
 import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.BidPlaced
 import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.CardDealt
+import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.CardPlayed
 import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.GameStarted
 import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.PlayerJoined
 import com.tamj0rd2.skullking.application.port.inandout.GameUpdateListener
@@ -14,12 +15,14 @@ import com.tamj0rd2.skullking.application.port.input.PlayACardUseCase.PlayACardC
 import com.tamj0rd2.skullking.application.port.input.SkullKingUseCases
 import com.tamj0rd2.skullking.application.port.input.StartGameUseCase.StartGameCommand
 import com.tamj0rd2.skullking.application.port.input.testsupport.PlayerRole.PlayerGameState.Companion.bids
+import com.tamj0rd2.skullking.application.port.input.testsupport.PlayerRole.PlayerGameState.Companion.cardsInTrick
 import com.tamj0rd2.skullking.application.port.input.testsupport.PlayerRole.PlayerGameState.Companion.players
 import com.tamj0rd2.skullking.domain.auth.SessionId
 import com.tamj0rd2.skullking.domain.game.Bid
 import com.tamj0rd2.skullking.domain.game.Card
 import com.tamj0rd2.skullking.domain.game.GameErrorCode
 import com.tamj0rd2.skullking.domain.game.GameId
+import com.tamj0rd2.skullking.domain.game.PlayedCard
 import com.tamj0rd2.skullking.domain.game.PlayerId
 import com.tamj0rd2.skullking.domain.game.RoundNumber
 import dev.forkhandles.result4k.orThrow
@@ -31,10 +34,12 @@ import strikt.assertions.contains
 import strikt.assertions.containsExactlyInAnyOrder
 import strikt.assertions.hasEntry
 import strikt.assertions.hasSize
+import strikt.assertions.isEqualTo
 import strikt.assertions.isNotEmpty
 import strikt.assertions.isNotEqualTo
 import strikt.assertions.isNotNull
 import strikt.assertions.isNull
+import strikt.assertions.one
 import java.time.Instant
 
 class PlayerRole(
@@ -53,7 +58,7 @@ class PlayerRole(
     // Essentially, in application terms, I need some kind of "command" to create and return a sessionId, before doing anything else.
     private val sessionId = SessionId.random()
 
-    override fun toString(): String = "$sessionId ($id)"
+    override fun toString(): String = id.toString()
 
     private var gameId = GameId.NONE
         get() {
@@ -164,6 +169,7 @@ class PlayerRole(
                         is PlayerJoined -> copy(players = players + it.playerId)
                         is BidPlaced -> copy(bids = bids + Pair(it.playerId, null))
                         is AllBidsPlaced -> copy(bids = it.bids)
+                        is CardPlayed -> copy(cardsInTrick = cardsInTrick + it.playedCard)
                     }
                 }
         }
@@ -205,16 +211,19 @@ class PlayerRole(
     }
 
     fun `plays a card`(card: Card) {
-        driver(PlayACardCommand(gameId, id, card))
-
-        TODO("blep")
+        driver(PlayACardCommand(gameId, id, card)).orThrow()
     }
 
     fun `see a card`(
         card: Card,
         playedBy: PlayerId,
     ) {
-        TODO("blep")
+        hasGameStateWhere {
+            cardsInTrick.isNotEmpty().one {
+                get { this.playedBy }.isEqualTo(playedBy)
+                get { this.card }.isEqualTo(card)
+            }
+        }
     }
 
     data class PlayerGameState(
@@ -222,12 +231,14 @@ class PlayerRole(
         val hand: List<Card> = emptyList(),
         val players: List<PlayerId> = emptyList(),
         val bids: Map<PlayerId, Bid?> = emptyMap(),
+        val cardsInTrick: List<PlayedCard> = emptyList(),
     ) {
         companion object {
             val Builder<PlayerGameState>.roundNumber get() = get { roundNumber }.describedAs("round number")
             val Builder<PlayerGameState>.hand get() = get { hand }.describedAs("hand")
             val Builder<PlayerGameState>.players get() = get { players }.describedAs("players")
             val Builder<PlayerGameState>.bids get() = get { bids }.describedAs("bids")
+            val Builder<PlayerGameState>.cardsInTrick get() = get { cardsInTrick }
         }
     }
 

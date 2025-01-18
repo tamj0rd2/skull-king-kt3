@@ -34,4 +34,7 @@ interface PlayACardUseCaseContract : UseCaseContract {
             thePlayers.each { `see a card`(Card, playedBy = player1.id) }
         }
     }
+
+    // TODO: business rule - when a card is played, that player's hand size decreases by 1.
+    // TODO: each player can only play 1 card per trick.
 }

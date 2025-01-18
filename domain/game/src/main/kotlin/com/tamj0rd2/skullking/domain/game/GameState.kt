@@ -61,5 +61,3 @@ enum class Status {
     IN_LOBBY,
     IN_PROGRESS,
 }
-
-data object Card

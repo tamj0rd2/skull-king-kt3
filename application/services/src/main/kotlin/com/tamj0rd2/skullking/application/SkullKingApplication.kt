@@ -53,7 +53,10 @@ class SkullKingApplication private constructor(
                 gameUpdateNotifier = gameUpdateNotifier,
                 gameRepository = gameRepository,
             ),
-        playACardUseCase = PlayACardService(),
+        playACardUseCase =
+            PlayACardService(
+                gameUpdateNotifier = gameUpdateNotifier,
+            ),
     )
 
     companion object
