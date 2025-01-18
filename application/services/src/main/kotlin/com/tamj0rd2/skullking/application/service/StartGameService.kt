@@ -1,8 +1,8 @@
 package com.tamj0rd2.skullking.application.service
 
 import com.tamj0rd2.extensions.asSuccess
-import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.CardDealt
-import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.GameStarted
+import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.ACardWasDealt
+import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.TheGameHasStarted
 import com.tamj0rd2.skullking.application.port.input.StartGameUseCase
 import com.tamj0rd2.skullking.application.port.input.StartGameUseCase.StartGameCommand
 import com.tamj0rd2.skullking.application.port.input.StartGameUseCase.StartGameOutput
@@ -33,8 +33,8 @@ class StartGameService(
     private fun List<GameEvent>.toGameUpdates() =
         map {
             when (it) {
-                is GameStartedEvent -> GameStarted
-                is CardDealtEvent -> CardDealt(Card)
+                is GameStartedEvent -> TheGameHasStarted
+                is CardDealtEvent -> ACardWasDealt(Card)
                 else -> error("unexpected game event at this point in time.")
             }
         }

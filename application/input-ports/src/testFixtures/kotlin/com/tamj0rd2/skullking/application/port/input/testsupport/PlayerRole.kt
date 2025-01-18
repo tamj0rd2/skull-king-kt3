@@ -1,13 +1,13 @@
 package com.tamj0rd2.skullking.application.port.input.testsupport
 
 import com.tamj0rd2.skullking.application.port.inandout.GameUpdate
-import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.AllBidsPlaced
-import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.BidPlaced
-import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.CardDealt
-import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.CardPlayed
-import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.GameStarted
-import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.PlayerJoined
-import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.TrickEnded
+import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.ABidWasPlaced
+import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.ACardWasDealt
+import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.ACardWasPlayed
+import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.APlayerHasJoined
+import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.AllBidsHaveBeenPlaced
+import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.TheGameHasStarted
+import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.TheTrickHasEnded
 import com.tamj0rd2.skullking.application.port.inandout.GameUpdateListener
 import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.CreateNewGameCommand
 import com.tamj0rd2.skullking.application.port.input.JoinAGameUseCase.JoinGameCommand
@@ -166,13 +166,13 @@ class PlayerRole(
             state =
                 state.run {
                     when (it) {
-                        is CardDealt -> copy(hand = hand + it.card)
-                        is GameStarted -> copy(roundNumber = roundNumber.next())
-                        is PlayerJoined -> copy(players = players + it.playerId)
-                        is BidPlaced -> copy(bids = bids + Pair(it.playerId, null))
-                        is AllBidsPlaced -> copy(bids = it.bids)
-                        is CardPlayed -> copy(cardsInTrick = cardsInTrick + it.playedCard)
-                        is TrickEnded -> copy(trickWinner = it.winner)
+                        is ACardWasDealt -> copy(hand = hand + it.card)
+                        is TheGameHasStarted -> copy(roundNumber = roundNumber.next())
+                        is APlayerHasJoined -> copy(players = players + it.playerId)
+                        is ABidWasPlaced -> copy(bids = bids + Pair(it.playerId, null))
+                        is AllBidsHaveBeenPlaced -> copy(bids = it.bids)
+                        is ACardWasPlayed -> copy(cardsInTrick = cardsInTrick + it.playedCard)
+                        is TheTrickHasEnded -> copy(trickWinner = it.winner)
                     }
                 }
         }

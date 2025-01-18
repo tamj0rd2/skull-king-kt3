@@ -9,7 +9,7 @@ object GameUpdateArbs {
     private val playerJoinedGameUpdateArb =
         arbitrary {
             val playerId = GameArbs.playerIdArb.bind()
-            GameUpdate.PlayerJoined(playerId)
+            GameUpdate.APlayerHasJoined(playerId)
         }
 
     val gameUpdateArb =

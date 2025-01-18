@@ -31,7 +31,7 @@ class JoinAGameService(
         gameRepository.save(game)
 
         gameUpdateNotifier.subscribe(game.id, command.gameUpdateListener)
-        gameUpdateNotifier.broadcast(game.id, GameUpdate.PlayerJoined(playerId))
+        gameUpdateNotifier.broadcast(game.id, GameUpdate.APlayerHasJoined(playerId))
 
         return JoinGameOutput(playerId).asSuccess()
     }

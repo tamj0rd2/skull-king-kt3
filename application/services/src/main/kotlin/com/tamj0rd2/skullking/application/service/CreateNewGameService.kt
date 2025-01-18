@@ -23,7 +23,7 @@ class CreateNewGameService(
         val game = Game.new(createdBy = playerId)
         gameRepository.save(game)
         gameUpdateNotifier.subscribe(game.id, command.gameUpdateListener)
-        gameUpdateNotifier.broadcast(game.id, GameUpdate.PlayerJoined(playerId))
+        gameUpdateNotifier.broadcast(game.id, GameUpdate.APlayerHasJoined(playerId))
 
         return CreateNewGameOutput(
             gameId = game.id,

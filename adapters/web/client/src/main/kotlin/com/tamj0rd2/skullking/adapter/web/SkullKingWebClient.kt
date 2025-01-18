@@ -9,9 +9,9 @@ import com.tamj0rd2.skullking.adapter.web.MessageToClient.GameCreatedMessage
 import com.tamj0rd2.skullking.adapter.web.MessageToClient.GameUpdateMessage
 import com.tamj0rd2.skullking.adapter.web.MessageToClient.JoinAcknowledgedMessage
 import com.tamj0rd2.skullking.application.port.inandout.GameUpdate
-import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.BidPlaced
-import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.CardPlayed
-import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.GameStarted
+import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.ABidWasPlaced
+import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.ACardWasPlayed
+import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.TheGameHasStarted
 import com.tamj0rd2.skullking.application.port.inandout.GameUpdateListener
 import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.CreateNewGameCommand
 import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.CreateNewGameOutput
@@ -81,19 +81,19 @@ class SkullKingWebClient(
 
     override fun invoke(command: StartGameCommand): Result4k<StartGameOutput, GameErrorCode> {
         ws.send(messageFromClient(StartGameMessage))
-        ws.waitForGameUpdate<GameStarted>()
+        ws.waitForGameUpdate<TheGameHasStarted>()
         return StartGameOutput.asSuccess()
     }
 
     override fun invoke(command: PlayACardCommand): Result4k<PlayACardOutput, GameErrorCode> {
         ws.send(messageFromClient(PlayACardMessage(command.card)))
-        ws.waitForGameUpdate<CardPlayed>()
+        ws.waitForGameUpdate<ACardWasPlayed>()
         return PlayACardOutput.asSuccess()
     }
 
     override fun invoke(command: PlaceABidCommand): Result4k<PlaceABidOutput, GameErrorCode> {
         ws.send(messageFromClient(PlaceABidMessage(command.bid)))
-        ws.waitForGameUpdate<BidPlaced>()
+        ws.waitForGameUpdate<ABidWasPlaced>()
         return PlaceABidOutput.asSuccess()
     }
 

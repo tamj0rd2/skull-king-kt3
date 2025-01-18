@@ -16,8 +16,8 @@ class PlayACardService(
 ) : PlayACardUseCase {
     override fun invoke(command: PlayACardCommand): Result4k<PlayACardOutput, GameErrorCode> {
         val playedCard = PlayedCard(command.card, command.playerId)
-        gameUpdateNotifier.broadcast(command.gameId, GameUpdate.CardPlayed(playedCard))
-        gameUpdateNotifier.broadcast(command.gameId, GameUpdate.TrickEnded(winner = PlayerId.NONE))
+        gameUpdateNotifier.broadcast(command.gameId, GameUpdate.ACardWasPlayed(playedCard))
+        gameUpdateNotifier.broadcast(command.gameId, GameUpdate.TheTrickHasEnded(winner = PlayerId.NONE))
 
         return PlayACardOutput.asSuccess()
     }

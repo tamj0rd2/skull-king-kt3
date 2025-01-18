@@ -15,29 +15,29 @@ fun interface GameUpdateListener {
 }
 
 sealed interface GameUpdate {
-    data class PlayerJoined(
+    data class APlayerHasJoined(
         val playerId: PlayerId,
     ) : GameUpdate
 
-    data object GameStarted : GameUpdate
+    data object TheGameHasStarted : GameUpdate
 
-    data class CardDealt(
+    data class ACardWasDealt(
         val card: Card,
     ) : GameUpdate
 
-    data class BidPlaced(
+    data class ABidWasPlaced(
         val playerId: PlayerId,
     ) : GameUpdate
 
-    data class AllBidsPlaced(
+    data class AllBidsHaveBeenPlaced(
         val bids: Map<PlayerId, Bid>,
     ) : GameUpdate
 
-    data class CardPlayed(
+    data class ACardWasPlayed(
         val playedCard: PlayedCard,
     ) : GameUpdate
 
-    data class TrickEnded(
+    data class TheTrickHasEnded(
         val winner: PlayerId,
     ) : GameUpdate
 }
