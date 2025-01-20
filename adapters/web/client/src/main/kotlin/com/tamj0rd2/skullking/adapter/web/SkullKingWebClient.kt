@@ -107,6 +107,8 @@ class SkullKingWebClient(
         val allSeenMessages = mutableListOf<MessageToClient>()
 
         onMessage {
+            if (wantedMessage != null) return@onMessage
+
             val message = messageToClient(it)
             allSeenMessages.add(message)
 

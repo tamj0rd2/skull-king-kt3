@@ -1,5 +1,6 @@
 package com.tamj0rd2.skullking.adapter.web
 
+import com.tamj0rd2.skullking.adapter.web.JPlayedCard.playedBy
 import com.tamj0rd2.skullking.adapter.web.MessageToClient.ErrorMessage
 import com.tamj0rd2.skullking.adapter.web.MessageToClient.GameCreatedMessage
 import com.tamj0rd2.skullking.adapter.web.MessageToClient.GameUpdateMessage
@@ -118,6 +119,7 @@ private object JGameUpdate : JSealed<GameUpdate>() {
                 "bid-placed" to JBidPlaced,
                 "all-bids-placed" to JAllBidsPlaced,
                 "card-played" to JCardPlayed,
+                "trick-ended" to JTrickEnded,
             )
 
     override fun extractTypeName(obj: GameUpdate): String =
@@ -128,7 +130,7 @@ private object JGameUpdate : JSealed<GameUpdate>() {
             is ABidWasPlaced -> "bid-placed"
             is AllBidsHaveBeenPlaced -> "all-bids-placed"
             is ACardWasPlayed -> "card-played"
-            is TheTrickHasEnded -> TODO()
+            is TheTrickHasEnded -> "trick-ended"
         }
 }
 
@@ -170,6 +172,15 @@ private object JPlayedCard : JAny<PlayedCard>() {
         PlayedCard(
             card = +card,
             playedBy = +playedBy,
+        )
+}
+
+private object JTrickEnded : JAny<TheTrickHasEnded>() {
+    private val winner by obj(JPlayerId, TheTrickHasEnded::winner)
+
+    override fun JsonNodeObject.deserializeOrThrow() =
+        TheTrickHasEnded(
+            winner = +winner,
         )
 }
 
