@@ -16,6 +16,7 @@ import com.tamj0rd2.skullking.domain.game.AddPlayerErrorCode.GameHasAlreadyStart
 import com.tamj0rd2.skullking.domain.game.AddPlayerErrorCode.LobbyIsFull
 import com.tamj0rd2.skullking.domain.game.AddPlayerErrorCode.PlayerHasAlreadyJoined
 import com.tamj0rd2.skullking.domain.game.Card
+import com.tamj0rd2.skullking.domain.game.GameNotInProgress
 import com.tamj0rd2.skullking.domain.game.LobbyErrorCode
 import com.tamj0rd2.skullking.domain.game.LobbyId
 import com.tamj0rd2.skullking.domain.game.PlayedCard
@@ -192,6 +193,7 @@ private object JErrorMessage : JAny<ErrorMessage>() {
             is TooFewPlayers -> "too-few-players"
             is PlayerHasAlreadyJoined -> "player-already-joined"
             is GameHasAlreadyStarted -> "game-already-started"
+            is GameNotInProgress -> TODO()
         }
 
     override fun JsonNodeObject.deserializeOrThrow(): ErrorMessage =

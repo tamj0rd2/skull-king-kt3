@@ -24,8 +24,9 @@ class PlaceABidService(
 
         lobbyNotifier.broadcast(command.lobbyId, ABidWasPlaced(command.playerId))
 
+        // FIXME: this feels very wrong.
         if (game.state.allBidsHaveBeenPlaced) {
-            lobbyNotifier.broadcast(command.lobbyId, AllBidsHaveBeenPlaced(game.state.bids))
+            lobbyNotifier.broadcast(command.lobbyId, AllBidsHaveBeenPlaced(game.state.gameState!!.bids))
         }
 
         return PlaceABidOutput.asSuccess()

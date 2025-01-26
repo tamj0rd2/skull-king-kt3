@@ -13,3 +13,5 @@ sealed class AddPlayerErrorCode : LobbyErrorCode() {
 sealed class StartGameErrorCode : LobbyErrorCode() {
     class TooFewPlayers : StartGameErrorCode()
 }
+
+class GameNotInProgress : LobbyErrorCode()
