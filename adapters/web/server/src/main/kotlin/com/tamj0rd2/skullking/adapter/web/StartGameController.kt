@@ -11,7 +11,7 @@ internal class StartGameController(
     operator fun invoke(session: PlayerSession) {
         val command =
             StartGameCommand(
-                gameId = session.gameId,
+                lobbyId = session.lobbyId,
                 playerId = session.playerId,
             )
 

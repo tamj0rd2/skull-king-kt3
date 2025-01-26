@@ -17,9 +17,9 @@ interface PlayACardUseCaseContract : UseCaseContract {
         val thePlayers = listOf(player1, player2)
 
         Given {
-            player1.`creates a game`()
+            player1.`creates a lobby`()
             player1.invites(player2)
-            player2.`accepts the game invite`()
+            player2.`accepts the lobby invite`()
             player1.`starts the game`()
 
             player1.`places a bid`(Bid.of(0))
@@ -42,9 +42,9 @@ interface PlayACardUseCaseContract : UseCaseContract {
         val thePlayers = listOf(player1, player2)
 
         Given {
-            player1.`creates a game`()
+            player1.`creates a lobby`()
             player1.invites(player2)
-            player2.`accepts the game invite`()
+            player2.`accepts the lobby invite`()
             player1.`starts the game`()
 
             player1.`places a bid`(Bid.of(0))

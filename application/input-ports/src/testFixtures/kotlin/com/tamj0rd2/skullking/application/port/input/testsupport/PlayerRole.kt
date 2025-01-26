@@ -1,29 +1,29 @@
 package com.tamj0rd2.skullking.application.port.input.testsupport
 
-import com.tamj0rd2.skullking.application.port.inandout.GameUpdate
-import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.ABidWasPlaced
-import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.ACardWasDealt
-import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.ACardWasPlayed
-import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.APlayerHasJoined
-import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.AllBidsHaveBeenPlaced
-import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.TheGameHasStarted
-import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.TheTrickHasEnded
-import com.tamj0rd2.skullking.application.port.inandout.GameUpdateListener
-import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.CreateNewGameCommand
-import com.tamj0rd2.skullking.application.port.input.JoinAGameUseCase.JoinGameCommand
+import com.tamj0rd2.skullking.application.port.inandout.LobbyNotification
+import com.tamj0rd2.skullking.application.port.inandout.LobbyNotification.ABidWasPlaced
+import com.tamj0rd2.skullking.application.port.inandout.LobbyNotification.ACardWasDealt
+import com.tamj0rd2.skullking.application.port.inandout.LobbyNotification.ACardWasPlayed
+import com.tamj0rd2.skullking.application.port.inandout.LobbyNotification.APlayerHasJoined
+import com.tamj0rd2.skullking.application.port.inandout.LobbyNotification.AllBidsHaveBeenPlaced
+import com.tamj0rd2.skullking.application.port.inandout.LobbyNotification.TheGameHasStarted
+import com.tamj0rd2.skullking.application.port.inandout.LobbyNotification.TheTrickHasEnded
+import com.tamj0rd2.skullking.application.port.inandout.LobbyNotificationListener
+import com.tamj0rd2.skullking.application.port.input.CreateNewLobbyUseCase.CreateNewLobbyCommand
+import com.tamj0rd2.skullking.application.port.input.JoinALobbyUseCase.JoinALobbyCommand
 import com.tamj0rd2.skullking.application.port.input.PlaceABidUseCase.PlaceABidCommand
 import com.tamj0rd2.skullking.application.port.input.PlayACardUseCase.PlayACardCommand
 import com.tamj0rd2.skullking.application.port.input.SkullKingUseCases
 import com.tamj0rd2.skullking.application.port.input.StartGameUseCase.StartGameCommand
-import com.tamj0rd2.skullking.application.port.input.testsupport.PlayerRole.PlayerGameState.Companion.bids
-import com.tamj0rd2.skullking.application.port.input.testsupport.PlayerRole.PlayerGameState.Companion.cardsInTrick
-import com.tamj0rd2.skullking.application.port.input.testsupport.PlayerRole.PlayerGameState.Companion.players
-import com.tamj0rd2.skullking.application.port.input.testsupport.PlayerRole.PlayerGameState.Companion.trickWinner
+import com.tamj0rd2.skullking.application.port.input.testsupport.PlayerRole.PlayerLobbyState.Companion.bids
+import com.tamj0rd2.skullking.application.port.input.testsupport.PlayerRole.PlayerLobbyState.Companion.cardsInTrick
+import com.tamj0rd2.skullking.application.port.input.testsupport.PlayerRole.PlayerLobbyState.Companion.players
+import com.tamj0rd2.skullking.application.port.input.testsupport.PlayerRole.PlayerLobbyState.Companion.trickWinner
 import com.tamj0rd2.skullking.domain.auth.SessionId
 import com.tamj0rd2.skullking.domain.game.Bid
 import com.tamj0rd2.skullking.domain.game.Card
-import com.tamj0rd2.skullking.domain.game.GameErrorCode
-import com.tamj0rd2.skullking.domain.game.GameId
+import com.tamj0rd2.skullking.domain.game.LobbyErrorCode
+import com.tamj0rd2.skullking.domain.game.LobbyId
 import com.tamj0rd2.skullking.domain.game.PlayedCard
 import com.tamj0rd2.skullking.domain.game.PlayerId
 import com.tamj0rd2.skullking.domain.game.RoundNumber
@@ -46,7 +46,7 @@ import java.time.Instant
 
 class PlayerRole(
     private val driver: SkullKingUseCases,
-) : GameUpdateListener {
+) : LobbyNotificationListener {
     var id = PlayerId.NONE
         private set
         get() {
@@ -62,43 +62,43 @@ class PlayerRole(
 
     override fun toString(): String = id.toString()
 
-    private var gameId = GameId.NONE
+    private var lobbyId = LobbyId.NONE
         get() {
-            expectThat(field).isNotEqualTo(GameId.NONE)
+            expectThat(field).isNotEqualTo(LobbyId.NONE)
             return field
         }
 
-    private val receivedGameUpdates = mutableListOf<GameUpdate>()
+    private val receivedLobbyNotifications = mutableListOf<LobbyNotification>()
 
-    fun `has created a game`() = `creates a game`()
+    fun `has created a lobby`() = `creates a lobby`()
 
-    fun `creates a game`(): GameId {
+    fun `creates a lobby`(): LobbyId {
         val output =
             driver(
-                CreateNewGameCommand(
+                CreateNewLobbyCommand(
                     sessionId = sessionId,
-                    gameUpdateListener = this,
+                    lobbyNotificationListener = this,
                 ),
             )
 
         expectThat(output.playerId).isNotEqualTo(PlayerId.NONE)
         id = output.playerId
 
-        expectThat(output.gameId).isNotEqualTo(GameId.NONE)
-        this.gameId = output.gameId
-        return output.gameId
+        expectThat(output.lobbyId).isNotEqualTo(LobbyId.NONE)
+        this.lobbyId = output.lobbyId
+        return output.lobbyId
     }
 
-    fun `accepts the game invite`() = `accept the game invite`()
+    fun `accepts the lobby invite`() = `accept the lobby invite`()
 
-    fun `accept the game invite`() {
-        expectThat(gameId).isNotEqualTo(GameId.NONE)
+    fun `accept the lobby invite`() {
+        expectThat(lobbyId).isNotEqualTo(LobbyId.NONE)
 
         val command =
-            JoinGameCommand(
+            JoinALobbyCommand(
                 sessionId = sessionId,
-                gameId = gameId,
-                gameUpdateListener = this,
+                lobbyId = lobbyId,
+                lobbyNotificationListener = this,
             )
 
         driver.invoke(command).orThrow().playerId.also {
@@ -107,12 +107,12 @@ class PlayerRole(
         }
     }
 
-    fun `join the game again`() {
-        expectThat(gameId).isNotEqualTo(GameId.NONE)
-        `accept the game invite`()
+    fun `join the lobby again`() {
+        expectThat(lobbyId).isNotEqualTo(LobbyId.NONE)
+        `accept the lobby invite`()
     }
 
-    private var latestErrorCode: GameErrorCode? = null
+    private var latestErrorCode: LobbyErrorCode? = null
 
     fun triesTo(block: PlayerRole.() -> Unit) {
         expectThat(latestErrorCode).isNull()
@@ -120,47 +120,47 @@ class PlayerRole(
         try {
             @Suppress("UNUSED_EXPRESSION")
             block()
-        } catch (e: GameErrorCode) {
+        } catch (e: LobbyErrorCode) {
             latestErrorCode = e
         }
     }
 
-    fun `gets the error`(expectedErrorCode: GameErrorCode) {
+    fun `gets the error`(expectedErrorCode: LobbyErrorCode) {
         expectThat(latestErrorCode).isNotNull().isA(expectedErrorCode::class.java)
         latestErrorCode = null
     }
 
     fun `starts the game`() {
-        driver(StartGameCommand(gameId, id)).orThrow()
+        driver(StartGameCommand(lobbyId, id)).orThrow()
     }
 
-    private var state = PlayerGameState()
+    private var state = PlayerLobbyState()
 
-    fun `sees them self in the game`() {
-        hasGameStateWhere { players.contains(id) }
+    fun `sees them self in the lobby`() {
+        hasLobbyStateWhere { players.contains(id) }
     }
 
-    fun `sees each invited player in the game`() {
+    fun `sees each invited player in the lobby`() {
         expectThat(invitedPlayers.isNotEmpty())
-        `sees exact players in the game`(this + invitedPlayers)
+        `sees exact players in the lobby`(this + invitedPlayers)
     }
 
-    fun `sees exact players in the game`(expected: List<PlayerRole>) {
-        hasGameStateWhere {
+    fun `sees exact players in the lobby`(expected: List<PlayerRole>) {
+        hasLobbyStateWhere {
             players.hasSize(expected.size)
             players.containsExactlyInAnyOrder(expected.map { it.id })
             players.all { isNotEqualTo(PlayerId.NONE) }
         }
     }
 
-    fun hasGameStateWhere(assertion: Builder<PlayerGameState>.() -> Unit) {
+    fun hasLobbyStateWhere(assertion: Builder<PlayerLobbyState>.() -> Unit) {
         eventually {
             expectThat(this).get { state }.assertion()
         }
     }
 
-    override fun receive(updates: List<GameUpdate>) {
-        receivedGameUpdates += updates
+    override fun receive(updates: List<LobbyNotification>) {
+        receivedLobbyNotifications += updates
 
         updates.forEach {
             state =
@@ -182,7 +182,7 @@ class PlayerRole(
 
     fun invites(players: List<PlayerRole>) {
         players.forEach { player ->
-            player.gameId = this.gameId
+            player.lobbyId = this.lobbyId
             invitedPlayers += player
         }
     }
@@ -195,11 +195,11 @@ class PlayerRole(
     operator fun plus(otherPlayers: List<PlayerRole>) = listOf(this) + otherPlayers
 
     fun `places a bid`(bid: Bid) {
-        driver(PlaceABidCommand(gameId, id, bid)).orThrow()
+        driver(PlaceABidCommand(lobbyId, id, bid)).orThrow()
     }
 
     fun `sees that a bid has been placed by`(playerId: PlayerId) {
-        hasGameStateWhere {
+        hasLobbyStateWhere {
             bids.isNotEmpty().hasEntry(playerId, null)
         }
     }
@@ -208,7 +208,7 @@ class PlayerRole(
         bid: Bid,
         placedBy: PlayerId,
     ) {
-        hasGameStateWhere {
+        hasLobbyStateWhere {
             bids.isNotEmpty().hasEntry(placedBy, bid)
         }
     }
@@ -216,11 +216,11 @@ class PlayerRole(
     fun `plays a card in their hand`() = `play a card in their hand`()
 
     fun `play a card in their hand`() {
-        driver(PlayACardCommand(gameId, id, state.hand.first())).orThrow()
+        driver(PlayACardCommand(lobbyId, id, state.hand.first())).orThrow()
     }
 
     fun `see that the trick winner has been chosen`() {
-        hasGameStateWhere {
+        hasLobbyStateWhere {
             trickWinner.isNotNull()
         }
     }
@@ -229,7 +229,7 @@ class PlayerRole(
         card: Card,
         playedBy: PlayerId,
     ) {
-        hasGameStateWhere {
+        hasLobbyStateWhere {
             cardsInTrick.isNotEmpty().one {
                 get { this.playedBy }.isEqualTo(playedBy)
                 get { this.card }.isEqualTo(card)
@@ -237,7 +237,7 @@ class PlayerRole(
         }
     }
 
-    data class PlayerGameState(
+    data class PlayerLobbyState(
         val roundNumber: RoundNumber = RoundNumber.none,
         val hand: List<Card> = emptyList(),
         val players: List<PlayerId> = emptyList(),
@@ -246,12 +246,12 @@ class PlayerRole(
         val trickWinner: PlayerId? = null,
     ) {
         companion object {
-            val Builder<PlayerGameState>.roundNumber get() = get { roundNumber }.describedAs("round number")
-            val Builder<PlayerGameState>.hand get() = get { hand }.describedAs("hand")
-            val Builder<PlayerGameState>.players get() = get { players }.describedAs("players")
-            val Builder<PlayerGameState>.bids get() = get { bids }.describedAs("bids")
-            val Builder<PlayerGameState>.cardsInTrick get() = get { cardsInTrick }
-            val Builder<PlayerGameState>.trickWinner get() = get { trickWinner }
+            val Builder<PlayerLobbyState>.roundNumber get() = get { roundNumber }.describedAs("round number")
+            val Builder<PlayerLobbyState>.hand get() = get { hand }.describedAs("hand")
+            val Builder<PlayerLobbyState>.players get() = get { players }.describedAs("players")
+            val Builder<PlayerLobbyState>.bids get() = get { bids }.describedAs("bids")
+            val Builder<PlayerLobbyState>.cardsInTrick get() = get { cardsInTrick }
+            val Builder<PlayerLobbyState>.trickWinner get() = get { trickWinner }
         }
     }
 

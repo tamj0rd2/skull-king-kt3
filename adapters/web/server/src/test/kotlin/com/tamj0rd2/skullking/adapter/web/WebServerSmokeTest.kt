@@ -10,16 +10,16 @@ import org.junit.jupiter.api.parallel.ExecutionMode.SAME_THREAD
 @Execution(SAME_THREAD)
 class WebServerSmokeTest {
     @Test
-    fun `can start a 2 player game`() {
+    fun `can play a 2 player game`() {
         WebServer(port = Main.DEFAULT_PORT).start().use {
             val baseUri = Uri.of("ws://localhost:${it.port()}")
 
             val player1 = PlayerRole(SkullKingWebClient(baseUri))
             val player2 = PlayerRole(SkullKingWebClient(baseUri))
 
-            player1.`creates a game`()
+            player1.`creates a lobby`()
             player1.invites(player2)
-            player2.`accepts the game invite`()
+            player2.`accepts the lobby invite`()
             player1.`starts the game`()
 
             // TODO: add a konsist test to make sure I'm at least using every game action once

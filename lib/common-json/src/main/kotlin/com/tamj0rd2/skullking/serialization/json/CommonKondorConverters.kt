@@ -1,7 +1,7 @@
 package com.tamj0rd2.skullking.serialization.json
 
 import com.tamj0rd2.skullking.domain.game.Bid
-import com.tamj0rd2.skullking.domain.game.GameId
+import com.tamj0rd2.skullking.domain.game.LobbyId
 import com.tamj0rd2.skullking.domain.game.PlayerId
 import com.tamj0rd2.skullking.domain.game.PlayerId.Companion
 import com.ubertob.kondor.json.JAny
@@ -15,9 +15,9 @@ object JPlayerId : JStringRepresentable<PlayerId>() {
     override val render: (PlayerId) -> String = Companion::show
 }
 
-object JGameId : JStringRepresentable<GameId>() {
-    override val cons: (String) -> GameId = GameId.Companion::parse
-    override val render: (GameId) -> String = GameId.Companion::show
+object JLobbyId : JStringRepresentable<LobbyId>() {
+    override val cons: (String) -> LobbyId = LobbyId.Companion::parse
+    override val render: (LobbyId) -> String = LobbyId.Companion::show
 }
 
 object JBid : JNumRepresentable<Bid>() {

@@ -16,7 +16,7 @@ internal class PlayACardController(
     ) {
         val command =
             PlayACardCommand(
-                gameId = playerSession.gameId,
+                lobbyId = playerSession.lobbyId,
                 playerId = playerSession.playerId,
                 card = message.card,
             )

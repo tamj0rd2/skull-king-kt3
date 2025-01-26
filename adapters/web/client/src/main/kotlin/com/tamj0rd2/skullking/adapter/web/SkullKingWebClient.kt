@@ -5,18 +5,18 @@ import com.tamj0rd2.skullking.adapter.web.MessageFromClient.PlaceABidMessage
 import com.tamj0rd2.skullking.adapter.web.MessageFromClient.PlayACardMessage
 import com.tamj0rd2.skullking.adapter.web.MessageFromClient.StartGameMessage
 import com.tamj0rd2.skullking.adapter.web.MessageToClient.ErrorMessage
-import com.tamj0rd2.skullking.adapter.web.MessageToClient.GameCreatedMessage
-import com.tamj0rd2.skullking.adapter.web.MessageToClient.GameUpdateMessage
 import com.tamj0rd2.skullking.adapter.web.MessageToClient.JoinAcknowledgedMessage
-import com.tamj0rd2.skullking.application.port.inandout.GameUpdate
-import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.ABidWasPlaced
-import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.ACardWasPlayed
-import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.TheGameHasStarted
-import com.tamj0rd2.skullking.application.port.inandout.GameUpdateListener
-import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.CreateNewGameCommand
-import com.tamj0rd2.skullking.application.port.input.CreateNewGameUseCase.CreateNewGameOutput
-import com.tamj0rd2.skullking.application.port.input.JoinAGameUseCase.JoinGameCommand
-import com.tamj0rd2.skullking.application.port.input.JoinAGameUseCase.JoinGameOutput
+import com.tamj0rd2.skullking.adapter.web.MessageToClient.LobbyCreatedMessage
+import com.tamj0rd2.skullking.adapter.web.MessageToClient.LobbyNotificationMessage
+import com.tamj0rd2.skullking.application.port.inandout.LobbyNotification
+import com.tamj0rd2.skullking.application.port.inandout.LobbyNotification.ABidWasPlaced
+import com.tamj0rd2.skullking.application.port.inandout.LobbyNotification.ACardWasPlayed
+import com.tamj0rd2.skullking.application.port.inandout.LobbyNotification.TheGameHasStarted
+import com.tamj0rd2.skullking.application.port.inandout.LobbyNotificationListener
+import com.tamj0rd2.skullking.application.port.input.CreateNewLobbyUseCase.CreateNewLobbyCommand
+import com.tamj0rd2.skullking.application.port.input.CreateNewLobbyUseCase.CreateNewLobbyOutput
+import com.tamj0rd2.skullking.application.port.input.JoinALobbyUseCase.JoinALobbyCommand
+import com.tamj0rd2.skullking.application.port.input.JoinALobbyUseCase.JoinALobbyOutput
 import com.tamj0rd2.skullking.application.port.input.PlaceABidUseCase.PlaceABidCommand
 import com.tamj0rd2.skullking.application.port.input.PlaceABidUseCase.PlaceABidOutput
 import com.tamj0rd2.skullking.application.port.input.PlayACardUseCase.PlayACardCommand
@@ -25,8 +25,8 @@ import com.tamj0rd2.skullking.application.port.input.SkullKingUseCases
 import com.tamj0rd2.skullking.application.port.input.StartGameUseCase.StartGameCommand
 import com.tamj0rd2.skullking.application.port.input.StartGameUseCase.StartGameOutput
 import com.tamj0rd2.skullking.domain.auth.SessionId
-import com.tamj0rd2.skullking.domain.game.GameErrorCode
-import com.tamj0rd2.skullking.domain.game.GameId
+import com.tamj0rd2.skullking.domain.game.LobbyErrorCode
+import com.tamj0rd2.skullking.domain.game.LobbyId
 import com.tamj0rd2.skullking.domain.game.PlayerId
 import dev.forkhandles.result4k.Result4k
 import org.http4k.client.WebsocketClient
@@ -47,62 +47,62 @@ class SkullKingWebClient(
         if (this::ws.isInitialized) ws.close()
     }
 
-    override fun invoke(command: CreateNewGameCommand): CreateNewGameOutput {
+    override fun invoke(command: CreateNewLobbyCommand): CreateNewLobbyOutput {
         ws =
             connectToWs(
                 path = "/game",
                 sessionId = command.sessionId,
-                gameUpdateListener = command.gameUpdateListener,
+                lobbyNotificationListener = command.lobbyNotificationListener,
             )
 
-        val message = ws.waitForMessage<GameCreatedMessage>()
+        val message = ws.waitForMessage<LobbyCreatedMessage>()
         check(message.playerId != PlayerId.NONE) { "got a zero playerId" }
-        check(message.gameId != GameId.NONE) { "got a zero gameId" }
+        check(message.lobbyId != LobbyId.NONE) { "got a zero lobbyId" }
 
-        return CreateNewGameOutput(
-            gameId = message.gameId,
+        return CreateNewLobbyOutput(
+            lobbyId = message.lobbyId,
             playerId = message.playerId,
         )
     }
 
-    override fun invoke(command: JoinGameCommand): Result4k<JoinGameOutput, GameErrorCode> {
+    override fun invoke(command: JoinALobbyCommand): Result4k<JoinALobbyOutput, LobbyErrorCode> {
         ws =
             connectToWs(
-                path = "/game/${GameId.show(command.gameId)}",
+                path = "/game/${LobbyId.show(command.lobbyId)}",
                 sessionId = command.sessionId,
-                gameUpdateListener = command.gameUpdateListener,
+                lobbyNotificationListener = command.lobbyNotificationListener,
             )
 
         val message = ws.waitForMessage<JoinAcknowledgedMessage>()
         check(message.playerId != PlayerId.NONE) { "got a zero playerId" }
 
-        return JoinGameOutput(playerId = message.playerId).asSuccess()
+        return JoinALobbyOutput(playerId = message.playerId).asSuccess()
     }
 
-    override fun invoke(command: StartGameCommand): Result4k<StartGameOutput, GameErrorCode> {
+    override fun invoke(command: StartGameCommand): Result4k<StartGameOutput, LobbyErrorCode> {
         ws.send(messageFromClient(StartGameMessage))
-        ws.waitForGameUpdate<TheGameHasStarted>()
+        ws.waitForLobbyNotification<TheGameHasStarted>()
         return StartGameOutput.asSuccess()
     }
 
-    override fun invoke(command: PlayACardCommand): Result4k<PlayACardOutput, GameErrorCode> {
+    override fun invoke(command: PlayACardCommand): Result4k<PlayACardOutput, LobbyErrorCode> {
         ws.send(messageFromClient(PlayACardMessage(command.card)))
-        ws.waitForGameUpdate<ACardWasPlayed>()
+        ws.waitForLobbyNotification<ACardWasPlayed>()
         return PlayACardOutput.asSuccess()
     }
 
-    override fun invoke(command: PlaceABidCommand): Result4k<PlaceABidOutput, GameErrorCode> {
+    override fun invoke(command: PlaceABidCommand): Result4k<PlaceABidOutput, LobbyErrorCode> {
         ws.send(messageFromClient(PlaceABidMessage(command.bid)))
-        ws.waitForGameUpdate<ABidWasPlaced>()
+        ws.waitForLobbyNotification<ABidWasPlaced>()
         return PlaceABidOutput.asSuccess()
     }
 
-    private inline fun <reified T : GameUpdate> Websocket.waitForGameUpdate(): T =
-        waitForMessage<GameUpdateMessage> { it.gameUpdate is T }.gameUpdate as T
+    private inline fun <reified T : LobbyNotification> Websocket.waitForLobbyNotification(): T =
+        waitForMessage<LobbyNotificationMessage> { it.lobbyNotification is T }.lobbyNotification as T
 
     private inline fun <reified T : MessageToClient> Websocket.waitForMessage(crossinline matcher: (T) -> Boolean = { true }): T {
         val latch = CountDownLatch(1)
-        var failureReason: GameErrorCode? = null
+        var failureReason: LobbyErrorCode? = null
         var wantedMessage: T? = null
         val allSeenMessages = mutableListOf<MessageToClient>()
 
@@ -138,7 +138,7 @@ class SkullKingWebClient(
     private fun connectToWs(
         path: String,
         sessionId: SessionId,
-        gameUpdateListener: GameUpdateListener,
+        lobbyNotificationListener: LobbyNotificationListener,
     ): Websocket {
         val ws =
             WebsocketClient.nonBlocking(
@@ -151,8 +151,8 @@ class SkullKingWebClient(
                         val message = messageToClient(it)
                         println("client: $sessionId: received: $message")
 
-                        if (message is GameUpdateMessage) {
-                            gameUpdateListener.receive(message.gameUpdate)
+                        if (message is LobbyNotificationMessage) {
+                            lobbyNotificationListener.receive(message.lobbyNotification)
                         }
                     }
                 },

@@ -1,29 +1,28 @@
 package com.tamj0rd2.skullking.adapter.web
 
-import com.tamj0rd2.skullking.adapter.web.JPlayedCard.playedBy
 import com.tamj0rd2.skullking.adapter.web.MessageToClient.ErrorMessage
-import com.tamj0rd2.skullking.adapter.web.MessageToClient.GameCreatedMessage
-import com.tamj0rd2.skullking.adapter.web.MessageToClient.GameUpdateMessage
 import com.tamj0rd2.skullking.adapter.web.MessageToClient.JoinAcknowledgedMessage
-import com.tamj0rd2.skullking.application.port.inandout.GameUpdate
-import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.ABidWasPlaced
-import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.ACardWasDealt
-import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.ACardWasPlayed
-import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.APlayerHasJoined
-import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.AllBidsHaveBeenPlaced
-import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.TheGameHasStarted
-import com.tamj0rd2.skullking.application.port.inandout.GameUpdate.TheTrickHasEnded
+import com.tamj0rd2.skullking.adapter.web.MessageToClient.LobbyCreatedMessage
+import com.tamj0rd2.skullking.adapter.web.MessageToClient.LobbyNotificationMessage
+import com.tamj0rd2.skullking.application.port.inandout.LobbyNotification
+import com.tamj0rd2.skullking.application.port.inandout.LobbyNotification.ABidWasPlaced
+import com.tamj0rd2.skullking.application.port.inandout.LobbyNotification.ACardWasDealt
+import com.tamj0rd2.skullking.application.port.inandout.LobbyNotification.ACardWasPlayed
+import com.tamj0rd2.skullking.application.port.inandout.LobbyNotification.APlayerHasJoined
+import com.tamj0rd2.skullking.application.port.inandout.LobbyNotification.AllBidsHaveBeenPlaced
+import com.tamj0rd2.skullking.application.port.inandout.LobbyNotification.TheGameHasStarted
+import com.tamj0rd2.skullking.application.port.inandout.LobbyNotification.TheTrickHasEnded
 import com.tamj0rd2.skullking.domain.game.AddPlayerErrorCode.GameHasAlreadyStarted
-import com.tamj0rd2.skullking.domain.game.AddPlayerErrorCode.GameIsFull
+import com.tamj0rd2.skullking.domain.game.AddPlayerErrorCode.LobbyIsFull
 import com.tamj0rd2.skullking.domain.game.AddPlayerErrorCode.PlayerHasAlreadyJoined
 import com.tamj0rd2.skullking.domain.game.Card
-import com.tamj0rd2.skullking.domain.game.GameErrorCode
-import com.tamj0rd2.skullking.domain.game.GameId
+import com.tamj0rd2.skullking.domain.game.LobbyErrorCode
+import com.tamj0rd2.skullking.domain.game.LobbyId
 import com.tamj0rd2.skullking.domain.game.PlayedCard
 import com.tamj0rd2.skullking.domain.game.PlayerId
 import com.tamj0rd2.skullking.domain.game.StartGameErrorCode.TooFewPlayers
 import com.tamj0rd2.skullking.serialization.json.JBid
-import com.tamj0rd2.skullking.serialization.json.JGameId
+import com.tamj0rd2.skullking.serialization.json.JLobbyId
 import com.tamj0rd2.skullking.serialization.json.JPlayerId
 import com.tamj0rd2.skullking.serialization.json.JSingleton
 import com.ubertob.kondor.json.JAny
@@ -37,8 +36,8 @@ import org.http4k.lens.BiDiWsMessageLens
 import org.http4k.websocket.WsMessage
 
 sealed interface MessageToClient {
-    data class GameCreatedMessage(
-        val gameId: GameId,
+    data class LobbyCreatedMessage(
+        val lobbyId: LobbyId,
         val playerId: PlayerId,
     ) : MessageToClient
 
@@ -46,12 +45,12 @@ sealed interface MessageToClient {
         val playerId: PlayerId,
     ) : MessageToClient
 
-    data class GameUpdateMessage(
-        val gameUpdate: GameUpdate,
+    data class LobbyNotificationMessage(
+        val lobbyNotification: LobbyNotification,
     ) : MessageToClient
 
     data class ErrorMessage(
-        val error: GameErrorCode,
+        val error: LobbyErrorCode,
     ) : MessageToClient
 }
 
@@ -61,13 +60,13 @@ val messageToClient =
         setLens = { message, _ -> WsMessage(JMessageToClient.toJson(message)) },
     )
 
-private object JGameCreatedMessage : JAny<GameCreatedMessage>() {
-    private val gameId by str(JGameId, GameCreatedMessage::gameId)
-    private val createdBy by str(JPlayerId, GameCreatedMessage::playerId)
+private object JLobbyCreatedMessage : JAny<LobbyCreatedMessage>() {
+    private val lobbyId by str(JLobbyId, LobbyCreatedMessage::lobbyId)
+    private val createdBy by str(JPlayerId, LobbyCreatedMessage::playerId)
 
     override fun JsonNodeObject.deserializeOrThrow() =
-        GameCreatedMessage(
-            gameId = +gameId,
+        LobbyCreatedMessage(
+            lobbyId = +lobbyId,
             playerId = +createdBy,
         )
 }
@@ -77,17 +76,17 @@ private object JMessageToClient : JSealed<MessageToClient>() {
 
     override val subConverters: Map<String, ObjectNodeConverter<out MessageToClient>> =
         mapOf(
-            "game-created" to JGameCreatedMessage,
+            "game-created" to JLobbyCreatedMessage,
             "join-acknowledged" to JAcknowledged,
-            "game-update" to JGameUpdateMessage,
+            "game-update" to JLobbyNotificationMessage,
             "error-message" to JErrorMessage,
         )
 
     override fun extractTypeName(obj: MessageToClient): String =
         when (obj) {
-            is GameCreatedMessage -> "game-created"
+            is LobbyCreatedMessage -> "game-created"
             is JoinAcknowledgedMessage -> "join-acknowledged"
-            is GameUpdateMessage -> "game-update"
+            is LobbyNotificationMessage -> "game-update"
             is ErrorMessage -> "error-message"
         }
 }
@@ -101,16 +100,16 @@ private object JAcknowledged : JAny<JoinAcknowledgedMessage>() {
         )
 }
 
-private object JGameUpdateMessage : JAny<GameUpdateMessage>() {
-    private val gameUpdate by obj(JGameUpdate, GameUpdateMessage::gameUpdate)
+private object JLobbyNotificationMessage : JAny<LobbyNotificationMessage>() {
+    private val lobbyNotification by obj(JLobbyNotification, LobbyNotificationMessage::lobbyNotification)
 
-    override fun JsonNodeObject.deserializeOrThrow() = GameUpdateMessage(gameUpdate = +gameUpdate)
+    override fun JsonNodeObject.deserializeOrThrow() = LobbyNotificationMessage(lobbyNotification = +lobbyNotification)
 }
 
-private object JGameUpdate : JSealed<GameUpdate>() {
+private object JLobbyNotification : JSealed<LobbyNotification>() {
     override val discriminatorFieldName: String = "type"
 
-    override val subConverters: Map<String, ObjectNodeConverter<out GameUpdate>>
+    override val subConverters: Map<String, ObjectNodeConverter<out LobbyNotification>>
         get() =
             mapOf(
                 "player-joined" to JPlayerJoined,
@@ -122,7 +121,7 @@ private object JGameUpdate : JSealed<GameUpdate>() {
                 "trick-ended" to JTrickEnded,
             )
 
-    override fun extractTypeName(obj: GameUpdate): String =
+    override fun extractTypeName(obj: LobbyNotification): String =
         when (obj) {
             is APlayerHasJoined -> "player-joined"
             is TheGameHasStarted -> "game-started"
@@ -189,7 +188,7 @@ private object JErrorMessage : JAny<ErrorMessage>() {
 
     private fun errorMessageAsString(errorMessage: ErrorMessage): String =
         when (errorMessage.error) {
-            is GameIsFull -> "game-is-full"
+            is LobbyIsFull -> "game-is-full"
             is TooFewPlayers -> "too-few-players"
             is PlayerHasAlreadyJoined -> "player-already-joined"
             is GameHasAlreadyStarted -> "game-already-started"
@@ -198,7 +197,7 @@ private object JErrorMessage : JAny<ErrorMessage>() {
     override fun JsonNodeObject.deserializeOrThrow(): ErrorMessage =
         ErrorMessage(
             when (val reason = +reason) {
-                "game-is-full" -> GameIsFull()
+                "game-is-full" -> LobbyIsFull()
                 "too-few-players" -> TooFewPlayers()
                 "player-already-joined" -> PlayerHasAlreadyJoined()
                 "game-already-started" -> GameHasAlreadyStarted()

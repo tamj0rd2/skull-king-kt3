@@ -1,16 +1,16 @@
 package com.tamj0rd2.skullking.adapter.web
 
-import com.tamj0rd2.skullking.adapter.esdb.GameRepositoryEsdbAdapter
-import com.tamj0rd2.skullking.adapter.inmemory.GameUpdateNotifierInMemoryAdapter
+import com.tamj0rd2.skullking.adapter.esdb.LobbyRepositoryEsdbAdapter
+import com.tamj0rd2.skullking.adapter.inmemory.LobbyNotifierInMemoryAdapter
 import com.tamj0rd2.skullking.adapter.inmemory.PlayerIdStorageInMemoryAdapter
 import com.tamj0rd2.skullking.adapter.web.MessageFromClient.PlaceABidMessage
 import com.tamj0rd2.skullking.adapter.web.MessageFromClient.PlayACardMessage
 import com.tamj0rd2.skullking.adapter.web.MessageFromClient.StartGameMessage
-import com.tamj0rd2.skullking.adapter.web.MessageToClient.GameUpdateMessage
+import com.tamj0rd2.skullking.adapter.web.MessageToClient.LobbyNotificationMessage
 import com.tamj0rd2.skullking.application.SkullKingApplication
-import com.tamj0rd2.skullking.application.port.inandout.GameUpdateListener
+import com.tamj0rd2.skullking.application.port.inandout.LobbyNotificationListener
 import com.tamj0rd2.skullking.domain.auth.SessionId
-import com.tamj0rd2.skullking.domain.game.GameId
+import com.tamj0rd2.skullking.domain.game.LobbyId
 import com.tamj0rd2.skullking.domain.game.PlayerId
 import org.http4k.core.Request
 import org.http4k.lens.Header
@@ -25,16 +25,16 @@ internal class WebServer(
     application: SkullKingApplication = createApp(),
     port: Int = getUnusedPort(),
 ) {
-    private val createGameController = CreateGameController(application)
-    private val joinGameController = JoinAGameController(application)
+    private val createLobbyController = CreateLobbyController(application)
+    private val joinALobbyController = JoinALobbyController(application)
     private val startGameController = StartGameController(application)
     private val placeABidController = PlaceABidController(application)
     private val playACardController = PlayACardController(application)
 
     private val wsRouter =
         websockets(
-            "/game" bindWs createGameController.asWsHandler(),
-            "/game/{gameId}" bindWs joinGameController.asWsHandler(),
+            "/game" bindWs createLobbyController.asWsHandler(),
+            "/game/{lobbyId}" bindWs joinALobbyController.asWsHandler(),
         )
 
     private fun EstablishesAPlayerSession.asWsHandler(): WsHandler =
@@ -46,7 +46,7 @@ internal class WebServer(
                     establishPlayerSession(
                         req = req,
                         ws = this,
-                        gameUpdateListener = { updates -> updates.map(::GameUpdateMessage).forEach(::send) },
+                        lobbyNotificationListener = { updates -> updates.map(::LobbyNotificationMessage).forEach(::send) },
                     )
 
                 WsMessageHandler { wsMessage ->
@@ -67,8 +67,8 @@ internal class WebServer(
         private fun createApp(): SkullKingApplication {
             val playerIdStorage = PlayerIdStorageInMemoryAdapter()
             return SkullKingApplication(
-                gameRepository = GameRepositoryEsdbAdapter(),
-                gameUpdateNotifier = GameUpdateNotifierInMemoryAdapter(),
+                lobbyRepository = LobbyRepositoryEsdbAdapter(),
+                lobbyNotifier = LobbyNotifierInMemoryAdapter(),
                 findPlayerIdPort = playerIdStorage,
                 savePlayerIdPort = playerIdStorage,
             )
@@ -92,7 +92,7 @@ internal class WebServer(
 
 internal data class PlayerSession(
     val ws: WsSession,
-    val gameId: GameId,
+    val lobbyId: LobbyId,
     val playerId: PlayerId,
 )
 
@@ -100,6 +100,6 @@ internal fun interface EstablishesAPlayerSession {
     fun establishPlayerSession(
         req: Request,
         ws: WsSession,
-        gameUpdateListener: GameUpdateListener,
+        lobbyNotificationListener: LobbyNotificationListener,
     ): PlayerSession
 }

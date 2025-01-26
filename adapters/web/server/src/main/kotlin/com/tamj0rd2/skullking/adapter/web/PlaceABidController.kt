@@ -12,7 +12,7 @@ internal class PlaceABidController(
         playerSession: PlayerSession,
         bid: Bid,
     ) {
-        val command = PlaceABidCommand(playerSession.gameId, playerSession.playerId, bid)
+        val command = PlaceABidCommand(playerSession.lobbyId, playerSession.playerId, bid)
         placeABidUseCase.invoke(command).orThrow()
     }
 }

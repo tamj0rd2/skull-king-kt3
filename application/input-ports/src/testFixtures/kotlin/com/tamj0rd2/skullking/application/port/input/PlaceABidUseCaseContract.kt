@@ -6,7 +6,7 @@ import com.tamj0rd2.skullking.application.port.input.testsupport.UseCaseContract
 import com.tamj0rd2.skullking.application.port.input.testsupport.When
 import com.tamj0rd2.skullking.application.port.input.testsupport.each
 import com.tamj0rd2.skullking.domain.game.Bid
-import com.tamj0rd2.skullking.domain.game.GameArbs.validBid
+import com.tamj0rd2.skullking.domain.game.LobbyArbs.validBid
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.single
 import org.junit.jupiter.api.Test
@@ -18,9 +18,9 @@ interface PlaceABidUseCaseContract : UseCaseContract {
         val anotherPlayer = scenario.newPlayer()
 
         Given {
-            gameCreator.`creates a game`()
+            gameCreator.`creates a lobby`()
             gameCreator.invites(anotherPlayer)
-            anotherPlayer.`accepts the game invite`()
+            anotherPlayer.`accepts the lobby invite`()
             gameCreator.`starts the game`()
         }
 
@@ -40,9 +40,9 @@ interface PlaceABidUseCaseContract : UseCaseContract {
         val thePlayers = listOf(gameCreator, anotherPlayer)
 
         Given {
-            gameCreator.`creates a game`()
+            gameCreator.`creates a lobby`()
             gameCreator.invites(anotherPlayer)
-            anotherPlayer.`accepts the game invite`()
+            anotherPlayer.`accepts the lobby invite`()
             gameCreator.`starts the game`()
         }
 
