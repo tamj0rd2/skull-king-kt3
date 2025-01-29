@@ -1,8 +1,8 @@
 package com.tamj0rd2.skullking.application.port.output
 
-import com.tamj0rd2.skullking.application.port.inandout.LobbyNotification
 import com.tamj0rd2.skullking.application.port.inandout.LobbyNotificationListener
 import com.tamj0rd2.skullking.domain.game.LobbyId
+import com.tamj0rd2.skullking.domain.game.LobbyNotification
 
 interface LobbyNotifier {
     fun subscribe(

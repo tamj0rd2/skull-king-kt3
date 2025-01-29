@@ -1,12 +1,12 @@
 package com.tamj0rd2.skullking.application.service
 
 import com.tamj0rd2.extensions.asSuccess
-import com.tamj0rd2.skullking.application.port.inandout.LobbyNotification
 import com.tamj0rd2.skullking.application.port.input.PlayACardUseCase
 import com.tamj0rd2.skullking.application.port.input.PlayACardUseCase.PlayACardCommand
 import com.tamj0rd2.skullking.application.port.input.PlayACardUseCase.PlayACardOutput
 import com.tamj0rd2.skullking.application.port.output.LobbyNotifier
 import com.tamj0rd2.skullking.domain.game.LobbyErrorCode
+import com.tamj0rd2.skullking.domain.game.LobbyNotification
 import com.tamj0rd2.skullking.domain.game.PlayedCard
 import dev.forkhandles.result4k.Result4k
 

@@ -1,9 +1,4 @@
-package com.tamj0rd2.skullking.application.port.inandout
-
-import com.tamj0rd2.skullking.domain.game.Bid
-import com.tamj0rd2.skullking.domain.game.Card
-import com.tamj0rd2.skullking.domain.game.PlayedCard
-import com.tamj0rd2.skullking.domain.game.PlayerId
+package com.tamj0rd2.skullking.domain.game
 
 sealed interface LobbyNotification {
     data class APlayerHasJoined(

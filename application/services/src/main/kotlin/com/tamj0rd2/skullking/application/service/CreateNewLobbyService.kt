@@ -1,6 +1,5 @@
 package com.tamj0rd2.skullking.application.service
 
-import com.tamj0rd2.skullking.application.port.inandout.LobbyNotification
 import com.tamj0rd2.skullking.application.port.input.CreateNewLobbyUseCase
 import com.tamj0rd2.skullking.application.port.input.CreateNewLobbyUseCase.CreateNewLobbyCommand
 import com.tamj0rd2.skullking.application.port.input.CreateNewLobbyUseCase.CreateNewLobbyOutput
@@ -8,6 +7,7 @@ import com.tamj0rd2.skullking.application.port.output.LobbyNotifier
 import com.tamj0rd2.skullking.application.port.output.LobbyRepository
 import com.tamj0rd2.skullking.application.port.output.SavePlayerIdPort
 import com.tamj0rd2.skullking.domain.game.Lobby
+import com.tamj0rd2.skullking.domain.game.LobbyNotification
 import com.tamj0rd2.skullking.domain.game.PlayerId
 import dev.forkhandles.values.random
 

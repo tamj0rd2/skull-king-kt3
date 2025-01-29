@@ -1,13 +1,5 @@
 package com.tamj0rd2.skullking.application.port.input.testsupport
 
-import com.tamj0rd2.skullking.application.port.inandout.LobbyNotification
-import com.tamj0rd2.skullking.application.port.inandout.LobbyNotification.ABidWasPlaced
-import com.tamj0rd2.skullking.application.port.inandout.LobbyNotification.ACardWasDealt
-import com.tamj0rd2.skullking.application.port.inandout.LobbyNotification.ACardWasPlayed
-import com.tamj0rd2.skullking.application.port.inandout.LobbyNotification.APlayerHasJoined
-import com.tamj0rd2.skullking.application.port.inandout.LobbyNotification.AllBidsHaveBeenPlaced
-import com.tamj0rd2.skullking.application.port.inandout.LobbyNotification.TheGameHasStarted
-import com.tamj0rd2.skullking.application.port.inandout.LobbyNotification.TheTrickHasEnded
 import com.tamj0rd2.skullking.application.port.inandout.LobbyNotificationListener
 import com.tamj0rd2.skullking.application.port.input.CreateNewLobbyUseCase.CreateNewLobbyCommand
 import com.tamj0rd2.skullking.application.port.input.JoinALobbyUseCase.JoinALobbyCommand
@@ -24,6 +16,14 @@ import com.tamj0rd2.skullking.domain.game.Bid
 import com.tamj0rd2.skullking.domain.game.Card
 import com.tamj0rd2.skullking.domain.game.LobbyErrorCode
 import com.tamj0rd2.skullking.domain.game.LobbyId
+import com.tamj0rd2.skullking.domain.game.LobbyNotification
+import com.tamj0rd2.skullking.domain.game.LobbyNotification.ABidWasPlaced
+import com.tamj0rd2.skullking.domain.game.LobbyNotification.ACardWasDealt
+import com.tamj0rd2.skullking.domain.game.LobbyNotification.ACardWasPlayed
+import com.tamj0rd2.skullking.domain.game.LobbyNotification.APlayerHasJoined
+import com.tamj0rd2.skullking.domain.game.LobbyNotification.AllBidsHaveBeenPlaced
+import com.tamj0rd2.skullking.domain.game.LobbyNotification.TheGameHasStarted
+import com.tamj0rd2.skullking.domain.game.LobbyNotification.TheTrickHasEnded
 import com.tamj0rd2.skullking.domain.game.PlayedCard
 import com.tamj0rd2.skullking.domain.game.PlayerId
 import com.tamj0rd2.skullking.domain.game.RoundNumber

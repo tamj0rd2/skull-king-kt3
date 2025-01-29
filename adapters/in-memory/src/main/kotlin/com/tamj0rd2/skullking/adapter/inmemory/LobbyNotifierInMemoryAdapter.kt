@@ -1,9 +1,9 @@
 package com.tamj0rd2.skullking.adapter.inmemory
 
-import com.tamj0rd2.skullking.application.port.inandout.LobbyNotification
 import com.tamj0rd2.skullking.application.port.inandout.LobbyNotificationListener
 import com.tamj0rd2.skullking.application.port.output.LobbyNotifier
 import com.tamj0rd2.skullking.domain.game.LobbyId
+import com.tamj0rd2.skullking.domain.game.LobbyNotification
 
 class LobbyNotifierInMemoryAdapter : LobbyNotifier {
     private val notifiers = mutableMapOf<LobbyId, LobbySpecificNotifier>()

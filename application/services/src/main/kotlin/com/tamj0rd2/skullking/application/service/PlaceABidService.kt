@@ -1,8 +1,6 @@
 package com.tamj0rd2.skullking.application.service
 
 import com.tamj0rd2.extensions.asSuccess
-import com.tamj0rd2.skullking.application.port.inandout.LobbyNotification.ABidWasPlaced
-import com.tamj0rd2.skullking.application.port.inandout.LobbyNotification.AllBidsHaveBeenPlaced
 import com.tamj0rd2.skullking.application.port.input.PlaceABidUseCase
 import com.tamj0rd2.skullking.application.port.input.PlaceABidUseCase.PlaceABidCommand
 import com.tamj0rd2.skullking.application.port.input.PlaceABidUseCase.PlaceABidOutput
@@ -10,6 +8,8 @@ import com.tamj0rd2.skullking.application.port.output.LobbyNotifier
 import com.tamj0rd2.skullking.application.port.output.LobbyRepository
 import com.tamj0rd2.skullking.domain.game.LobbyCommand
 import com.tamj0rd2.skullking.domain.game.LobbyErrorCode
+import com.tamj0rd2.skullking.domain.game.LobbyNotification.ABidWasPlaced
+import com.tamj0rd2.skullking.domain.game.LobbyNotification.AllBidsHaveBeenPlaced
 import dev.forkhandles.result4k.Result4k
 import dev.forkhandles.result4k.orThrow
 
