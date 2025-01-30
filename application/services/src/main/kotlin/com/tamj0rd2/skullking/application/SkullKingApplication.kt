@@ -55,6 +55,7 @@ class SkullKingApplication private constructor(
             ),
         playACardUseCase =
             PlayACardService(
+                lobbyRepository = lobbyRepository,
                 lobbyNotifier = lobbyNotifier,
             ),
     )

@@ -27,3 +27,9 @@ data class BidPlacedEvent(
     val playerId: PlayerId,
     val bid: Bid,
 ) : LobbyEvent
+
+data class CardPlayedEvent(
+    override val lobbyId: LobbyId,
+    val playerId: PlayerId,
+    val card: Card,
+) : LobbyEvent

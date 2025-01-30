@@ -1,5 +1,6 @@
 package com.tamj0rd2.skullking.domain.game
 
+import com.tamj0rd2.skullking.domain.game.LobbyArbs.playerIdArb
 import com.tamj0rd2.skullking.domain.game.LobbyArbs.validBid
 import dev.forkhandles.result4k.orThrow
 import io.kotest.property.Arb
@@ -13,7 +14,7 @@ object LobbyActionArbs {
     private val addPlayerLobbyCommandArb =
         arbitrary {
             LobbyCommand.AddPlayer(
-                playerId = LobbyArbs.playerIdArb.bind(),
+                playerId = playerIdArb.bind(),
             )
         }
 
@@ -24,7 +25,12 @@ object LobbyActionArbs {
 
     private val placeBidLobbyCommandArb =
         arbitrary {
-            LobbyCommand.PlaceBid(LobbyArbs.playerIdArb.bind(), Arb.validBid.bind())
+            LobbyCommand.PlaceBid(playerIdArb.bind(), Arb.validBid.bind())
+        }
+
+    private val playACardLobbyCommandArb =
+        arbitrary {
+            LobbyCommand.PlayACard(playerIdArb.bind(), Card)
         }
 
     private val lobbyCommandArb =
@@ -32,6 +38,7 @@ object LobbyActionArbs {
             addPlayerLobbyCommandArb,
             startLobbyCommandArb,
             placeBidLobbyCommandArb,
+            playACardLobbyCommandArb,
         )
 
     private val possiblyInvalidLobbyCommandsArb = Arb.list(lobbyCommandArb)
@@ -52,6 +59,14 @@ object LobbyActionArbs {
                         .zip(addPlayerActions)
                         .map { (a, b) -> a.copy(playerId = b.playerId) }
                 addAll(bidPlacedActions)
+
+                val playCardActions =
+                    Arb
+                        .set(playACardLobbyCommandArb, addPlayerActions.size, addPlayerActions.size)
+                        .bind()
+                        .zip(addPlayerActions)
+                        .map { (a, b) -> a.copy(playerId = b.playerId) }
+                addAll(playCardActions)
             }
         }
 

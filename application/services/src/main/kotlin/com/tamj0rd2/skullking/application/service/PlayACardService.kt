@@ -5,21 +5,21 @@ import com.tamj0rd2.skullking.application.port.input.PlayACardUseCase
 import com.tamj0rd2.skullking.application.port.input.PlayACardUseCase.PlayACardCommand
 import com.tamj0rd2.skullking.application.port.input.PlayACardUseCase.PlayACardOutput
 import com.tamj0rd2.skullking.application.port.output.LobbyNotifier
+import com.tamj0rd2.skullking.application.port.output.LobbyRepository
+import com.tamj0rd2.skullking.domain.game.LobbyCommand
 import com.tamj0rd2.skullking.domain.game.LobbyErrorCode
-import com.tamj0rd2.skullking.domain.game.LobbyNotification
-import com.tamj0rd2.skullking.domain.game.PlayedCard
 import dev.forkhandles.result4k.Result4k
+import dev.forkhandles.result4k.orThrow
 
 class PlayACardService(
+    private val lobbyRepository: LobbyRepository,
     private val lobbyNotifier: LobbyNotifier,
 ) : PlayACardUseCase {
     override fun invoke(command: PlayACardCommand): Result4k<PlayACardOutput, LobbyErrorCode> {
-        // FIXME: move notification logic to the correct place
-        val playedCard = PlayedCard(command.card, command.playerId)
-        lobbyNotifier.broadcast(command.lobbyId, LobbyNotification.ACardWasPlayed(playedCard))
-
-        // FIXME: the winner is wrong. drive out correct behaviour through a test.
-        lobbyNotifier.broadcast(command.lobbyId, LobbyNotification.TheTrickHasEnded(winner = command.playerId))
+        val lobby = lobbyRepository.load(command.lobbyId)
+        lobby.execute(LobbyCommand.PlayACard(command.playerId, command.card)).orThrow()
+        lobbyRepository.save(lobby)
+        lobbyNotifier.broadcast(command.lobbyId, lobby.state.notifications.sinceVersion(lobby.loadedAtVersion))
         return PlayACardOutput.asSuccess()
     }
 }

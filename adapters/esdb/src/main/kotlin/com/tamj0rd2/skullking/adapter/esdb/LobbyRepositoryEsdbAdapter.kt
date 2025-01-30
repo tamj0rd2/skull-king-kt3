@@ -11,7 +11,9 @@ import com.eventstore.dbclient.StreamNotFoundException
 import com.tamj0rd2.skullking.application.port.output.LobbyDoesNotExist
 import com.tamj0rd2.skullking.application.port.output.LobbyRepository
 import com.tamj0rd2.skullking.domain.game.BidPlacedEvent
+import com.tamj0rd2.skullking.domain.game.Card
 import com.tamj0rd2.skullking.domain.game.CardDealtEvent
+import com.tamj0rd2.skullking.domain.game.CardPlayedEvent
 import com.tamj0rd2.skullking.domain.game.GameStartedEvent
 import com.tamj0rd2.skullking.domain.game.Lobby
 import com.tamj0rd2.skullking.domain.game.LobbyCreatedEvent
@@ -100,6 +102,7 @@ class LobbyRepositoryEsdbAdapter : LobbyRepository {
                     Triple(GameStartedEvent::class, "game-started", JGameStarted),
                     Triple(CardDealtEvent::class, "card-dealt-event", JCardDealt),
                     Triple(BidPlacedEvent::class, "bid-placed", JBidPlaced),
+                    Triple(CardPlayedEvent::class, "card-played", JCardPlayed),
                 )
 
             override val subConverters: Map<String, ObjectNodeConverter<out LobbyEvent>>
@@ -162,6 +165,18 @@ class LobbyRepositoryEsdbAdapter : LobbyRepository {
                     lobbyId = +lobbyId,
                     playerId = +playerId,
                     bid = +bid,
+                )
+        }
+
+        private object JCardPlayed : JAny<CardPlayedEvent>() {
+            private val lobbyId by str(JLobbyId, CardPlayedEvent::lobbyId)
+            private val playerId by str(JPlayerId, CardPlayedEvent::playerId)
+
+            override fun JsonNodeObject.deserializeOrThrow() =
+                CardPlayedEvent(
+                    lobbyId = +lobbyId,
+                    playerId = +playerId,
+                    card = Card,
                 )
         }
     }

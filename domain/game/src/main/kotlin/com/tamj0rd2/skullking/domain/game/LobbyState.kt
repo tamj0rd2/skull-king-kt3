@@ -7,6 +7,9 @@ import com.tamj0rd2.skullking.domain.game.AddPlayerErrorCode.LobbyIsFull
 import com.tamj0rd2.skullking.domain.game.AddPlayerErrorCode.PlayerHasAlreadyJoined
 import com.tamj0rd2.skullking.domain.game.Lobby.Companion.MAXIMUM_PLAYER_COUNT
 import com.tamj0rd2.skullking.domain.game.Lobby.Companion.MINIMUM_PLAYER_COUNT
+import com.tamj0rd2.skullking.domain.game.LobbyNotification.ABidWasPlaced
+import com.tamj0rd2.skullking.domain.game.LobbyNotification.ACardWasDealt
+import com.tamj0rd2.skullking.domain.game.LobbyNotification.AllBidsHaveBeenPlaced
 import com.tamj0rd2.skullking.domain.game.StartGameErrorCode.TooFewPlayers
 import dev.forkhandles.result4k.Result4k
 import dev.forkhandles.result4k.map
@@ -23,28 +26,39 @@ data class LobbyState private constructor(
                 is LobbyCreatedEvent -> apply(event)
                 is PlayerJoinedEvent -> apply(event)
                 is GameStartedEvent -> apply(event)
-                is CardDealtEvent -> withNotifications(LobbyNotification.ACardWasDealt(Card)).asSuccess()
+                is CardDealtEvent -> withNotification(ACardWasDealt(Card)).asSuccess()
 
                 // TODO: this is pretty awful... I think I should have a separation between notifications about the lobby, and notifications
                 //  about the game. even just to make things easier to derive.
                 is BidPlacedEvent ->
                     updateGameState { it.apply(event) }.map {
                         it.withNotifications(
-                            *buildList {
-                                add(LobbyNotification.ABidWasPlaced(event.playerId))
+                            buildList {
+                                add(ABidWasPlaced(event.playerId))
 
                                 if (it.gameState!!.allBidsHaveBeenPlaced) {
-                                    add(LobbyNotification.AllBidsHaveBeenPlaced(it.gameState.bids))
+                                    add(AllBidsHaveBeenPlaced(it.gameState.bids))
                                 }
-                            }.toTypedArray(),
+                            },
                         )
                     }
+
+                is CardPlayedEvent ->
+                    withNotifications(
+                        buildList {
+                            val playedCard = PlayedCard(event.card, event.playerId)
+                            add(LobbyNotification.ACardWasPlayed(playedCard))
+
+                            // FIXME: the winner is wrong. drive out correct behaviour through a test.
+                            add(LobbyNotification.TheTrickHasEnded(event.playerId))
+                        },
+                    ).asSuccess()
             }
         }
 
     private fun apply(event: LobbyCreatedEvent): Result4k<LobbyState, LobbyErrorCode> =
         copy(players = listOf(event.createdBy))
-            .withNotifications(LobbyNotification.APlayerHasJoined(event.createdBy))
+            .withNotification(LobbyNotification.APlayerHasJoined(event.createdBy))
             .asSuccess()
 
     private fun apply(event: PlayerJoinedEvent): Result4k<LobbyState, AddPlayerErrorCode> {
@@ -52,7 +66,7 @@ data class LobbyState private constructor(
         if (players.size >= MAXIMUM_PLAYER_COUNT) return LobbyIsFull().asFailure()
         if (players.contains(event.playerId)) return PlayerHasAlreadyJoined().asFailure()
         return copy(players = players + event.playerId)
-            .withNotifications(LobbyNotification.APlayerHasJoined(event.playerId))
+            .withNotification(LobbyNotification.APlayerHasJoined(event.playerId))
             .asSuccess()
     }
 
@@ -61,7 +75,7 @@ data class LobbyState private constructor(
     ): Result4k<LobbyState, StartGameErrorCode> {
         if (players.size < MINIMUM_PLAYER_COUNT) return TooFewPlayers().asFailure()
         return copy(gameState = GameState.new(players))
-            .withNotifications(LobbyNotification.TheGameHasStarted)
+            .withNotification(LobbyNotification.TheGameHasStarted)
             .asSuccess()
     }
 
@@ -70,8 +84,10 @@ data class LobbyState private constructor(
         return block(gameState).map { updatedGameState -> copy(gameState = updatedGameState) }
     }
 
-    private fun withNotifications(vararg newNotifications: LobbyNotification) =
+    private fun withNotifications(newNotifications: List<LobbyNotification>) =
         copy(notifications = notifications.add(atVersion, newNotifications.toList()))
+
+    private fun withNotification(newNotification: LobbyNotification) = withNotifications(listOf(newNotification))
 
     companion object {
         internal fun new() =

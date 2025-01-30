@@ -3,6 +3,7 @@ package com.tamj0rd2.skullking.domain.game
 import com.tamj0rd2.extensions.asSuccess
 import com.tamj0rd2.skullking.domain.game.LobbyCommand.AddPlayer
 import com.tamj0rd2.skullking.domain.game.LobbyCommand.PlaceBid
+import com.tamj0rd2.skullking.domain.game.LobbyCommand.PlayACard
 import com.tamj0rd2.skullking.domain.game.LobbyCommand.Start
 import dev.forkhandles.result4k.Result4k
 import dev.forkhandles.result4k.onFailure
@@ -67,6 +68,11 @@ class Lobby private constructor(
             is PlaceBid ->
                 appendEvents(
                     BidPlacedEvent(id, action.playerId, action.bid),
+                )
+
+            is PlayACard ->
+                appendEvents(
+                    CardPlayedEvent(id, action.playerId, action.card),
                 )
         }
 

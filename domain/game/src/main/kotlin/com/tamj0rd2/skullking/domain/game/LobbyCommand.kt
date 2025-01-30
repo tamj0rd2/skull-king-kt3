@@ -11,4 +11,9 @@ sealed class LobbyCommand {
         val playerId: PlayerId,
         val bid: Bid,
     ) : LobbyCommand()
+
+    data class PlayACard(
+        val playerId: PlayerId,
+        val card: Card,
+    ) : LobbyCommand()
 }
