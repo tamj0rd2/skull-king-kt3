@@ -7,7 +7,6 @@ import com.tamj0rd2.skullking.application.port.output.LobbyNotifier
 import com.tamj0rd2.skullking.application.port.output.LobbyRepository
 import com.tamj0rd2.skullking.application.port.output.SavePlayerIdPort
 import com.tamj0rd2.skullking.domain.game.Lobby
-import com.tamj0rd2.skullking.domain.game.LobbyNotification
 import com.tamj0rd2.skullking.domain.game.PlayerId
 import dev.forkhandles.values.random
 
@@ -23,7 +22,7 @@ class CreateNewLobbyService(
         val lobby = Lobby.new(createdBy = playerId)
         lobbyRepository.save(lobby)
         lobbyNotifier.subscribe(lobby.id, command.lobbyNotificationListener)
-        lobbyNotifier.broadcast(lobby.id, LobbyNotification.APlayerHasJoined(playerId))
+        lobbyNotifier.broadcast(lobby.id, lobby.state.notifications.all)
 
         return CreateNewLobbyOutput(
             lobbyId = lobby.id,

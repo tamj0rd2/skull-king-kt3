@@ -14,6 +14,7 @@ class PlayACardService(
     private val lobbyNotifier: LobbyNotifier,
 ) : PlayACardUseCase {
     override fun invoke(command: PlayACardCommand): Result4k<PlayACardOutput, LobbyErrorCode> {
+        // FIXME: move notification logic to the correct place
         val playedCard = PlayedCard(command.card, command.playerId)
         lobbyNotifier.broadcast(command.lobbyId, LobbyNotification.ACardWasPlayed(playedCard))
 

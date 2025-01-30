@@ -8,8 +8,6 @@ import com.tamj0rd2.skullking.application.port.output.LobbyNotifier
 import com.tamj0rd2.skullking.application.port.output.LobbyRepository
 import com.tamj0rd2.skullking.domain.game.LobbyCommand
 import com.tamj0rd2.skullking.domain.game.LobbyErrorCode
-import com.tamj0rd2.skullking.domain.game.LobbyNotification.ABidWasPlaced
-import com.tamj0rd2.skullking.domain.game.LobbyNotification.AllBidsHaveBeenPlaced
 import dev.forkhandles.result4k.Result4k
 import dev.forkhandles.result4k.orThrow
 
@@ -22,13 +20,7 @@ class PlaceABidService(
         game.execute(LobbyCommand.PlaceBid(command.playerId, command.bid)).orThrow()
         lobbyRepository.save(game)
 
-        lobbyNotifier.broadcast(command.lobbyId, ABidWasPlaced(command.playerId))
-
-        // FIXME: this feels very wrong.
-        if (game.state.allBidsHaveBeenPlaced) {
-            lobbyNotifier.broadcast(command.lobbyId, AllBidsHaveBeenPlaced(game.state.gameState!!.bids))
-        }
-
+        lobbyNotifier.broadcast(command.lobbyId, game.state.notifications.sinceVersion(game.loadedAtVersion))
         return PlaceABidOutput.asSuccess()
     }
 }

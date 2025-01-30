@@ -6,14 +6,8 @@ import com.tamj0rd2.skullking.application.port.input.StartGameUseCase.StartGameC
 import com.tamj0rd2.skullking.application.port.input.StartGameUseCase.StartGameOutput
 import com.tamj0rd2.skullking.application.port.output.LobbyNotifier
 import com.tamj0rd2.skullking.application.port.output.LobbyRepository
-import com.tamj0rd2.skullking.domain.game.Card
-import com.tamj0rd2.skullking.domain.game.CardDealtEvent
-import com.tamj0rd2.skullking.domain.game.GameStartedEvent
 import com.tamj0rd2.skullking.domain.game.LobbyCommand
 import com.tamj0rd2.skullking.domain.game.LobbyErrorCode
-import com.tamj0rd2.skullking.domain.game.LobbyEvent
-import com.tamj0rd2.skullking.domain.game.LobbyNotification.ACardWasDealt
-import com.tamj0rd2.skullking.domain.game.LobbyNotification.TheGameHasStarted
 import dev.forkhandles.result4k.Result4k
 import dev.forkhandles.result4k.onFailure
 
@@ -26,16 +20,7 @@ class StartGameService(
         game.execute(LobbyCommand.Start).onFailure { return it }
         lobbyRepository.save(game)
 
-        lobbyNotifier.broadcast(game.id, game.newEventsSinceLobbyWasLoaded.toLobbyNotifications())
+        lobbyNotifier.broadcast(game.id, game.state.notifications.sinceVersion(game.loadedAtVersion))
         return StartGameOutput.asSuccess()
     }
-
-    private fun List<LobbyEvent>.toLobbyNotifications() =
-        map {
-            when (it) {
-                is GameStartedEvent -> TheGameHasStarted
-                is CardDealtEvent -> ACardWasDealt(Card)
-                else -> error("unexpected game event at this point in time.")
-            }
-        }
 }

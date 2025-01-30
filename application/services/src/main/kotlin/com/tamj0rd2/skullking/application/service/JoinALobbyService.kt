@@ -11,7 +11,6 @@ import com.tamj0rd2.skullking.application.port.output.SavePlayerIdPort
 import com.tamj0rd2.skullking.domain.auth.SessionId
 import com.tamj0rd2.skullking.domain.game.LobbyCommand
 import com.tamj0rd2.skullking.domain.game.LobbyErrorCode
-import com.tamj0rd2.skullking.domain.game.LobbyNotification
 import com.tamj0rd2.skullking.domain.game.PlayerId
 import dev.forkhandles.result4k.Result4k
 import dev.forkhandles.result4k.onFailure
@@ -31,7 +30,7 @@ class JoinALobbyService(
         lobbyRepository.save(game)
 
         lobbyNotifier.subscribe(game.id, command.lobbyNotificationListener)
-        lobbyNotifier.broadcast(game.id, LobbyNotification.APlayerHasJoined(playerId))
+        lobbyNotifier.broadcast(game.id, game.state.notifications.sinceVersion(game.loadedAtVersion))
 
         return JoinALobbyOutput(playerId).asSuccess()
     }
