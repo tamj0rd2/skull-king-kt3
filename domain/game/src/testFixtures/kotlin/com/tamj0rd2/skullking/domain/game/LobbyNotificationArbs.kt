@@ -1,7 +1,6 @@
-package com.tamj0rd2.skullking.application.port.inandout
+package com.tamj0rd2.skullking.domain.game
 
-import com.tamj0rd2.skullking.domain.game.LobbyArbs
-import com.tamj0rd2.skullking.domain.game.LobbyNotification
+import com.tamj0rd2.skullking.domain.game.LobbyNotification.APlayerHasJoined
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.arbitrary
 import io.kotest.property.arbitrary.choice
@@ -10,7 +9,7 @@ object LobbyNotificationArbs {
     private val playerJoinedLobbyNotificationArb =
         arbitrary {
             val playerId = LobbyArbs.playerIdArb.bind()
-            LobbyNotification.APlayerHasJoined(playerId)
+            APlayerHasJoined(playerId)
         }
 
     val lobbyNotificationArb =

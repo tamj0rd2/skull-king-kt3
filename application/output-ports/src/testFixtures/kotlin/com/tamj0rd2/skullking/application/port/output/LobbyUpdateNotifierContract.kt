@@ -1,10 +1,10 @@
 package com.tamj0rd2.skullking.application.port.output
 
-import com.tamj0rd2.skullking.application.port.inandout.LobbyNotificationArbs
 import com.tamj0rd2.skullking.application.port.inandout.LobbyNotificationListener
 import com.tamj0rd2.skullking.domain.game.Lobby
 import com.tamj0rd2.skullking.domain.game.LobbyArbs
 import com.tamj0rd2.skullking.domain.game.LobbyNotification
+import com.tamj0rd2.skullking.domain.game.LobbyNotificationArbs
 import com.tamj0rd2.skullking.domain.game.listOfSize
 import com.tamj0rd2.skullking.domain.game.propertyTest
 import io.kotest.property.Arb
