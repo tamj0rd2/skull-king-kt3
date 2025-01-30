@@ -8,6 +8,8 @@ import dev.forkhandles.values.minValue
 value class Version private constructor(
     override val value: Int,
 ) : Value<Int> {
+    fun next(): Version = Version.of(value + 1)
+
     companion object : IntValueFactory<Version>(::Version, 0.minValue) {
         val NONE = Version(0)
     }

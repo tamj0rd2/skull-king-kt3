@@ -12,6 +12,7 @@ import dev.forkhandles.result4k.Result4k
 import dev.forkhandles.result4k.map
 
 data class LobbyState private constructor(
+    val atVersion: Version,
     val players: List<PlayerId>,
     val gameState: GameState?,
 ) {
@@ -24,7 +25,7 @@ data class LobbyState private constructor(
             is GameStartedEvent -> apply(event)
             is CardDealtEvent -> asSuccess()
             is BidPlacedEvent -> updateGameState { it.apply(event) }
-        }
+        }.map { it.copy(atVersion = atVersion.next()) }
 
     private fun apply(event: LobbyCreatedEvent): Result4k<LobbyState, LobbyErrorCode> = copy(players = listOf(event.createdBy)).asSuccess()
 
@@ -50,6 +51,7 @@ data class LobbyState private constructor(
     companion object {
         internal fun new() =
             LobbyState(
+                atVersion = Version.NONE,
                 players = emptyList(),
                 gameState = null,
             )
