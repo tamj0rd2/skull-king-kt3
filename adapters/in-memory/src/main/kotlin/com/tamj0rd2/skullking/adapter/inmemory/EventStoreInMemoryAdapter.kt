@@ -1,10 +1,14 @@
 package com.tamj0rd2.skullking.adapter.inmemory
 
 import com.tamj0rd2.skullking.application.port.output.EventStore
+import com.tamj0rd2.skullking.application.port.output.EventStoreSubscriber
 import com.tamj0rd2.skullking.domain.game.Version
 
-class EventStoreInMemoryAdapter<ID, Event : Any> : EventStore<ID, Event> {
+class EventStoreInMemoryAdapter<ID, Event : Any>(
+    initialSubscribers: List<EventStoreSubscriber<Event>> = emptyList(),
+) : EventStore<ID, Event> {
     private val savedEvents = mutableMapOf<ID, List<Event>>()
+    private val subscribers = mutableListOf(*initialSubscribers.toTypedArray())
 
     override fun append(
         entityId: ID,
@@ -16,6 +20,8 @@ class EventStoreInMemoryAdapter<ID, Event : Any> : EventStore<ID, Event> {
 
         if (expectedVersion == currentlySavedVersion) {
             savedEvents[entityId] = currentlySavedEvents + events
+            // NOTE: this opens up potential consistency issues. but maybe that's ok for an in memory fake 🤷
+            subscribers.forEach { it.receive(events) }
             return
         }
 
@@ -30,6 +36,10 @@ class EventStoreInMemoryAdapter<ID, Event : Any> : EventStore<ID, Event> {
     }
 
     override fun read(entityId: ID): Collection<Event> = savedEvents[entityId] ?: emptyList()
+
+    override fun subscribe(subscriber: EventStoreSubscriber<Event>) {
+        subscribers.add(subscriber)
+    }
 
     companion object {
         private fun Collection<*>.version() = Version.of(size)

@@ -11,6 +11,8 @@ interface EventStore<ID, Event : Any> {
 
     fun read(entityId: ID): Collection<Event>
 
+    fun subscribe(subscriber: EventStoreSubscriber<Event>)
+
     companion object {
         fun concurrentModificationException(
             expectedVersion: Version,
@@ -19,4 +21,8 @@ interface EventStore<ID, Event : Any> {
             "Expected the most recent entity version to be $expectedVersion but the actual version was $actualVersion",
         )
     }
+}
+
+fun interface EventStoreSubscriber<Event : Any> {
+    fun receive(events: Collection<Event>)
 }

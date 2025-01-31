@@ -1,16 +1,22 @@
 package com.tamj0rd2.skullking.adapter.esdb
 
 import com.eventstore.dbclient.AppendToStreamOptions
+import com.eventstore.dbclient.CreatePersistentSubscriptionToStreamOptions
 import com.eventstore.dbclient.EventData
 import com.eventstore.dbclient.EventDataBuilder
 import com.eventstore.dbclient.EventStoreDBClient
 import com.eventstore.dbclient.EventStoreDBConnectionString
+import com.eventstore.dbclient.EventStoreDBPersistentSubscriptionsClient
 import com.eventstore.dbclient.ExpectedRevision
+import com.eventstore.dbclient.PersistentSubscription
+import com.eventstore.dbclient.PersistentSubscriptionListener
 import com.eventstore.dbclient.ReadStreamOptions
 import com.eventstore.dbclient.ResolvedEvent
 import com.eventstore.dbclient.StreamNotFoundException
+import com.eventstore.dbclient.SubscribePersistentSubscriptionOptions
 import com.eventstore.dbclient.WrongExpectedVersionException
 import com.tamj0rd2.skullking.application.port.output.EventStore
+import com.tamj0rd2.skullking.application.port.output.EventStoreSubscriber
 import com.tamj0rd2.skullking.domain.game.Version
 import com.ubertob.kondor.json.JSealed
 import java.util.concurrent.ExecutionException
@@ -18,7 +24,13 @@ import java.util.concurrent.ExecutionException
 class EventStoreEsdbAdapter<ID, Event : Any>(
     private val streamNameProvider: StreamNameProvider<ID>,
     private val converter: JSealed<Event>,
+    // TODO: this stream name shouldn't be defaulted.
+    private val subscriptionStreamName: String = "\$ce-lobby",
+    private val subscriptionGroup: String = "spike-subscriptions",
+    initialSubscribers: List<EventStoreSubscriber<Event>> = emptyList(),
 ) : EventStore<ID, Event> {
+    private val subscribers = mutableListOf(*initialSubscribers.toTypedArray())
+
     data class StreamNameProvider<ID>(
         private val prefix: String,
         private val idToString: (ID) -> String,
@@ -26,10 +38,20 @@ class EventStoreEsdbAdapter<ID, Event : Any>(
         fun streamNameFor(id: ID) = "$prefix-${idToString(id)}"
     }
 
-    private val client: EventStoreDBClient =
-        EventStoreDBClient.create(
-            EventStoreDBConnectionString.parseOrThrow("esdb://localhost:2113?tls=false"),
-        )
+    private val connectionString = EventStoreDBConnectionString.parseOrThrow("esdb://localhost:2113?tls=false")
+    private val client = EventStoreDBClient.create(connectionString)
+    private val subscriptionClient = EventStoreDBPersistentSubscriptionsClient.create(connectionString)
+
+    init {
+        startPersistentSubscription()
+    }
+
+    override fun read(entityId: ID): Collection<Event> =
+        readEvents(entityId.toStreamName()).map { converter.fromJson(it.dataAsString()).orThrow() }
+
+    override fun subscribe(subscriber: EventStoreSubscriber<Event>) {
+        subscribers.add(subscriber)
+    }
 
     // TODO: rename events to eventsToWrite
     override fun append(
@@ -76,9 +98,6 @@ class EventStoreEsdbAdapter<ID, Event : Any>(
             ).get()
     }
 
-    override fun read(entityId: ID): Collection<Event> =
-        readEvents(entityId.toStreamName()).map { converter.fromJson(it.dataAsString()).orThrow() }
-
     private fun readEvents(streamName: String): List<ResolvedEvent> =
         try {
             client.readStream(streamName, ReadStreamOptions.get().forwards()).get().events
@@ -89,6 +108,46 @@ class EventStoreEsdbAdapter<ID, Event : Any>(
                 throw e
             }
         }
+
+    private fun startPersistentSubscription() {
+        try {
+            subscriptionClient
+                .createToStream(
+                    subscriptionStreamName,
+                    subscriptionGroup,
+                    CreatePersistentSubscriptionToStreamOptions.get().resolveLinkTos(),
+                ).get()
+        } catch (e: ExecutionException) {
+            // the next call will tell me whether something failed.
+        }
+
+        subscriptionClient
+            .subscribeToStream(
+                // TODO: the accumulation stream needs to be configurable.
+                subscriptionStreamName,
+                subscriptionGroup,
+                SubscribePersistentSubscriptionOptions.get(),
+                object : PersistentSubscriptionListener() {
+                    override fun onCancelled(
+                        subscription: PersistentSubscription?,
+                        exception: Throwable?,
+                    ) {
+                        println("ESDB - subscription cancelled")
+                        if (exception != null) throw exception
+                    }
+
+                    override fun onEvent(
+                        subscription: PersistentSubscription,
+                        retryCount: Int,
+                        resolvedEvent: ResolvedEvent,
+                    ) {
+                        val event = converter.fromJson(resolvedEvent.dataAsString()).orThrow()
+                        subscribers.forEach { it.receive(listOf(event)) }
+                        subscription.ack(resolvedEvent)
+                    }
+                },
+            ).get()
+    }
 
     private fun ID.toStreamName() = streamNameProvider.streamNameFor(this)
 

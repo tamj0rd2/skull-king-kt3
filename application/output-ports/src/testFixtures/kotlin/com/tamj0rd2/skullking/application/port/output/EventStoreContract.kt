@@ -14,9 +14,12 @@ import strikt.api.expectThat
 import strikt.assertions.isA
 import strikt.assertions.isEqualTo
 import strikt.assertions.isFailure
+import strikt.assertions.isNotEmpty
 import strikt.assertions.isNotEqualTo
 import strikt.assertions.isSuccess
+import java.time.Instant
 
+// NOTE: this test doesn't necessarily have to be about the LobbyEvent entity. It was just convenient.
 interface EventStoreContract {
     val eventStore: EventStore<LobbyId, LobbyEvent>
 
@@ -27,6 +30,20 @@ interface EventStoreContract {
         eventStore.append(lobby.id, Version.NONE, lobby.newEventsSinceLobbyWasLoaded)
 
         expectThat(eventStore.read(lobby.id)).isEqualTo(lobby.newEventsSinceLobbyWasLoaded)
+    }
+
+    @Test
+    fun `can subscribe to receive game events`() {
+        val receivedEvents = mutableListOf<LobbyEvent>()
+        eventStore.subscribe { receivedEvents.addAll(it) }
+
+        val lobbyId = LobbyId.random()
+        val eventsToAppend = listOf(LobbyCreatedEvent(lobbyId, PlayerId.random()))
+        eventStore.append(lobbyId, Version.NONE, eventsToAppend)
+
+        eventually {
+            expectThat(receivedEvents.filter { it.lobbyId == lobbyId }).isNotEmpty().isEqualTo(eventsToAppend)
+        }
     }
 
     @Test
@@ -92,5 +109,24 @@ interface EventStoreContract {
                 events = eventsToAppend,
             )
         }.isSuccess()
+    }
+
+    companion object {
+        // TODO: this was duplicated. put this into a shared module.
+        private fun <T> eventually(block: () -> T): T {
+            val stopAt = Instant.now().plusMillis(200)
+            var lastError: AssertionError? = null
+            do {
+                try {
+                    return block()
+                } catch (e: AssertionError) {
+                    lastError = e
+                } catch (e: ConcurrentModificationException) {
+                    // continue
+                }
+            } while (stopAt > Instant.now())
+
+            throw checkNotNull(lastError)
+        }
     }
 }
