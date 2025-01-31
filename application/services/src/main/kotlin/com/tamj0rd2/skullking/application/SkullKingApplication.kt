@@ -6,6 +6,7 @@ import com.tamj0rd2.skullking.application.port.input.PlaceABidUseCase
 import com.tamj0rd2.skullking.application.port.input.PlayACardUseCase
 import com.tamj0rd2.skullking.application.port.input.SkullKingUseCases
 import com.tamj0rd2.skullking.application.port.input.StartGameUseCase
+import com.tamj0rd2.skullking.application.port.output.EventStore
 import com.tamj0rd2.skullking.application.port.output.FindPlayerIdPort
 import com.tamj0rd2.skullking.application.port.output.LobbyNotifier
 import com.tamj0rd2.skullking.application.port.output.LobbyRepository
@@ -15,6 +16,8 @@ import com.tamj0rd2.skullking.application.service.JoinALobbyService
 import com.tamj0rd2.skullking.application.service.PlaceABidService
 import com.tamj0rd2.skullking.application.service.PlayACardService
 import com.tamj0rd2.skullking.application.service.StartGameService
+import com.tamj0rd2.skullking.domain.game.LobbyEvent
+import com.tamj0rd2.skullking.domain.game.LobbyId
 
 class SkullKingApplication private constructor(
     private val createNewLobbyUseCase: CreateNewLobbyUseCase,
@@ -28,37 +31,41 @@ class SkullKingApplication private constructor(
     PlaceABidUseCase by placeABidUseCase,
     StartGameUseCase by startGameUseCase,
     PlayACardUseCase by playACardUseCase {
-    constructor(
-        lobbyRepository: LobbyRepository,
-        lobbyNotifier: LobbyNotifier,
-        findPlayerIdPort: FindPlayerIdPort,
-        savePlayerIdPort: SavePlayerIdPort,
-    ) : this(
-        createNewLobbyUseCase =
-            CreateNewLobbyService(
-                lobbyRepository = lobbyRepository,
-                lobbyNotifier = lobbyNotifier,
-                savePlayerIdPort = savePlayerIdPort,
-            ),
-        joinALobbyUseCase =
-            JoinALobbyService(
-                lobbyRepository = lobbyRepository,
-                lobbyNotifier = lobbyNotifier,
-                findPlayerIdPort = findPlayerIdPort,
-                savePlayerIdPort = savePlayerIdPort,
-            ),
-        startGameUseCase = StartGameService(lobbyRepository, lobbyNotifier),
-        placeABidUseCase =
-            PlaceABidService(
-                lobbyNotifier = lobbyNotifier,
-                lobbyRepository = lobbyRepository,
-            ),
-        playACardUseCase =
-            PlayACardService(
-                lobbyRepository = lobbyRepository,
-                lobbyNotifier = lobbyNotifier,
-            ),
-    )
+    companion object {
+        fun constructFromPorts(
+            lobbyEventStore: EventStore<LobbyId, LobbyEvent>,
+            lobbyNotifier: LobbyNotifier,
+            findPlayerIdPort: FindPlayerIdPort,
+            savePlayerIdPort: SavePlayerIdPort,
+        ): SkullKingApplication {
+            val lobbyRepository = LobbyRepository(lobbyEventStore)
 
-    companion object
+            return SkullKingApplication(
+                createNewLobbyUseCase =
+                    CreateNewLobbyService(
+                        lobbyRepository = lobbyRepository,
+                        lobbyNotifier = lobbyNotifier,
+                        savePlayerIdPort = savePlayerIdPort,
+                    ),
+                joinALobbyUseCase =
+                    JoinALobbyService(
+                        lobbyRepository = lobbyRepository,
+                        lobbyNotifier = lobbyNotifier,
+                        findPlayerIdPort = findPlayerIdPort,
+                        savePlayerIdPort = savePlayerIdPort,
+                    ),
+                startGameUseCase = StartGameService(lobbyRepository, lobbyNotifier),
+                placeABidUseCase =
+                    PlaceABidService(
+                        lobbyNotifier = lobbyNotifier,
+                        lobbyRepository = lobbyRepository,
+                    ),
+                playACardUseCase =
+                    PlayACardService(
+                        lobbyRepository = lobbyRepository,
+                        lobbyNotifier = lobbyNotifier,
+                    ),
+            )
+        }
+    }
 }

@@ -10,7 +10,6 @@ import com.tamj0rd2.skullking.adapter.web.MessageFromClient.StartGameMessage
 import com.tamj0rd2.skullking.adapter.web.MessageToClient.LobbyNotificationMessage
 import com.tamj0rd2.skullking.application.SkullKingApplication
 import com.tamj0rd2.skullking.application.port.inandout.LobbyNotificationListener
-import com.tamj0rd2.skullking.application.port.output.LobbyRepository
 import com.tamj0rd2.skullking.domain.auth.SessionId
 import com.tamj0rd2.skullking.domain.game.LobbyId
 import com.tamj0rd2.skullking.domain.game.PlayerId
@@ -69,18 +68,19 @@ internal class WebServer(
     companion object {
         private fun createApp(): SkullKingApplication {
             val playerIdStorage = PlayerIdStorageInMemoryAdapter()
-            val lobbyEventStore =
-                EventStoreEsdbAdapter(
-                    streamNameProvider =
-                        StreamNameProvider(
-                            prefix = "lobby-events",
-                            idToString = LobbyId::show,
-                        ),
-                    converter = JLobbyEvent,
-                )
 
-            return SkullKingApplication(
-                lobbyRepository = LobbyRepository(lobbyEventStore),
+            return SkullKingApplication.constructFromPorts(
+                lobbyEventStore =
+                    EventStoreEsdbAdapter(
+                        // TODO: I don't like that I need to provide this configuration in the server and the tests. seems ripe for
+                        //  making a mistake.
+                        streamNameProvider =
+                            StreamNameProvider(
+                                prefix = "lobby-events",
+                                idToString = LobbyId::show,
+                            ),
+                        converter = JLobbyEvent,
+                    ),
                 lobbyNotifier = LobbyNotifierInMemoryAdapter(),
                 findPlayerIdPort = playerIdStorage,
                 savePlayerIdPort = playerIdStorage,
