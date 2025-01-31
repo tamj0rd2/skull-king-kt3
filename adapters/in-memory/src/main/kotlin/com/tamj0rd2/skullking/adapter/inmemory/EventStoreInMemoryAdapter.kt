@@ -12,8 +12,25 @@ class EventStoreInMemoryAdapter<ID, Event : Any> : EventStore<ID, Event> {
         events: Collection<Event>,
     ) {
         val currentlySavedEvents = savedEvents.getOrDefault(entityId, emptyList())
-        if (expectedVersion != currentlySavedEvents.version()) TODO("handle concurrency issues")
-        savedEvents[entityId] = currentlySavedEvents + events
+        val currentlySavedVersion = currentlySavedEvents.version()
+
+        when {
+            // there's no contention :D
+            expectedVersion == currentlySavedVersion -> {
+                savedEvents[entityId] = currentlySavedEvents + events
+            }
+
+            // someone is trying to make exactly the same writes again
+            currentlySavedEvents.drop(expectedVersion.value) == events -> {
+                // doing nothing for idempotency sake
+            }
+
+            else -> {
+                throw ConcurrentModificationException(
+                    "Expected most recent entity version to be $expectedVersion but was $currentlySavedVersion",
+                )
+            }
+        }
     }
 
     override fun read(entityId: ID): Collection<Event> = savedEvents[entityId] ?: emptyList()

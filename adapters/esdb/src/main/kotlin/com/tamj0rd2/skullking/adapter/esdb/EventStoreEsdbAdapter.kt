@@ -1,6 +1,7 @@
 package com.tamj0rd2.skullking.adapter.esdb
 
 import com.eventstore.dbclient.AppendToStreamOptions
+import com.eventstore.dbclient.EventData
 import com.eventstore.dbclient.EventDataBuilder
 import com.eventstore.dbclient.EventStoreDBClient
 import com.eventstore.dbclient.EventStoreDBConnectionString
@@ -8,6 +9,7 @@ import com.eventstore.dbclient.ExpectedRevision
 import com.eventstore.dbclient.ReadStreamOptions
 import com.eventstore.dbclient.ResolvedEvent
 import com.eventstore.dbclient.StreamNotFoundException
+import com.eventstore.dbclient.WrongExpectedVersionException
 import com.tamj0rd2.skullking.application.port.output.EventStore
 import com.tamj0rd2.skullking.domain.game.Version
 import com.ubertob.kondor.json.JSealed
@@ -29,6 +31,7 @@ class EventStoreEsdbAdapter<ID, Event : Any>(
             EventStoreDBConnectionString.parseOrThrow("esdb://localhost:2113?tls=false"),
         )
 
+    // TODO: rename events to eventsToWrite
     override fun append(
         entityId: ID,
         expectedVersion: Version,
@@ -43,6 +46,28 @@ class EventStoreEsdbAdapter<ID, Event : Any>(
                     ).build()
             }
 
+        try {
+            writeEvents(entityId, expectedVersion, eventData)
+        } catch (e: ExecutionException) {
+            if (e.cause !is WrongExpectedVersionException) throw e
+
+            val eventsWrittenInTheMeantime = read(entityId).drop(expectedVersion.value)
+
+            // attempting to write exactly the same events that have already been written. Idempotence!
+            if (eventsWrittenInTheMeantime == events) return
+
+            throw EventStore.concurrentModificationException(
+                expectedVersion = expectedVersion,
+                actualVersion = (e.cause as WrongExpectedVersionException).actualVersion.asVersion(),
+            )
+        }
+    }
+
+    private fun writeEvents(
+        entityId: ID,
+        expectedVersion: Version,
+        eventData: List<EventData>,
+    ) {
         client
             .appendToStream(
                 entityId.toStreamName(),
@@ -74,6 +99,8 @@ class EventStoreEsdbAdapter<ID, Event : Any>(
         } else {
             ExpectedRevision.expectedRevision(this.value.toLong() - 1)
         }
+
+    private fun ExpectedRevision.asVersion() = Version.of(this.toRawLong().toInt())
 
     private fun ResolvedEvent.dataAsString() = event.eventData.toString(Charsets.UTF_8)
 }

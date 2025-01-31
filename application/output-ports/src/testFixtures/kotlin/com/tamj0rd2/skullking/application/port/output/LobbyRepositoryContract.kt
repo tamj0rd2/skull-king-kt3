@@ -13,8 +13,8 @@ import strikt.api.expectThat
 import strikt.api.expectThrows
 import strikt.assertions.isEqualTo
 
-abstract class LobbyRepositoryContract {
-    protected abstract val lobbyRepository: LobbyRepository
+interface LobbyRepositoryContract {
+    val lobbyRepository: LobbyRepository
 
     @Test
     fun `modifying, saving and loading a lobby multiple times results in the same state as just modifying the lobby in memory`() =
