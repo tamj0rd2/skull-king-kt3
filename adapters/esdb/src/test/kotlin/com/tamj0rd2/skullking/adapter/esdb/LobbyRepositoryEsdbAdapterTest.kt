@@ -1,15 +1,27 @@
 package com.tamj0rd2.skullking.adapter.esdb
 
+import com.tamj0rd2.skullking.adapter.esdb.EsdbEventStore.StreamNameProvider
+import com.tamj0rd2.skullking.application.port.output.LobbyRepository
 import com.tamj0rd2.skullking.application.port.output.LobbyRepositoryContract
+import com.tamj0rd2.skullking.domain.game.LobbyId
+import com.tamj0rd2.skullking.serialization.json.JLobbyEvent
 import io.kotest.property.PropertyTesting
 
 class LobbyRepositoryEsdbAdapterTest : LobbyRepositoryContract() {
-    companion object {
+    private companion object {
         // here so that I only need to deal with establishing a connection once
-        val repo = LobbyRepositoryEsdbAdapter()
+        val eventStore =
+            EsdbEventStore(
+                streamNameProvider =
+                    StreamNameProvider(
+                        prefix = "lobby-events",
+                        idToString = LobbyId::show,
+                    ),
+                converter = JLobbyEvent,
+            )
     }
 
-    override val lobbyRepository: LobbyRepositoryEsdbAdapter = repo
+    override val lobbyRepository = LobbyRepository(eventStore)
 
     init {
         PropertyTesting.defaultIterationCount = 10

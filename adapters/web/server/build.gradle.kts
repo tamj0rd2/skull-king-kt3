@@ -5,6 +5,7 @@ plugins {
 dependencies {
     forImplementation(libs.bundles.http4k.server)
     forImplementation(libs.slf4j)
+    forImplementation(project(":lib:common-json"))
     forImplementation(project(":adapters:esdb"))
     forImplementation(project(":adapters:in-memory"))
     forImplementation(project(":adapters:web:api"))

@@ -14,9 +14,16 @@ import com.ubertob.kondor.json.JSealed
 import java.util.concurrent.ExecutionException
 
 class EsdbEventStore<ID, Event : Any>(
+    private val streamNameProvider: StreamNameProvider<ID>,
     private val converter: JSealed<Event>,
-    private val getStreamName: (ID) -> String,
 ) : EventStore<ID, Event> {
+    data class StreamNameProvider<ID>(
+        private val prefix: String,
+        private val idToString: (ID) -> String,
+    ) {
+        fun streamNameFor(id: ID) = "$prefix-${idToString(id)}"
+    }
+
     private val client: EventStoreDBClient =
         EventStoreDBClient.create(
             EventStoreDBConnectionString.parseOrThrow("esdb://localhost:2113?tls=false"),
@@ -38,14 +45,14 @@ class EsdbEventStore<ID, Event : Any>(
 
         client
             .appendToStream(
-                getStreamName(entityId),
+                entityId.toStreamName(),
                 AppendToStreamOptions.get().expectedRevision(expectedVersion.asExpectedRevision()),
                 eventData.iterator(),
             ).get()
     }
 
     override fun read(entityId: ID): Collection<Event> =
-        readEvents(getStreamName(entityId)).map { converter.fromJson(it.dataAsString()).orThrow() }
+        readEvents(entityId.toStreamName()).map { converter.fromJson(it.dataAsString()).orThrow() }
 
     private fun readEvents(streamName: String): List<ResolvedEvent> =
         try {
@@ -57,6 +64,8 @@ class EsdbEventStore<ID, Event : Any>(
                 throw e
             }
         }
+
+    private fun ID.toStreamName() = streamNameProvider.streamNameFor(this)
 
     // TODO: Version doesn't necessarily need to be part of the Game package.
     private fun Version.asExpectedRevision() =

@@ -1,6 +1,7 @@
 package com.tamj0rd2.skullking.adapter.web
 
-import com.tamj0rd2.skullking.adapter.esdb.LobbyRepositoryEsdbAdapter
+import com.tamj0rd2.skullking.adapter.esdb.EsdbEventStore
+import com.tamj0rd2.skullking.adapter.esdb.EsdbEventStore.StreamNameProvider
 import com.tamj0rd2.skullking.adapter.inmemory.LobbyNotifierInMemoryAdapter
 import com.tamj0rd2.skullking.adapter.inmemory.PlayerIdStorageInMemoryAdapter
 import com.tamj0rd2.skullking.adapter.web.MessageFromClient.PlaceABidMessage
@@ -9,9 +10,11 @@ import com.tamj0rd2.skullking.adapter.web.MessageFromClient.StartGameMessage
 import com.tamj0rd2.skullking.adapter.web.MessageToClient.LobbyNotificationMessage
 import com.tamj0rd2.skullking.application.SkullKingApplication
 import com.tamj0rd2.skullking.application.port.inandout.LobbyNotificationListener
+import com.tamj0rd2.skullking.application.port.output.LobbyRepository
 import com.tamj0rd2.skullking.domain.auth.SessionId
 import com.tamj0rd2.skullking.domain.game.LobbyId
 import com.tamj0rd2.skullking.domain.game.PlayerId
+import com.tamj0rd2.skullking.serialization.json.JLobbyEvent
 import org.http4k.core.Request
 import org.http4k.lens.Header
 import org.http4k.routing.websockets
@@ -66,8 +69,18 @@ internal class WebServer(
     companion object {
         private fun createApp(): SkullKingApplication {
             val playerIdStorage = PlayerIdStorageInMemoryAdapter()
+            val lobbyEventStore =
+                EsdbEventStore(
+                    streamNameProvider =
+                        StreamNameProvider(
+                            prefix = "lobby-events",
+                            idToString = LobbyId::show,
+                        ),
+                    converter = JLobbyEvent,
+                )
+
             return SkullKingApplication(
-                lobbyRepository = LobbyRepositoryEsdbAdapter(),
+                lobbyRepository = LobbyRepository(lobbyEventStore),
                 lobbyNotifier = LobbyNotifierInMemoryAdapter(),
                 findPlayerIdPort = playerIdStorage,
                 savePlayerIdPort = playerIdStorage,
