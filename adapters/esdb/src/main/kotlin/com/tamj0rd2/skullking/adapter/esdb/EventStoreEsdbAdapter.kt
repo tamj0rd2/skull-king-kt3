@@ -13,7 +13,7 @@ import com.tamj0rd2.skullking.domain.game.Version
 import com.ubertob.kondor.json.JSealed
 import java.util.concurrent.ExecutionException
 
-class EsdbEventStore<ID, Event : Any>(
+class EventStoreEsdbAdapter<ID, Event : Any>(
     private val streamNameProvider: StreamNameProvider<ID>,
     private val converter: JSealed<Event>,
 ) : EventStore<ID, Event> {

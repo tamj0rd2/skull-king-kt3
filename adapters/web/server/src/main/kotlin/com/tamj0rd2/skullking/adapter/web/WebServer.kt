@@ -1,7 +1,7 @@
 package com.tamj0rd2.skullking.adapter.web
 
-import com.tamj0rd2.skullking.adapter.esdb.EsdbEventStore
-import com.tamj0rd2.skullking.adapter.esdb.EsdbEventStore.StreamNameProvider
+import com.tamj0rd2.skullking.adapter.esdb.EventStoreEsdbAdapter
+import com.tamj0rd2.skullking.adapter.esdb.EventStoreEsdbAdapter.StreamNameProvider
 import com.tamj0rd2.skullking.adapter.inmemory.LobbyNotifierInMemoryAdapter
 import com.tamj0rd2.skullking.adapter.inmemory.PlayerIdStorageInMemoryAdapter
 import com.tamj0rd2.skullking.adapter.web.MessageFromClient.PlaceABidMessage
@@ -70,7 +70,7 @@ internal class WebServer(
         private fun createApp(): SkullKingApplication {
             val playerIdStorage = PlayerIdStorageInMemoryAdapter()
             val lobbyEventStore =
-                EsdbEventStore(
+                EventStoreEsdbAdapter(
                     streamNameProvider =
                         StreamNameProvider(
                             prefix = "lobby-events",
