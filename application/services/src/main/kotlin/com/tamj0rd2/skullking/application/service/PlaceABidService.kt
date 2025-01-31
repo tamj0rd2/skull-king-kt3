@@ -4,7 +4,6 @@ import com.tamj0rd2.extensions.asSuccess
 import com.tamj0rd2.skullking.application.port.input.PlaceABidUseCase
 import com.tamj0rd2.skullking.application.port.input.PlaceABidUseCase.PlaceABidCommand
 import com.tamj0rd2.skullking.application.port.input.PlaceABidUseCase.PlaceABidOutput
-import com.tamj0rd2.skullking.application.port.output.LobbyNotifier
 import com.tamj0rd2.skullking.application.port.output.LobbyRepository
 import com.tamj0rd2.skullking.domain.game.LobbyCommand
 import com.tamj0rd2.skullking.domain.game.LobbyErrorCode

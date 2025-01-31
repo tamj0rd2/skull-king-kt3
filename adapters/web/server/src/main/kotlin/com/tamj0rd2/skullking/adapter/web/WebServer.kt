@@ -2,7 +2,6 @@ package com.tamj0rd2.skullking.adapter.web
 
 import com.tamj0rd2.skullking.adapter.esdb.EventStoreEsdbAdapter
 import com.tamj0rd2.skullking.adapter.esdb.EventStoreEsdbAdapter.StreamNameProvider
-import com.tamj0rd2.skullking.adapter.inmemory.LobbyNotifierInMemoryAdapter
 import com.tamj0rd2.skullking.adapter.inmemory.PlayerIdStorageInMemoryAdapter
 import com.tamj0rd2.skullking.adapter.web.MessageFromClient.PlaceABidMessage
 import com.tamj0rd2.skullking.adapter.web.MessageFromClient.PlayACardMessage
@@ -81,7 +80,6 @@ internal class WebServer(
                             ),
                         converter = JLobbyEvent,
                     ),
-                lobbyNotifier = LobbyNotifierInMemoryAdapter(),
                 findPlayerIdPort = playerIdStorage,
                 savePlayerIdPort = playerIdStorage,
             )

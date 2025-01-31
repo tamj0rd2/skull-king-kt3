@@ -8,11 +8,11 @@ import com.tamj0rd2.skullking.application.port.input.SkullKingUseCases
 import com.tamj0rd2.skullking.application.port.input.StartGameUseCase
 import com.tamj0rd2.skullking.application.port.output.EventStore
 import com.tamj0rd2.skullking.application.port.output.FindPlayerIdPort
-import com.tamj0rd2.skullking.application.port.output.LobbyNotifier
 import com.tamj0rd2.skullking.application.port.output.LobbyRepository
 import com.tamj0rd2.skullking.application.port.output.SavePlayerIdPort
 import com.tamj0rd2.skullking.application.service.CreateNewLobbyService
 import com.tamj0rd2.skullking.application.service.JoinALobbyService
+import com.tamj0rd2.skullking.application.service.LobbyNotifier
 import com.tamj0rd2.skullking.application.service.PlaceABidService
 import com.tamj0rd2.skullking.application.service.PlayACardService
 import com.tamj0rd2.skullking.application.service.StartGameService
@@ -34,11 +34,11 @@ class SkullKingApplication private constructor(
     companion object {
         fun constructFromPorts(
             lobbyEventStore: EventStore<LobbyId, LobbyEvent>,
-            lobbyNotifier: LobbyNotifier,
             findPlayerIdPort: FindPlayerIdPort,
             savePlayerIdPort: SavePlayerIdPort,
         ): SkullKingApplication {
             val lobbyRepository = LobbyRepository(lobbyEventStore)
+            val lobbyNotifier = LobbyNotifier()
 
             return SkullKingApplication(
                 createNewLobbyUseCase =

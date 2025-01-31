@@ -1,25 +1,32 @@
-package com.tamj0rd2.skullking.adapter.inmemory
+package com.tamj0rd2.skullking.application.service
 
 import com.tamj0rd2.skullking.application.port.inandout.LobbyNotificationListener
-import com.tamj0rd2.skullking.application.port.output.LobbyNotifier
 import com.tamj0rd2.skullking.domain.game.LobbyId
 import com.tamj0rd2.skullking.domain.game.LobbyNotification
 
-class LobbyNotifierInMemoryAdapter : LobbyNotifier {
+class LobbyNotifier {
     private val notifiers = mutableMapOf<LobbyId, LobbySpecificNotifier>()
 
-    override fun subscribe(
+    fun subscribe(
         lobbyId: LobbyId,
         listener: LobbyNotificationListener,
     ) {
         getNotifierForLobby(lobbyId).addListenerAndSendMissedUpdates(listener)
     }
 
-    override fun broadcast(
+    fun broadcast(
         lobbyId: LobbyId,
         updates: List<LobbyNotification>,
     ) {
         getNotifierForLobby(lobbyId).broadcast(updates)
+    }
+
+    fun broadcast(
+        lobbyId: LobbyId,
+        vararg updates: LobbyNotification,
+    ) {
+        require(updates.isNotEmpty()) { "list of updates was empty" }
+        return broadcast(lobbyId, updates.toList())
     }
 
     private fun getNotifierForLobby(lobbyId: LobbyId) = notifiers[lobbyId] ?: LobbySpecificNotifier().also { notifiers[lobbyId] = it }

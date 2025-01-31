@@ -1,4 +1,4 @@
-package com.tamj0rd2.skullking.application.port.output
+package com.tamj0rd2.skullking.application.service
 
 import com.tamj0rd2.skullking.application.port.inandout.LobbyNotificationListener
 import com.tamj0rd2.skullking.domain.game.Lobby
@@ -17,8 +17,8 @@ import strikt.api.expectThat
 import strikt.assertions.all
 import strikt.assertions.isEqualTo
 
-abstract class LobbyUpdateNotifierContract {
-    protected abstract val sut: LobbyNotifier
+class LobbyUpdateNotifierTest {
+    private val sut: LobbyNotifier = LobbyNotifier()
 
     @Test
     fun `notifications can be broadcast to all listeners subscribed to a specific lobby`() =

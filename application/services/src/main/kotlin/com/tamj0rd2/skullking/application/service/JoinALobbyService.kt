@@ -5,7 +5,6 @@ import com.tamj0rd2.skullking.application.port.input.JoinALobbyUseCase
 import com.tamj0rd2.skullking.application.port.input.JoinALobbyUseCase.JoinALobbyCommand
 import com.tamj0rd2.skullking.application.port.input.JoinALobbyUseCase.JoinALobbyOutput
 import com.tamj0rd2.skullking.application.port.output.FindPlayerIdPort
-import com.tamj0rd2.skullking.application.port.output.LobbyNotifier
 import com.tamj0rd2.skullking.application.port.output.LobbyRepository
 import com.tamj0rd2.skullking.application.port.output.SavePlayerIdPort
 import com.tamj0rd2.skullking.domain.auth.SessionId
