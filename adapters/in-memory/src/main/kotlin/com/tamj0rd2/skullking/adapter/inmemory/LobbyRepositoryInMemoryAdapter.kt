@@ -7,14 +7,14 @@ import com.tamj0rd2.skullking.domain.game.LobbyEvent
 import com.tamj0rd2.skullking.domain.game.LobbyId
 
 class LobbyRepositoryInMemoryAdapter : LobbyRepository {
-    private val savedEvents = mutableMapOf<LobbyId, List<LobbyEvent>>()
+    private val eventStore = EventStoreInMemoryAdapter<LobbyId, LobbyEvent>()
 
     override fun load(lobbyId: LobbyId): Lobby {
-        val events = savedEvents[lobbyId] ?: throw LobbyDoesNotExist()
-        return Lobby.from(events)
+        val events = eventStore.read(lobbyId).ifEmpty { throw LobbyDoesNotExist() }
+        return Lobby.from(events.toList())
     }
 
     override fun save(lobby: Lobby) {
-        savedEvents[lobby.id] = lobby.allEvents
+        eventStore.append(lobby.id, lobby.loadedAtVersion, lobby.newEventsSinceLobbyWasLoaded)
     }
 }

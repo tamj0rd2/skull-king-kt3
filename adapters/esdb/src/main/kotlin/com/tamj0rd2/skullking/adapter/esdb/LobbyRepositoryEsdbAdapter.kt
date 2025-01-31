@@ -1,13 +1,5 @@
 package com.tamj0rd2.skullking.adapter.esdb
 
-import com.eventstore.dbclient.AppendToStreamOptions
-import com.eventstore.dbclient.EventDataBuilder
-import com.eventstore.dbclient.EventStoreDBClient
-import com.eventstore.dbclient.EventStoreDBConnectionString
-import com.eventstore.dbclient.ExpectedRevision
-import com.eventstore.dbclient.ReadStreamOptions
-import com.eventstore.dbclient.ResolvedEvent
-import com.eventstore.dbclient.StreamNotFoundException
 import com.tamj0rd2.skullking.application.port.output.LobbyDoesNotExist
 import com.tamj0rd2.skullking.application.port.output.LobbyRepository
 import com.tamj0rd2.skullking.domain.game.BidPlacedEvent
@@ -20,7 +12,6 @@ import com.tamj0rd2.skullking.domain.game.LobbyCreatedEvent
 import com.tamj0rd2.skullking.domain.game.LobbyEvent
 import com.tamj0rd2.skullking.domain.game.LobbyId
 import com.tamj0rd2.skullking.domain.game.PlayerJoinedEvent
-import com.tamj0rd2.skullking.domain.game.Version
 import com.tamj0rd2.skullking.serialization.json.JBid
 import com.tamj0rd2.skullking.serialization.json.JLobbyId
 import com.tamj0rd2.skullking.serialization.json.JPlayerId
@@ -30,69 +21,27 @@ import com.ubertob.kondor.json.ObjectNodeConverter
 import com.ubertob.kondor.json.jsonnode.JsonNodeObject
 import com.ubertob.kondor.json.num
 import com.ubertob.kondor.json.str
-import java.util.concurrent.ExecutionException
 
-class LobbyRepositoryEsdbAdapter : LobbyRepository {
-    private val client: EventStoreDBClient =
-        EventStoreDBClient.create(
-            EventStoreDBConnectionString.parseOrThrow("esdb://localhost:2113?tls=false"),
-        )
-
+class LobbyRepositoryEsdbAdapter(
+    private val eventStore: EsdbEventStore<LobbyId, LobbyEvent> =
+        EsdbEventStore(
+            converter = JLobbyEvent,
+            getStreamName = { it.asStreamName() },
+        ),
+) : LobbyRepository {
     override fun load(lobbyId: LobbyId): Lobby {
-        val events =
-            readEvents(lobbyId.asStreamName())
-                .asSequence()
-                .map { it.event.eventData }
-                .map { it.toString(Charsets.UTF_8) }
-                .map { JLobbyEvent.fromJson(it).orThrow() }
-                .filter { it.lobbyId == lobbyId }
-                .toList()
-                .ifEmpty { throw LobbyDoesNotExist() }
-
-        return Lobby.from(events)
+        val events = eventStore.read(lobbyId).ifEmpty { throw LobbyDoesNotExist() }
+        return Lobby.from(events.toList())
     }
 
     override fun save(lobby: Lobby) {
-        val eventData =
-            lobby.newEventsSinceLobbyWasLoaded.map {
-                EventDataBuilder
-                    .json(
-                        JLobbyEvent.extractTypeName(it),
-                        JLobbyEvent.toJson(it).toByteArray(Charsets.UTF_8),
-                    ).build()
-            }
-
-        client
-            .appendToStream(
-                lobby.id.asStreamName(),
-                AppendToStreamOptions.get().expectedRevision(lobby.expectedRevision),
-                eventData.iterator(),
-            ).get()
+        eventStore.append(lobby.id, lobby.loadedAtVersion, lobby.newEventsSinceLobbyWasLoaded)
     }
-
-    private fun readEvents(streamName: String): List<ResolvedEvent> =
-        try {
-            client.readStream(streamName, ReadStreamOptions.get().forwards()).get().events
-        } catch (e: ExecutionException) {
-            if (e.cause is StreamNotFoundException) {
-                emptyList()
-            } else {
-                throw e
-            }
-        }
 
     companion object {
         private const val STREAM_PREFIX = "lobby-events"
 
         private fun LobbyId.asStreamName() = "$STREAM_PREFIX-${LobbyId.show(this)}"
-
-        private val Lobby.expectedRevision
-            get() =
-                if (loadedAtVersion == Version.NONE) {
-                    ExpectedRevision.noStream()
-                } else {
-                    ExpectedRevision.expectedRevision(loadedAtVersion.value.toLong() - 1)
-                }
 
         private object JLobbyEvent : JSealed<LobbyEvent>() {
             private val config =
