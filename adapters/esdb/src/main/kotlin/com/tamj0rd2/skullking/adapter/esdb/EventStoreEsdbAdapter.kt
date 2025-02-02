@@ -21,14 +21,14 @@ import com.tamj0rd2.skullking.domain.game.Version
 import com.ubertob.kondor.json.JSealed
 import java.util.concurrent.ExecutionException
 
-class EventStoreEsdbAdapter<ID, Event : Any>(
+class EventStoreEsdbAdapter<ID, E : Any>(
     private val streamNameProvider: StreamNameProvider<ID>,
-    private val converter: JSealed<Event>,
+    private val converter: JSealed<E>,
     // TODO: this stream name shouldn't be defaulted.
     private val subscriptionStreamName: String = "\$ce-lobby",
     private val subscriptionGroup: String = "spike-subscriptions",
-    initialSubscribers: List<EventStoreSubscriber<Event>> = emptyList(),
-) : EventStore<ID, Event> {
+    initialSubscribers: List<EventStoreSubscriber<E>> = emptyList(),
+) : EventStore<ID, E> {
     private val subscribers = mutableListOf(*initialSubscribers.toTypedArray())
 
     data class StreamNameProvider<ID>(
@@ -46,14 +46,14 @@ class EventStoreEsdbAdapter<ID, Event : Any>(
         startPersistentSubscription()
     }
 
-    override fun read(entityId: ID): Collection<Event> = readEvents(entityId, ReadStreamOptions.get().forwards())
+    override fun read(entityId: ID): Collection<E> = readEvents(entityId, ReadStreamOptions.get().forwards())
 
     override fun read(
         entityId: ID,
         upToAndIncludingVersion: Version,
-    ): Collection<Event> = readEvents(entityId, ReadStreamOptions.get().forwards().maxCount(upToAndIncludingVersion.value.toLong()))
+    ): Collection<E> = readEvents(entityId, ReadStreamOptions.get().forwards().maxCount(upToAndIncludingVersion.value.toLong()))
 
-    override fun subscribe(subscriber: EventStoreSubscriber<Event>) {
+    override fun subscribe(subscriber: EventStoreSubscriber<E>) {
         subscribers.add(subscriber)
     }
 
@@ -61,7 +61,7 @@ class EventStoreEsdbAdapter<ID, Event : Any>(
     override fun append(
         entityId: ID,
         expectedVersion: Version,
-        events: Collection<Event>,
+        events: Collection<E>,
     ) {
         val eventData =
             events.map {
@@ -105,7 +105,7 @@ class EventStoreEsdbAdapter<ID, Event : Any>(
     private fun readEvents(
         entityId: ID,
         readStreamOptions: ReadStreamOptions?,
-    ): List<Event> =
+    ): List<E> =
         try {
             client
                 .readStream(entityId.toStreamName(), readStreamOptions)

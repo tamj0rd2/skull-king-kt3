@@ -4,16 +4,16 @@ import com.tamj0rd2.skullking.application.port.output.EventStore
 import com.tamj0rd2.skullking.application.port.output.EventStoreSubscriber
 import com.tamj0rd2.skullking.domain.game.Version
 
-class EventStoreInMemoryAdapter<ID, Event : Any>(
-    initialSubscribers: List<EventStoreSubscriber<Event>> = emptyList(),
-) : EventStore<ID, Event> {
-    private val savedEvents = mutableMapOf<ID, List<Event>>()
+class EventStoreInMemoryAdapter<ID, E : Any>(
+    initialSubscribers: List<EventStoreSubscriber<E>> = emptyList(),
+) : EventStore<ID, E> {
+    private val savedEvents = mutableMapOf<ID, List<E>>()
     private val subscribers = mutableListOf(*initialSubscribers.toTypedArray())
 
     override fun append(
         entityId: ID,
         expectedVersion: Version,
-        events: Collection<Event>,
+        events: Collection<E>,
     ) {
         val currentlySavedEvents = savedEvents.getOrDefault(entityId, emptyList())
         val currentlySavedVersion = currentlySavedEvents.version()
@@ -35,9 +35,9 @@ class EventStoreInMemoryAdapter<ID, Event : Any>(
         )
     }
 
-    override fun read(entityId: ID): Collection<Event> = savedEvents[entityId] ?: emptyList()
+    override fun read(entityId: ID): Collection<E> = savedEvents[entityId] ?: emptyList()
 
-    override fun subscribe(subscriber: EventStoreSubscriber<Event>) {
+    override fun subscribe(subscriber: EventStoreSubscriber<E>) {
         subscribers.add(subscriber)
     }
 
