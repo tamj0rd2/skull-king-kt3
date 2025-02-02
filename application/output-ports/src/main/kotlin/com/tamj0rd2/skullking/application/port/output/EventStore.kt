@@ -29,6 +29,9 @@ interface EventStore<ID, E : Event<ID>> {
     }
 }
 
-fun interface EventStoreSubscriber<out ID, in E : Event<ID>> {
-    fun receive(events: Collection<E>)
+fun interface EventStoreSubscriber<ID, E : Event<ID>> {
+    fun onEventReceived(
+        entityId: ID,
+        version: Version,
+    )
 }

@@ -1,5 +1,6 @@
 package com.tamj0rd2.skullking.application.port.output
 
+import com.tamj0rd2.skullking.domain.Event
 import com.tamj0rd2.skullking.domain.game.Lobby
 import com.tamj0rd2.skullking.domain.game.LobbyCreatedEvent
 import com.tamj0rd2.skullking.domain.game.LobbyEvent
@@ -14,9 +15,9 @@ import strikt.api.expectThat
 import strikt.assertions.isA
 import strikt.assertions.isEqualTo
 import strikt.assertions.isFailure
-import strikt.assertions.isNotEmpty
 import strikt.assertions.isNotEqualTo
 import strikt.assertions.isSuccess
+import strikt.assertions.single
 import java.time.Instant
 
 // NOTE: this test doesn't necessarily have to be about the LobbyEvent entity. It was just convenient.
@@ -34,15 +35,15 @@ interface EventStoreContract {
 
     @Test
     fun `can subscribe to receive game events`() {
-        val receivedEvents = mutableListOf<LobbyEvent>()
-        eventStore.subscribe { receivedEvents.addAll(it) }
+        val subscriber = SpyEventStoreSubscriber<LobbyId, LobbyEvent>()
+        eventStore.subscribe(subscriber)
 
         val lobbyId = LobbyId.random()
         val eventsToAppend = listOf(LobbyCreatedEvent(lobbyId, PlayerId.random()))
         eventStore.append(lobbyId, Version.NONE, eventsToAppend)
 
         eventually {
-            expectThat(receivedEvents.filter { it.lobbyId == lobbyId }).isNotEmpty().isEqualTo(eventsToAppend)
+            expectThat(subscriber.calls.filter { it.entityId == lobbyId }).single().get { version }.isEqualTo(Version.INITIAL)
         }
     }
 
@@ -127,6 +128,23 @@ interface EventStoreContract {
             } while (stopAt > Instant.now())
 
             throw checkNotNull(lastError)
+        }
+    }
+
+    private class SpyEventStoreSubscriber<ID, E : Event<ID>> : EventStoreSubscriber<ID, E> {
+        data class Call<ID>(
+            val entityId: ID,
+            val version: Version,
+        )
+
+        private val _calls = mutableListOf<Call<ID>>()
+        val calls get() = _calls.toList()
+
+        override fun onEventReceived(
+            entityId: ID,
+            version: Version,
+        ) {
+            _calls.add(Call(entityId, version))
         }
     }
 }

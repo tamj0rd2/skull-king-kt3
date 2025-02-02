@@ -13,9 +13,12 @@ value class Version private constructor(
 
     fun previous(): Version = Version.of(value - 1)
 
+    operator fun plus(amount: Int) = Version.of(value + amount)
+
     override operator fun compareTo(other: Version) = value.compareTo(other.value)
 
     companion object : IntValueFactory<Version>(::Version, 0.minValue) {
         val NONE = Version(0)
+        val INITIAL = NONE.next()
     }
 }

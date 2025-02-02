@@ -22,7 +22,11 @@ class EventStoreInMemoryAdapter<ID, E : Event<ID>>(
         if (expectedVersion == currentlySavedVersion) {
             savedEvents[entityId] = currentlySavedEvents + events
             // NOTE: this opens up potential consistency issues. but maybe that's ok for an in memory fake 🤷
-            subscribers.forEach { it.receive(events) }
+            events.forEachIndexed { index, event ->
+                subscribers.forEach { subscriber ->
+                    subscriber.onEventReceived(entityId, currentlySavedVersion + index + 1)
+                }
+            }
             return
         }
 

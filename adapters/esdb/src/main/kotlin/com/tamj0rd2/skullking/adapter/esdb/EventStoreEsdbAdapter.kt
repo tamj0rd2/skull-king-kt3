@@ -153,8 +153,11 @@ class EventStoreEsdbAdapter<ID, E : Event<ID>>(
                         retryCount: Int,
                         resolvedEvent: ResolvedEvent,
                     ) {
+                        // TODO: I shouldn't need to deserialize the entire payload. I could just use event.entityId, as long as I had
+                        //  a way to deserialize just the ID.
                         val event = converter.fromJson(resolvedEvent.dataAsString()).orThrow()
-                        subscribers.forEach { it.receive(listOf(event)) }
+                        val version = resolvedEvent.asVersion()
+                        subscribers.forEach { it.onEventReceived(event.entityId, version) }
                         subscription.ack(resolvedEvent)
                     }
                 },
@@ -171,7 +174,11 @@ class EventStoreEsdbAdapter<ID, E : Event<ID>>(
             ExpectedRevision.expectedRevision(this.value.toLong() - 1)
         }
 
-    private fun ExpectedRevision.asVersion() = Version.of(this.toRawLong().toInt())
+    private fun Long.toVersion() = Version.of(toInt() + 1)
+
+    private fun ExpectedRevision.asVersion() = this.toRawLong().toVersion()
+
+    private fun ResolvedEvent.asVersion() = event.revision.toVersion()
 
     private fun ResolvedEvent.dataAsString() = event.eventData.toString(Charsets.UTF_8)
 }
