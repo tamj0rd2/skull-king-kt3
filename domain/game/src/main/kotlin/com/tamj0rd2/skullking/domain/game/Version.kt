@@ -11,6 +11,8 @@ value class Version private constructor(
     Comparable<Version> {
     fun next(): Version = Version.of(value + 1)
 
+    fun previous(): Version = Version.of(value - 1)
+
     override operator fun compareTo(other: Version) = value.compareTo(other.value)
 
     companion object : IntValueFactory<Version>(::Version, 0.minValue) {

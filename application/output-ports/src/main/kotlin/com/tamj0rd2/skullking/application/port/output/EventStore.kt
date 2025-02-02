@@ -11,6 +11,11 @@ interface EventStore<ID, Event : Any> {
 
     fun read(entityId: ID): Collection<Event>
 
+    fun read(
+        entityId: ID,
+        upToAndIncludingVersion: Version,
+    ): Collection<Event> = read(entityId).take(upToAndIncludingVersion.value)
+
     fun subscribe(subscriber: EventStoreSubscriber<Event>)
 
     companion object {

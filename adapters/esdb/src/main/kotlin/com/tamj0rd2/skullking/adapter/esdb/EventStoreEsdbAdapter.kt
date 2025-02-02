@@ -46,8 +46,12 @@ class EventStoreEsdbAdapter<ID, Event : Any>(
         startPersistentSubscription()
     }
 
-    override fun read(entityId: ID): Collection<Event> =
-        readEvents(entityId.toStreamName()).map { converter.fromJson(it.dataAsString()).orThrow() }
+    override fun read(entityId: ID): Collection<Event> = readEvents(entityId, ReadStreamOptions.get().forwards())
+
+    override fun read(
+        entityId: ID,
+        upToAndIncludingVersion: Version,
+    ): Collection<Event> = readEvents(entityId, ReadStreamOptions.get().forwards().maxCount(upToAndIncludingVersion.value.toLong()))
 
     override fun subscribe(subscriber: EventStoreSubscriber<Event>) {
         subscribers.add(subscriber)
@@ -98,9 +102,16 @@ class EventStoreEsdbAdapter<ID, Event : Any>(
             ).get()
     }
 
-    private fun readEvents(streamName: String): List<ResolvedEvent> =
+    private fun readEvents(
+        entityId: ID,
+        readStreamOptions: ReadStreamOptions?,
+    ): List<Event> =
         try {
-            client.readStream(streamName, ReadStreamOptions.get().forwards()).get().events
+            client
+                .readStream(entityId.toStreamName(), readStreamOptions)
+                .get()
+                .events
+                .map { converter.fromJson(it.dataAsString()).orThrow() }
         } catch (e: ExecutionException) {
             if (e.cause is StreamNotFoundException) {
                 emptyList()
