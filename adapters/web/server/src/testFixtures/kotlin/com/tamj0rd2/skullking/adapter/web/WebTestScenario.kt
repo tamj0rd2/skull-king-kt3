@@ -6,10 +6,11 @@ import com.tamj0rd2.skullking.application.port.input.testsupport.TestScenario
 import com.tamj0rd2.skullking.application.usingTestDoublesByDefault
 import org.http4k.core.Uri
 
-class WebTestScenario :
-    TestScenario,
+class WebTestScenario(
+    webServer: WebServer = WebServer(application = SkullKingApplication.usingTestDoublesByDefault()),
+) : TestScenario,
     AutoCloseable {
-    private val server = WebServer(application = SkullKingApplication.usingTestDoublesByDefault()).start()
+    private val server = webServer.start()
 
     override fun close() {
         server.close()
