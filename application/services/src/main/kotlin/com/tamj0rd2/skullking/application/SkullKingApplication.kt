@@ -31,13 +31,15 @@ class SkullKingApplication private constructor(
     PlaceABidUseCase by placeABidUseCase,
     StartGameUseCase by startGameUseCase,
     PlayACardUseCase by playACardUseCase {
+    data class OutputPorts(
+        val lobbyEventStore: EventStore<LobbyId, LobbyEvent>,
+        val findPlayerIdPort: FindPlayerIdPort,
+        val savePlayerIdPort: SavePlayerIdPort,
+    )
+
     companion object {
-        fun constructFromPorts(
-            lobbyEventStore: EventStore<LobbyId, LobbyEvent>,
-            findPlayerIdPort: FindPlayerIdPort,
-            savePlayerIdPort: SavePlayerIdPort,
-        ): SkullKingApplication {
-            val lobbyRepository = LobbyRepository(lobbyEventStore)
+        fun constructFromPorts(outputPorts: OutputPorts): SkullKingApplication {
+            val lobbyRepository = LobbyRepository(outputPorts.lobbyEventStore)
             val lobbyNotifier = LobbyNotifier()
 
             return SkullKingApplication(
@@ -45,14 +47,14 @@ class SkullKingApplication private constructor(
                     CreateNewLobbyService(
                         lobbyRepository = lobbyRepository,
                         lobbyNotifier = lobbyNotifier,
-                        savePlayerIdPort = savePlayerIdPort,
+                        savePlayerIdPort = outputPorts.savePlayerIdPort,
                     ),
                 joinALobbyUseCase =
                     JoinALobbyService(
                         lobbyRepository = lobbyRepository,
                         lobbyNotifier = lobbyNotifier,
-                        findPlayerIdPort = findPlayerIdPort,
-                        savePlayerIdPort = savePlayerIdPort,
+                        findPlayerIdPort = outputPorts.findPlayerIdPort,
+                        savePlayerIdPort = outputPorts.savePlayerIdPort,
                     ),
                 startGameUseCase = StartGameService(lobbyRepository, lobbyNotifier),
                 placeABidUseCase =

@@ -8,6 +8,7 @@ import com.tamj0rd2.skullking.adapter.web.MessageFromClient.PlayACardMessage
 import com.tamj0rd2.skullking.adapter.web.MessageFromClient.StartGameMessage
 import com.tamj0rd2.skullking.adapter.web.MessageToClient.LobbyNotificationMessage
 import com.tamj0rd2.skullking.application.SkullKingApplication
+import com.tamj0rd2.skullking.application.SkullKingApplication.OutputPorts
 import com.tamj0rd2.skullking.application.port.inandout.LobbyNotificationListener
 import com.tamj0rd2.skullking.domain.auth.SessionId
 import com.tamj0rd2.skullking.domain.game.LobbyId
@@ -70,19 +71,22 @@ class WebServer(
             val playerIdStorage = PlayerIdStorageInMemoryAdapter()
 
             return SkullKingApplication.constructFromPorts(
-                lobbyEventStore =
-                    EventStoreEsdbAdapter(
-                        // TODO: I don't like that I need to provide this configuration in the server and the tests. seems ripe for
-                        //  making a mistake.
-                        streamNameProvider =
-                            StreamNameProvider(
-                                prefix = "lobby-events",
-                                idToString = LobbyId::show,
+                outputPorts =
+                    OutputPorts(
+                        lobbyEventStore =
+                            EventStoreEsdbAdapter(
+                                // TODO: I don't like that I need to provide this configuration in the server and the tests. seems ripe for
+                                //  making a mistake.
+                                streamNameProvider =
+                                    StreamNameProvider(
+                                        prefix = "lobby-events",
+                                        idToString = LobbyId::show,
+                                    ),
+                                converter = JLobbyEvent,
                             ),
-                        converter = JLobbyEvent,
+                        findPlayerIdPort = playerIdStorage,
+                        savePlayerIdPort = playerIdStorage,
                     ),
-                findPlayerIdPort = playerIdStorage,
-                savePlayerIdPort = playerIdStorage,
             )
         }
 
