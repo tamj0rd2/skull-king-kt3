@@ -1,8 +1,9 @@
 package com.tamj0rd2.skullking.application.port.output
 
+import com.tamj0rd2.skullking.domain.Event
 import com.tamj0rd2.skullking.domain.game.Version
 
-interface EventStore<ID, E : Any> {
+interface EventStore<ID, E : Event<ID>> {
     fun append(
         entityId: ID,
         expectedVersion: Version,
@@ -16,7 +17,7 @@ interface EventStore<ID, E : Any> {
         upToAndIncludingVersion: Version,
     ): Collection<E> = read(entityId).take(upToAndIncludingVersion.value)
 
-    fun subscribe(subscriber: EventStoreSubscriber<E>)
+    fun subscribe(subscriber: EventStoreSubscriber<ID, E>)
 
     companion object {
         fun concurrentModificationException(
@@ -28,6 +29,6 @@ interface EventStore<ID, E : Any> {
     }
 }
 
-fun interface EventStoreSubscriber<E : Any> {
+fun interface EventStoreSubscriber<out ID, in E : Event<ID>> {
     fun receive(events: Collection<E>)
 }

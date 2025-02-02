@@ -2,10 +2,11 @@ package com.tamj0rd2.skullking.adapter.inmemory
 
 import com.tamj0rd2.skullking.application.port.output.EventStore
 import com.tamj0rd2.skullking.application.port.output.EventStoreSubscriber
+import com.tamj0rd2.skullking.domain.Event
 import com.tamj0rd2.skullking.domain.game.Version
 
-class EventStoreInMemoryAdapter<ID, E : Any>(
-    initialSubscribers: List<EventStoreSubscriber<E>> = emptyList(),
+class EventStoreInMemoryAdapter<ID, E : Event<ID>>(
+    initialSubscribers: List<EventStoreSubscriber<ID, E>> = emptyList(),
 ) : EventStore<ID, E> {
     private val savedEvents = mutableMapOf<ID, List<E>>()
     private val subscribers = mutableListOf(*initialSubscribers.toTypedArray())
@@ -37,7 +38,7 @@ class EventStoreInMemoryAdapter<ID, E : Any>(
 
     override fun read(entityId: ID): Collection<E> = savedEvents[entityId] ?: emptyList()
 
-    override fun subscribe(subscriber: EventStoreSubscriber<E>) {
+    override fun subscribe(subscriber: EventStoreSubscriber<ID, E>) {
         subscribers.add(subscriber)
     }
 

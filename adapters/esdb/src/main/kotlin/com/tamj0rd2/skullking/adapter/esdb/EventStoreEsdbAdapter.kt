@@ -17,17 +17,18 @@ import com.eventstore.dbclient.SubscribePersistentSubscriptionOptions
 import com.eventstore.dbclient.WrongExpectedVersionException
 import com.tamj0rd2.skullking.application.port.output.EventStore
 import com.tamj0rd2.skullking.application.port.output.EventStoreSubscriber
+import com.tamj0rd2.skullking.domain.Event
 import com.tamj0rd2.skullking.domain.game.Version
 import com.ubertob.kondor.json.JSealed
 import java.util.concurrent.ExecutionException
 
-class EventStoreEsdbAdapter<ID, E : Any>(
+class EventStoreEsdbAdapter<ID, E : Event<ID>>(
     private val streamNameProvider: StreamNameProvider<ID>,
     private val converter: JSealed<E>,
     // TODO: this stream name shouldn't be defaulted.
     private val subscriptionStreamName: String = "\$ce-lobby",
     private val subscriptionGroup: String = "spike-subscriptions",
-    initialSubscribers: List<EventStoreSubscriber<E>> = emptyList(),
+    initialSubscribers: List<EventStoreSubscriber<ID, E>> = emptyList(),
 ) : EventStore<ID, E> {
     private val subscribers = mutableListOf(*initialSubscribers.toTypedArray())
 
@@ -53,7 +54,7 @@ class EventStoreEsdbAdapter<ID, E : Any>(
         upToAndIncludingVersion: Version,
     ): Collection<E> = readEvents(entityId, ReadStreamOptions.get().forwards().maxCount(upToAndIncludingVersion.value.toLong()))
 
-    override fun subscribe(subscriber: EventStoreSubscriber<E>) {
+    override fun subscribe(subscriber: EventStoreSubscriber<ID, E>) {
         subscribers.add(subscriber)
     }
 

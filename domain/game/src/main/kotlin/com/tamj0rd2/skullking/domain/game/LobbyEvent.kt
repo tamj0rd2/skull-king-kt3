@@ -1,7 +1,10 @@
 package com.tamj0rd2.skullking.domain.game
 
-sealed interface LobbyEvent {
+import com.tamj0rd2.skullking.domain.Event
+
+sealed interface LobbyEvent : Event<LobbyId> {
     val lobbyId: LobbyId
+    override val entityId get() = lobbyId
 }
 
 data class LobbyCreatedEvent(
