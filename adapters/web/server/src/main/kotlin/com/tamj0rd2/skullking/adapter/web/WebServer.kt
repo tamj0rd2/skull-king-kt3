@@ -22,6 +22,7 @@ import org.http4k.websocket.WsHandler
 import java.net.ServerSocket
 import org.http4k.routing.ws.bind as bindWs
 
+// TODO: pass ports in instead of the app. Application is always built from ports.
 class WebServer(
     application: SkullKingApplication = createApp(),
     port: Int = getUnusedPort(),
