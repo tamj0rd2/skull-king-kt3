@@ -17,10 +17,12 @@ import io.kotest.property.exhaustive.exhaustive
 import org.junit.jupiter.api.Test
 
 interface JoinALobbyUseCaseContract : UseCaseContract {
+    val propertyTestIterations: Int get() = 1000
+
     @Test
     fun `each player who joins the lobby can see themself in the lobby`() =
         propertyTest {
-            checkAll((1..5).toList().exhaustive()) { playerCount ->
+            checkAll(propertyTestIterations, (1..5).toList().exhaustive()) { playerCount ->
                 val gameCreator = scenario.newPlayer()
                 val thisPlayer = scenario.newPlayer()
                 val otherPlayers = scenario.newPlayers(playerCount - 1)
@@ -39,7 +41,7 @@ interface JoinALobbyUseCaseContract : UseCaseContract {
     @Test
     fun `each player who joins the lobby can see the other players who have joined`() =
         propertyTest {
-            checkAll((1..5).toList().exhaustive()) { otherPlayerCount ->
+            checkAll(propertyTestIterations, (1..5).toList().exhaustive()) { otherPlayerCount ->
                 val gameCreator = scenario.newPlayer()
                 val otherPlayers = scenario.newPlayers(otherPlayerCount)
 
@@ -100,7 +102,7 @@ interface JoinALobbyUseCaseContract : UseCaseContract {
     @Test
     fun `a player cannot join a lobby where the game has already started`() =
         propertyTest {
-            checkAll(Arb.int(min = 1, max = MAXIMUM_PLAYER_COUNT - 1)) { playerCount ->
+            checkAll(propertyTestIterations, Arb.int(min = 1, max = MAXIMUM_PLAYER_COUNT - 1)) { playerCount ->
                 val theLobbyCreator = scenario.newPlayer()
                 val otherPlayers = scenario.newPlayers(playerCount)
                 val lateJoiningPlayer = scenario.newPlayer()

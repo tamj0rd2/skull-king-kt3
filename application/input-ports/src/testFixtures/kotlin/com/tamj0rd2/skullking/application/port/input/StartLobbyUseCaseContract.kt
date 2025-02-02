@@ -19,10 +19,12 @@ import strikt.assertions.hasSize
 import strikt.assertions.isEqualTo
 
 interface StartLobbyUseCaseContract : UseCaseContract {
+    val propertyTestIterations: Int get() = 1000
+
     @Test
     fun `starting the game begins round 1`() {
         propertyTest {
-            checkAll(Arb.validPlayerCountToStartALobby) { playerCount ->
+            checkAll(propertyTestIterations, Arb.validPlayerCountToStartALobby) { playerCount ->
                 val gameCreator = scenario.newPlayer()
                 val otherPlayers = scenario.newPlayers(playerCount - 1)
 
@@ -46,7 +48,7 @@ interface StartLobbyUseCaseContract : UseCaseContract {
     @Test
     fun `each player is dealt 1 card`() =
         propertyTest {
-            checkAll(Arb.validPlayerCountToStartALobby) { playerCount ->
+            checkAll(propertyTestIterations, Arb.validPlayerCountToStartALobby) { playerCount ->
                 val gameCreator = scenario.newPlayer()
                 val otherPlayers = scenario.newPlayers(playerCount - 1)
 

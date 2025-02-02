@@ -10,6 +10,8 @@ import com.tamj0rd2.skullking.domain.game.Card
 import org.junit.jupiter.api.Test
 
 interface PlayACardUseCaseContract : UseCaseContract {
+    val propertyTestIterations: Int get() = 1000
+
     @Test
     fun `can play a card once all bids have been placed`() {
         val player1 = scenario.newPlayer()

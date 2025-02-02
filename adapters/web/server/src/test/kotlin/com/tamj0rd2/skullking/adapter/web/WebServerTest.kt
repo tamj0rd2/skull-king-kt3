@@ -5,8 +5,6 @@ import com.tamj0rd2.skullking.application.port.input.JoinALobbyUseCaseContract
 import com.tamj0rd2.skullking.application.port.input.PlaceABidUseCaseContract
 import com.tamj0rd2.skullking.application.port.input.PlayACardUseCaseContract
 import com.tamj0rd2.skullking.application.port.input.StartLobbyUseCaseContract
-import io.kotest.property.PropertyTesting
-import io.kotest.property.ShrinkingMode
 import org.junit.jupiter.api.AutoClose
 import org.junit.jupiter.api.parallel.Execution
 import org.junit.jupiter.api.parallel.ExecutionMode.SAME_THREAD
@@ -21,10 +19,7 @@ class WebServerTest :
     StartLobbyUseCaseContract,
     PlaceABidUseCaseContract,
     PlayACardUseCaseContract {
-    init {
-        PropertyTesting.defaultIterationCount = 10
-        PropertyTesting.defaultShrinkingMode = ShrinkingMode.Off
-    }
+    override val propertyTestIterations = 1
 
     @AutoClose
     override val scenario = WebTestScenario(WebServer(port = Main.DEFAULT_PORT))
