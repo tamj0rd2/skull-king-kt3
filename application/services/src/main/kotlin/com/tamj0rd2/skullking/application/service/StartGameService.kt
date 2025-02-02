@@ -12,14 +12,11 @@ import dev.forkhandles.result4k.onFailure
 
 class StartGameService(
     private val lobbyRepository: LobbyRepository,
-    private val lobbyNotifier: LobbyNotifier,
 ) : StartGameUseCase {
     override fun invoke(command: StartGameCommand): Result4k<StartGameOutput, LobbyErrorCode> {
         val game = lobbyRepository.load(command.lobbyId)
         game.execute(LobbyCommand.Start).onFailure { return it }
         lobbyRepository.save(game)
-
-        lobbyNotifier.broadcast(game.id, game.state.notifications.sinceVersion(game.loadedAtVersion))
         return StartGameOutput.asSuccess()
     }
 }

@@ -21,6 +21,10 @@ class WebServerTest :
     PlayACardUseCaseContract {
     override val propertyTestIterations = 1
 
+    private companion object {
+        val webServer = WebServer(port = Main.DEFAULT_PORT)
+    }
+
     @AutoClose
-    override val scenario = WebTestScenario(WebServer(port = Main.DEFAULT_PORT))
+    override val scenario = WebTestScenario(webServer)
 }

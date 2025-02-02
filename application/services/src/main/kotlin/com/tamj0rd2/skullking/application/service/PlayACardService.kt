@@ -12,13 +12,11 @@ import dev.forkhandles.result4k.orThrow
 
 class PlayACardService(
     private val lobbyRepository: LobbyRepository,
-    private val lobbyNotifier: LobbyNotifier,
 ) : PlayACardUseCase {
     override fun invoke(command: PlayACardCommand): Result4k<PlayACardOutput, LobbyErrorCode> {
         val lobby = lobbyRepository.load(command.lobbyId)
         lobby.execute(LobbyCommand.PlayACard(command.playerId, command.card)).orThrow()
         lobbyRepository.save(lobby)
-        lobbyNotifier.broadcast(command.lobbyId, lobby.state.notifications.sinceVersion(lobby.loadedAtVersion))
         return PlayACardOutput.asSuccess()
     }
 }

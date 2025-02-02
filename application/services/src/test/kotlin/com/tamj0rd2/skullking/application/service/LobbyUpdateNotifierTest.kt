@@ -31,9 +31,11 @@ class LobbyUpdateNotifierTest {
                 LobbyArbs.lobbyIdArb,
             ) { listenerCount, lobbyNotifications, gameUpdateForAnotherGame, thisLobbyId, anotherLobbyId ->
                 val spyListenersForThisGame =
-                    listOfSize(listenerCount, ::SpyLobbyNotificationListener).onEach { sut.subscribe(thisLobbyId, it) }
-                lobbyNotifications.forEach { sut.broadcast(thisLobbyId, it) }
-                gameUpdateForAnotherGame.forEach { sut.broadcast(anotherLobbyId, it) }
+                    listOfSize(listenerCount, ::SpyLobbyNotificationListener)
+                        .onEach { sut.subscribe(thisLobbyId, it) }
+
+                lobbyNotifications.forEach { sut.broadcast(thisLobbyId, listOf(it)) }
+                gameUpdateForAnotherGame.forEach { sut.broadcast(anotherLobbyId, listOf(it)) }
                 expectThat(spyListenersForThisGame).all { get { receivedUpdates }.isEqualTo(lobbyNotifications) }
             }
         }
@@ -47,8 +49,10 @@ class LobbyUpdateNotifierTest {
                 LobbyArbs.lobbyIdArb,
             ) { listenerCount, lobbyNotifications, lobbyId ->
                 val alreadySubscribedListeners =
-                    listOfSize(listenerCount, ::SpyLobbyNotificationListener).onEach { sut.subscribe(lobbyId, it) }
-                lobbyNotifications.forEach { sut.broadcast(lobbyId, it) }
+                    listOfSize(listenerCount, ::SpyLobbyNotificationListener)
+                        .onEach { sut.subscribe(lobbyId, it) }
+
+                lobbyNotifications.forEach { sut.broadcast(lobbyId, listOf(it)) }
                 expectThat(alreadySubscribedListeners).all { get { receivedUpdates }.isEqualTo(lobbyNotifications) }
 
                 val lateSubscriber = SpyLobbyNotificationListener()

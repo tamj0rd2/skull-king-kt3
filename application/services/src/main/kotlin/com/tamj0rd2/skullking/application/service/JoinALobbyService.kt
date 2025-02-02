@@ -29,8 +29,6 @@ class JoinALobbyService(
         lobbyRepository.save(game)
 
         lobbyNotifier.subscribe(game.id, command.lobbyNotificationListener)
-        lobbyNotifier.broadcast(game.id, game.state.notifications.sinceVersion(game.loadedAtVersion))
-
         return JoinALobbyOutput(playerId).asSuccess()
     }
 

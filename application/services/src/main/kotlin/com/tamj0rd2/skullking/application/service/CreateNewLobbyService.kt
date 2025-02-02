@@ -21,7 +21,6 @@ class CreateNewLobbyService(
         val lobby = Lobby.new(createdBy = playerId)
         lobbyRepository.save(lobby)
         lobbyNotifier.subscribe(lobby.id, command.lobbyNotificationListener)
-        lobbyNotifier.broadcast(lobby.id, lobby.state.notifications.all)
 
         return CreateNewLobbyOutput(
             lobbyId = lobby.id,

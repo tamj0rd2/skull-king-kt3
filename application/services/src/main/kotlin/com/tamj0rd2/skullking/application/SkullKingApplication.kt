@@ -15,6 +15,7 @@ import com.tamj0rd2.skullking.application.service.JoinALobbyService
 import com.tamj0rd2.skullking.application.service.LobbyNotifier
 import com.tamj0rd2.skullking.application.service.PlaceABidService
 import com.tamj0rd2.skullking.application.service.PlayACardService
+import com.tamj0rd2.skullking.application.service.SendLobbyNotificationsService
 import com.tamj0rd2.skullking.application.service.StartGameService
 import com.tamj0rd2.skullking.domain.game.LobbyEvent
 import com.tamj0rd2.skullking.domain.game.LobbyId
@@ -43,6 +44,12 @@ class SkullKingApplication private constructor(
         fun constructFromPorts(outputPorts: OutputPorts): SkullKingApplication {
             val lobbyRepository = LobbyRepository(outputPorts.lobbyEventStore)
             val lobbyNotifier = LobbyNotifier()
+            outputPorts.lobbyEventStore.subscribe(
+                SendLobbyNotificationsService(
+                    lobbyRepository = lobbyRepository,
+                    lobbyNotifier = lobbyNotifier,
+                ),
+            )
 
             return SkullKingApplication(
                 createNewLobbyUseCase =
@@ -58,16 +65,17 @@ class SkullKingApplication private constructor(
                         findPlayerIdPort = outputPorts.findPlayerIdPort,
                         savePlayerIdPort = outputPorts.savePlayerIdPort,
                     ),
-                startGameUseCase = StartGameService(lobbyRepository, lobbyNotifier),
+                startGameUseCase =
+                    StartGameService(
+                        lobbyRepository = lobbyRepository,
+                    ),
                 placeABidUseCase =
                     PlaceABidService(
-                        lobbyNotifier = lobbyNotifier,
                         lobbyRepository = lobbyRepository,
                     ),
                 playACardUseCase =
                     PlayACardService(
                         lobbyRepository = lobbyRepository,
-                        lobbyNotifier = lobbyNotifier,
                     ),
             )
         }

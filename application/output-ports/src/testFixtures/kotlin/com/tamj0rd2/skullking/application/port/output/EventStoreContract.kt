@@ -9,6 +9,7 @@ import com.tamj0rd2.skullking.domain.game.PlayerId
 import com.tamj0rd2.skullking.domain.game.PlayerJoinedEvent
 import com.tamj0rd2.skullking.domain.game.Version
 import dev.forkhandles.values.random
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import strikt.api.expectCatching
 import strikt.api.expectThat
@@ -45,6 +46,12 @@ interface EventStoreContract {
         eventually {
             expectThat(subscriber.calls.filter { it.entityId == lobbyId }).single().get { version }.isEqualTo(Version.INITIAL)
         }
+    }
+
+    @Test
+    @Disabled
+    fun `can only append events for a single entity at a time`() {
+        TODO()
     }
 
     @Test

@@ -13,9 +13,12 @@ data class Notifications internal constructor(
         return copy(notifications = notifications + Pair(version, updatedNotificationsForVersion))
     }
 
+    @Deprecated("BAD")
     fun sinceVersion(version: Version) =
         notifications
             .filterKeys { it > version }
             .toSortedMap()
             .flatMap { it.value }
+
+    fun forVersion(version: Version): List<LobbyNotification> = notifications.getValue(version)
 }
