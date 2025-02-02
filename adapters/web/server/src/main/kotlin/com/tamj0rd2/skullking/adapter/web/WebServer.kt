@@ -23,11 +23,11 @@ import org.http4k.websocket.WsHandler
 import java.net.ServerSocket
 import org.http4k.routing.ws.bind as bindWs
 
-// TODO: pass ports in instead of the app. Application is always built from ports.
 class WebServer(
-    application: SkullKingApplication = createApp(),
+    outputPorts: OutputPorts = createOutputPorts(),
     port: Int = getUnusedPort(),
 ) {
+    private val application = SkullKingApplication.constructFromPorts(outputPorts)
     private val createLobbyController = CreateLobbyController(application)
     private val joinALobbyController = JoinALobbyController(application)
     private val startGameController = StartGameController(application)
@@ -67,26 +67,23 @@ class WebServer(
     fun start() = http4kServer.start()
 
     companion object {
-        private fun createApp(): SkullKingApplication {
+        private fun createOutputPorts(): OutputPorts {
             val playerIdStorage = PlayerIdStorageInMemoryAdapter()
 
-            return SkullKingApplication.constructFromPorts(
-                outputPorts =
-                    OutputPorts(
-                        lobbyEventStore =
-                            EventStoreEsdbAdapter(
-                                // TODO: I don't like that I need to provide this configuration in the server and the tests. seems ripe for
-                                //  making a mistake.
-                                streamNameProvider =
-                                    StreamNameProvider(
-                                        prefix = "lobby-events",
-                                        idToString = LobbyId::show,
-                                    ),
-                                converter = JLobbyEvent,
+            return OutputPorts(
+                lobbyEventStore =
+                    EventStoreEsdbAdapter(
+                        // TODO: I don't like that I need to provide this configuration in the server and the tests. seems ripe for
+                        //  making a mistake.
+                        streamNameProvider =
+                            StreamNameProvider(
+                                prefix = "lobby-events",
+                                idToString = LobbyId::show,
                             ),
-                        findPlayerIdPort = playerIdStorage,
-                        savePlayerIdPort = playerIdStorage,
+                        converter = JLobbyEvent,
                     ),
+                findPlayerIdPort = playerIdStorage,
+                savePlayerIdPort = playerIdStorage,
             )
         }
 

@@ -1,13 +1,13 @@
 package com.tamj0rd2.skullking.adapter.web
 
-import com.tamj0rd2.skullking.application.SkullKingApplication
+import com.tamj0rd2.skullking.application.SkullKingApplication.OutputPorts
 import com.tamj0rd2.skullking.application.port.input.testsupport.PlayerRole
 import com.tamj0rd2.skullking.application.port.input.testsupport.TestScenario
 import com.tamj0rd2.skullking.application.usingTestDoublesByDefault
 import org.http4k.core.Uri
 
 class WebTestScenario(
-    webServer: WebServer = WebServer(application = SkullKingApplication.usingTestDoublesByDefault()),
+    webServer: WebServer = WebServer(outputPorts = OutputPorts.usingTestDoublesByDefault()),
 ) : TestScenario,
     AutoCloseable {
     private val server = webServer.start()

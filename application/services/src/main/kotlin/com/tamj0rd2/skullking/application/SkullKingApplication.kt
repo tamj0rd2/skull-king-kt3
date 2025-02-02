@@ -35,7 +35,9 @@ class SkullKingApplication private constructor(
         val lobbyEventStore: EventStore<LobbyId, LobbyEvent>,
         val findPlayerIdPort: FindPlayerIdPort,
         val savePlayerIdPort: SavePlayerIdPort,
-    )
+    ) {
+        companion object
+    }
 
     companion object {
         fun constructFromPorts(outputPorts: OutputPorts): SkullKingApplication {
