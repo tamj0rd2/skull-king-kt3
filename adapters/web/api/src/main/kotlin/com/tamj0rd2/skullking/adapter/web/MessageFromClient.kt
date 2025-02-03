@@ -34,23 +34,24 @@ val messageFromClient =
         setLens = { message, _ -> WsMessage(JMessageFromClient.toJson(message)) },
     )
 
-// TODO: make this work the same way as the serialization in the esdb adapter.
 private object JMessageFromClient : JSealed<MessageFromClient>() {
+    private val config =
+        listOf(
+            Triple(StartGameMessage::class, "start-game", JSingleton(StartGameMessage)),
+            Triple(PlaceABidMessage::class, "place-a-bid", JPlaceABidMessage),
+            Triple(PlayACardMessage::class, "play-a-card", JPlayACardMessage),
+        )
+
     override val discriminatorFieldName: String = "type"
 
     override val subConverters: Map<String, ObjectNodeConverter<out MessageFromClient>> =
-        mapOf(
-            "start-game" to JSingleton(StartGameMessage),
-            "place-a-bid" to JPlaceABidMessage,
-            "play-a-card" to JPlayACardMessage,
-        )
+        config.associate { (_, eventType, converter) -> eventType to converter }
 
-    override fun extractTypeName(obj: MessageFromClient): String =
-        when (obj) {
-            is StartGameMessage -> "start-game"
-            is PlaceABidMessage -> "place-a-bid"
-            is PlayACardMessage -> "play-a-card"
-        }
+    override fun extractTypeName(obj: MessageFromClient): String {
+        val configForThisObj = config.firstOrNull { (clazz, _, _) -> clazz == obj::class }
+        checkNotNull(configForThisObj) { "Configure parsing for ${obj::class.java.simpleName}" }
+        return configForThisObj.second
+    }
 }
 
 private object JPlaceABidMessage : JAny<PlaceABidMessage>() {
