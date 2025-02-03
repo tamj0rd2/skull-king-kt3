@@ -24,8 +24,6 @@ tasks {
             failOnPassedAfterRetry = false
 
             filter {
-                // TODO: Can anything be done to improve WebServerSmokeTest? It has been flaky since I changed the creation of the game from
-                //  using an HTTP post to using a websocket. It's a concurrency issue - it only happens when other tests are running.
                 includeAnnotationClasses.add("*SmokeTest")
             }
         }

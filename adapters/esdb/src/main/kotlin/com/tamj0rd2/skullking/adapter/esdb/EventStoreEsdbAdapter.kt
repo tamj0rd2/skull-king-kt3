@@ -58,7 +58,6 @@ class EventStoreEsdbAdapter<ID, E : Event<ID>>(
         subscribers.add(subscriber)
     }
 
-    // TODO: rename events to eventsToWrite
     override fun append(
         entityId: ID,
         expectedVersion: Version,

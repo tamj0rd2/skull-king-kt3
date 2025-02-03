@@ -15,6 +15,7 @@ class CreateNewLobbyService(
     private val savePlayerIdPort: SavePlayerIdPort,
 ) : CreateNewLobbyUseCase {
     override fun invoke(command: CreateNewLobbyCommand): CreateNewLobbyOutput {
+        // TODO: completely get rid of the sessionId stuff for now. The player can just create their own ID for now.
         val playerId = PlayerId.random()
         savePlayerIdPort.save(command.sessionId, playerId)
 
