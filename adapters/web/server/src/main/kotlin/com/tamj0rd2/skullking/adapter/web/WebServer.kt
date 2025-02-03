@@ -1,7 +1,6 @@
 package com.tamj0rd2.skullking.adapter.web
 
 import com.tamj0rd2.skullking.adapter.esdb.EventStoreEsdbAdapter
-import com.tamj0rd2.skullking.adapter.esdb.EventStoreEsdbAdapter.StreamNameProvider
 import com.tamj0rd2.skullking.adapter.inmemory.PlayerIdStorageInMemoryAdapter
 import com.tamj0rd2.skullking.adapter.web.MessageFromClient.PlaceABidMessage
 import com.tamj0rd2.skullking.adapter.web.MessageFromClient.PlayACardMessage
@@ -13,7 +12,6 @@ import com.tamj0rd2.skullking.application.port.inandout.LobbyNotificationListene
 import com.tamj0rd2.skullking.domain.auth.SessionId
 import com.tamj0rd2.skullking.domain.game.LobbyId
 import com.tamj0rd2.skullking.domain.game.PlayerId
-import com.tamj0rd2.skullking.serialization.json.JLobbyEvent
 import org.http4k.core.Request
 import org.http4k.lens.Header
 import org.http4k.routing.websockets
@@ -71,17 +69,7 @@ class WebServer(
             val playerIdStorage = PlayerIdStorageInMemoryAdapter()
 
             return OutputPorts(
-                lobbyEventStore =
-                    EventStoreEsdbAdapter(
-                        // TODO: I don't like that I need to provide this configuration in the server and the tests. seems ripe for
-                        //  making a mistake.
-                        streamNameProvider =
-                            StreamNameProvider(
-                                prefix = "lobby-events",
-                                idToString = LobbyId::show,
-                            ),
-                        converter = JLobbyEvent,
-                    ),
+                lobbyEventStore = EventStoreEsdbAdapter.forLobbyEvents(),
                 findPlayerIdPort = playerIdStorage,
                 savePlayerIdPort = playerIdStorage,
             )

@@ -5,6 +5,7 @@ import com.eventstore.dbclient.CreatePersistentSubscriptionToStreamOptions
 import com.eventstore.dbclient.EventData
 import com.eventstore.dbclient.EventDataBuilder
 import com.eventstore.dbclient.EventStoreDBClient
+import com.eventstore.dbclient.EventStoreDBClientSettings
 import com.eventstore.dbclient.EventStoreDBConnectionString
 import com.eventstore.dbclient.EventStoreDBPersistentSubscriptionsClient
 import com.eventstore.dbclient.ExpectedRevision
@@ -18,20 +19,20 @@ import com.eventstore.dbclient.WrongExpectedVersionException
 import com.tamj0rd2.skullking.application.port.output.EventStore
 import com.tamj0rd2.skullking.application.port.output.EventStoreSubscriber
 import com.tamj0rd2.skullking.domain.Event
+import com.tamj0rd2.skullking.domain.game.LobbyId
 import com.tamj0rd2.skullking.domain.game.Version
+import com.tamj0rd2.skullking.serialization.json.JLobbyEvent
 import com.ubertob.kondor.json.JSealed
 import java.util.concurrent.ExecutionException
 
 class EventStoreEsdbAdapter<ID, E : Event<ID>>(
     private val streamNameProvider: StreamNameProvider<ID>,
     private val converter: JSealed<E>,
-    // TODO: this stream name shouldn't be defaulted.
-    private val subscriptionStreamName: String = "\$ce-lobby",
-    private val subscriptionGroup: String = "spike-subscriptions",
+    private val subscriptionStreamName: String,
+    private val subscriptionGroup: String = "subscriptions",
+    clientSettings: EventStoreDBClientSettings = EventStoreDBConnectionString.parseOrThrow("esdb://localhost:2113?tls=false"),
     initialSubscribers: List<EventStoreSubscriber<ID, E>> = emptyList(),
 ) : EventStore<ID, E> {
-    private val subscribers = mutableListOf(*initialSubscribers.toTypedArray())
-
     data class StreamNameProvider<ID>(
         private val prefix: String,
         private val idToString: (ID) -> String,
@@ -39,9 +40,9 @@ class EventStoreEsdbAdapter<ID, E : Event<ID>>(
         fun streamNameFor(id: ID) = "$prefix-${idToString(id)}"
     }
 
-    private val connectionString = EventStoreDBConnectionString.parseOrThrow("esdb://localhost:2113?tls=false")
-    private val client = EventStoreDBClient.create(connectionString)
-    private val subscriptionClient = EventStoreDBPersistentSubscriptionsClient.create(connectionString)
+    private val subscribers = mutableListOf(*initialSubscribers.toTypedArray())
+    private val client = EventStoreDBClient.create(clientSettings)
+    private val subscriptionClient = EventStoreDBPersistentSubscriptionsClient.create(clientSettings)
 
     init {
         startPersistentSubscription()
@@ -180,4 +181,18 @@ class EventStoreEsdbAdapter<ID, E : Event<ID>>(
     private fun ResolvedEvent.asVersion() = event.revision.toVersion()
 
     private fun ResolvedEvent.dataAsString() = event.eventData.toString(Charsets.UTF_8)
+
+    companion object {
+        fun forLobbyEvents() =
+            EventStoreEsdbAdapter(
+                streamNameProvider =
+                    StreamNameProvider(
+                        prefix = "lobby-events",
+                        idToString = LobbyId::show,
+                    ),
+                converter = JLobbyEvent,
+                // TODO: make this part of StreamNameProvider, since it's possible to derive it.
+                subscriptionStreamName = "\$ce-lobby",
+            )
+    }
 }
