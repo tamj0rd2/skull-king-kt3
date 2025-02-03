@@ -21,14 +21,6 @@ class LobbyNotifier {
         getNotifierForLobby(lobbyId).broadcast(updates)
     }
 
-    fun broadcast(
-        lobbyId: LobbyId,
-        vararg updates: LobbyNotification,
-    ) {
-        require(updates.isNotEmpty()) { "list of updates was empty" }
-        return broadcast(lobbyId, updates.toList())
-    }
-
     private fun getNotifierForLobby(lobbyId: LobbyId) = notifiers[lobbyId] ?: LobbySpecificNotifier().also { notifiers[lobbyId] = it }
 
     private class LobbySpecificNotifier {
