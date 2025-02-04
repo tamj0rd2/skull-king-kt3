@@ -20,7 +20,7 @@ data class LobbyState private constructor(
     val atVersion: Version,
     val players: List<PlayerId>,
     val gameState: GameState?,
-    val notifications: Notifications,
+    val notifications: List<LobbyNotification>,
 ) {
     internal fun apply(event: LobbyEvent): Result4k<LobbyState, LobbyErrorCode> =
         copy(atVersion = atVersion.next()).run {
@@ -90,8 +90,7 @@ data class LobbyState private constructor(
         return block(gameState).map { updatedGameState -> copy(gameState = updatedGameState) }
     }
 
-    private fun withNotifications(newNotifications: List<LobbyNotification>) =
-        copy(notifications = notifications.add(atVersion, newNotifications.toList()))
+    private fun withNotifications(newNotifications: List<LobbyNotification>) = copy(notifications = newNotifications)
 
     private fun withNotification(newNotification: LobbyNotification) = withNotifications(listOf(newNotification))
 
@@ -101,7 +100,7 @@ data class LobbyState private constructor(
                 atVersion = Version.NONE,
                 players = emptyList(),
                 gameState = null,
-                notifications = Notifications(emptyMap()),
+                notifications = emptyList(),
             )
     }
 }
