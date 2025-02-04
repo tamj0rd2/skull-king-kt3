@@ -7,7 +7,7 @@ import com.tamj0rd2.skullking.application.port.input.testsupport.Then
 import com.tamj0rd2.skullking.application.port.input.testsupport.UseCaseContract
 import com.tamj0rd2.skullking.application.port.input.testsupport.When
 import com.tamj0rd2.skullking.application.port.input.testsupport.each
-import com.tamj0rd2.skullking.domain.game.LobbyArbs.validPlayerCountToStartALobby
+import com.tamj0rd2.skullking.domain.game.LobbyArbs.validPlayerCountToStartAGame
 import com.tamj0rd2.skullking.domain.game.RoundNumber
 import com.tamj0rd2.skullking.domain.game.StartGameErrorCode.TooFewPlayers
 import com.tamj0rd2.skullking.domain.game.propertyTest
@@ -18,13 +18,13 @@ import org.junit.jupiter.api.Test
 import strikt.assertions.hasSize
 import strikt.assertions.isEqualTo
 
-interface StartLobbyUseCaseContract : UseCaseContract {
+interface StartGameUseCaseContract : UseCaseContract {
     val propertyTestIterations: Int get() = 1000
 
     @Test
     fun `starting the game begins round 1`() {
         propertyTest {
-            checkAll(propertyTestIterations, Arb.validPlayerCountToStartALobby) { playerCount ->
+            checkAll(propertyTestIterations, Arb.validPlayerCountToStartAGame) { playerCount ->
                 val gameCreator = scenario.newPlayer()
                 val otherPlayers = scenario.newPlayers(playerCount - 1)
 
@@ -48,7 +48,7 @@ interface StartLobbyUseCaseContract : UseCaseContract {
     @Test
     fun `each player is dealt 1 card`() =
         propertyTest {
-            checkAll(propertyTestIterations, Arb.validPlayerCountToStartALobby) { playerCount ->
+            checkAll(propertyTestIterations, Arb.validPlayerCountToStartAGame) { playerCount ->
                 val gameCreator = scenario.newPlayer()
                 val otherPlayers = scenario.newPlayers(playerCount - 1)
 

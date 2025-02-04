@@ -4,7 +4,7 @@ import com.tamj0rd2.skullking.application.port.input.CreateNewLobbyUseCaseContra
 import com.tamj0rd2.skullking.application.port.input.JoinALobbyUseCaseContract
 import com.tamj0rd2.skullking.application.port.input.PlaceABidUseCaseContract
 import com.tamj0rd2.skullking.application.port.input.PlayACardUseCaseContract
-import com.tamj0rd2.skullking.application.port.input.StartLobbyUseCaseContract
+import com.tamj0rd2.skullking.application.port.input.StartGameUseCaseContract
 import org.junit.jupiter.api.AutoClose
 import org.junit.jupiter.api.parallel.Execution
 import org.junit.jupiter.api.parallel.ExecutionMode.SAME_THREAD
@@ -16,7 +16,7 @@ import org.junit.jupiter.api.parallel.ExecutionMode.SAME_THREAD
 class WebServerTest :
     CreateNewLobbyUseCaseContract,
     JoinALobbyUseCaseContract,
-    StartLobbyUseCaseContract,
+    StartGameUseCaseContract,
     PlaceABidUseCaseContract,
     PlayACardUseCaseContract {
     override val propertyTestIterations = 1

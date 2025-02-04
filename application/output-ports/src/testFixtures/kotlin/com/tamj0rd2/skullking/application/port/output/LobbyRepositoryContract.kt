@@ -1,7 +1,7 @@
 package com.tamj0rd2.skullking.application.port.output
 
 import com.tamj0rd2.skullking.domain.game.Lobby
-import com.tamj0rd2.skullking.domain.game.LobbyActionArbs
+import com.tamj0rd2.skullking.domain.game.LobbyCommandArbs
 import com.tamj0rd2.skullking.domain.game.LobbyId
 import com.tamj0rd2.skullking.domain.game.PlayerId
 import com.tamj0rd2.skullking.domain.game.mustExecute
@@ -21,7 +21,7 @@ interface LobbyRepositoryContract {
     @Test
     fun `modifying, saving and loading a lobby multiple times results in the same state as just modifying the lobby in memory`() =
         propertyTest {
-            checkAll(propertyTestIterations, LobbyActionArbs.validLobbyCommandsArb) { actions ->
+            checkAll(propertyTestIterations, LobbyCommandArbs.validLobbyCommandsArb) { actions ->
                 val lobbyModifiedInMemoryOnly = Lobby.new(PlayerId.random()).also(lobbyRepository::save)
                 val lobbyId = lobbyModifiedInMemoryOnly.id
 
@@ -42,7 +42,7 @@ interface LobbyRepositoryContract {
     @Test
     fun `can load a lobby at a specific version`() =
         propertyTest {
-            checkAll(propertyTestIterations, LobbyActionArbs.lobbyCommandsArb) { commands ->
+            checkAll(propertyTestIterations, LobbyCommandArbs.lobbyCommandsArb) { commands ->
                 val lobby = Lobby.new(PlayerId.random())
                 commands.forEach(lobby::execute)
                 lobbyRepository.save(lobby)

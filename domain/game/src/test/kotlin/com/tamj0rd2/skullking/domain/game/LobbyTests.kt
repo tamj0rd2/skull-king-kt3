@@ -1,7 +1,7 @@
 package com.tamj0rd2.skullking.domain.game
 
 import com.tamj0rd2.skullking.domain.game.Lobby.Companion.MAXIMUM_PLAYER_COUNT
-import com.tamj0rd2.skullking.domain.game.LobbyActionArbs.lobbyCommandsArb
+import com.tamj0rd2.skullking.domain.game.LobbyCommandArbs.lobbyCommandsArb
 import dev.forkhandles.values.random
 import io.kotest.property.Arb
 import io.kotest.property.checkAll

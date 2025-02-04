@@ -10,7 +10,7 @@ import io.kotest.property.arbitrary.choose
 import io.kotest.property.arbitrary.list
 import io.kotest.property.arbitrary.set
 
-object LobbyActionArbs {
+object LobbyCommandArbs {
     private val addPlayerLobbyCommandArb =
         arbitrary {
             LobbyCommand.AddPlayer(

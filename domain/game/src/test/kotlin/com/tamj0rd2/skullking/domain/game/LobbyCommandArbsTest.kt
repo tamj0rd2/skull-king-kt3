@@ -3,7 +3,7 @@ package com.tamj0rd2.skullking.domain.game
 import com.lemonappdev.konsist.api.Konsist
 import com.lemonappdev.konsist.api.ext.list.withName
 import com.lemonappdev.konsist.api.verify.assertNotEmpty
-import com.tamj0rd2.skullking.domain.game.LobbyActionArbs.validLobbyCommandsArb
+import com.tamj0rd2.skullking.domain.game.LobbyCommandArbs.validLobbyCommandsArb
 import org.junit.jupiter.api.Test
 import strikt.api.Assertion.Builder
 import strikt.api.expectCatching
@@ -12,7 +12,7 @@ import strikt.assertions.contains
 import strikt.assertions.isSuccess
 import strikt.assertions.single
 
-class LobbyActionsArbsTest {
+class LobbyCommandArbsTest {
     private val gameModuleName = "domain/game"
 
     @Test
@@ -31,7 +31,7 @@ class LobbyActionsArbsTest {
             Konsist
                 .scopeFromProject(gameModuleName, "testFixtures")
                 .objects()
-                .withName("LobbyActionArbs")
+                .withName("LobbyCommandArbs")
                 .single()
                 .properties(includeNested = false)
 

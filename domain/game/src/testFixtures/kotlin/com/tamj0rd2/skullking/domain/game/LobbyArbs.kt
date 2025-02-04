@@ -9,7 +9,7 @@ import io.kotest.property.arbitrary.uuid
 object LobbyArbs {
     val playerIdArb = Arb.uuid(allowNilValue = false).map { PlayerId.of(it) }
     val lobbyIdArb = Arb.uuid(allowNilValue = false).map { LobbyId.of(it) }
-    val Arb.Companion.validPlayerCountToStartALobby get() = Arb.int(min = Lobby.MINIMUM_PLAYER_COUNT, max = Lobby.MAXIMUM_PLAYER_COUNT)
+    val Arb.Companion.validPlayerCountToStartAGame get() = Arb.int(min = Lobby.MINIMUM_PLAYER_COUNT, max = Lobby.MAXIMUM_PLAYER_COUNT)
     val Arb.Companion.validBid get() = Arb.int(min = 0, max = 10).map { Bid.of(it) }
 }
 
