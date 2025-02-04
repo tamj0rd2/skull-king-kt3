@@ -9,7 +9,9 @@ import com.tamj0rd2.skullking.domain.game.Lobby.Companion.MAXIMUM_PLAYER_COUNT
 import com.tamj0rd2.skullking.domain.game.Lobby.Companion.MINIMUM_PLAYER_COUNT
 import com.tamj0rd2.skullking.domain.game.LobbyNotification.ABidWasPlaced
 import com.tamj0rd2.skullking.domain.game.LobbyNotification.ACardWasDealt
+import com.tamj0rd2.skullking.domain.game.LobbyNotification.ACardWasPlayed
 import com.tamj0rd2.skullking.domain.game.LobbyNotification.AllBidsHaveBeenPlaced
+import com.tamj0rd2.skullking.domain.game.LobbyNotification.TheTrickHasEnded
 import com.tamj0rd2.skullking.domain.game.StartGameErrorCode.TooFewPlayers
 import dev.forkhandles.result4k.Result4k
 import dev.forkhandles.result4k.map
@@ -26,33 +28,9 @@ data class LobbyState private constructor(
                 is LobbyCreatedEvent -> apply(event)
                 is PlayerJoinedEvent -> apply(event)
                 is GameStartedEvent -> apply(event)
-                is CardDealtEvent -> withNotification(ACardWasDealt(Card)).asSuccess()
-
-                // TODO: this is pretty awful... I think I should have a separation between notifications about the lobby, and notifications
-                //  about the game. even just to make things easier to derive.
-                is BidPlacedEvent ->
-                    updateGameState { it.apply(event) }.map {
-                        it.withNotifications(
-                            buildList {
-                                add(ABidWasPlaced(event.playerId))
-
-                                if (it.gameState!!.allBidsHaveBeenPlaced) {
-                                    add(AllBidsHaveBeenPlaced(it.gameState.bids))
-                                }
-                            },
-                        )
-                    }
-
-                is CardPlayedEvent ->
-                    withNotifications(
-                        buildList {
-                            val playedCard = PlayedCard(event.card, event.playerId)
-                            add(LobbyNotification.ACardWasPlayed(playedCard))
-
-                            // FIXME: the winner is wrong. drive out correct behaviour through a test.
-                            add(LobbyNotification.TheTrickHasEnded(event.playerId))
-                        },
-                    ).asSuccess()
+                is CardDealtEvent -> apply(event)
+                is BidPlacedEvent -> apply(event)
+                is CardPlayedEvent -> apply(event)
             }
         }
 
@@ -78,6 +56,34 @@ data class LobbyState private constructor(
             .withNotification(LobbyNotification.TheGameHasStarted)
             .asSuccess()
     }
+
+    private fun apply(
+        @Suppress("UNUSED_PARAMETER") event: CardDealtEvent,
+    ) = withNotification(ACardWasDealt(Card)).asSuccess()
+
+    private fun apply(event: BidPlacedEvent) =
+        updateGameState { it.apply(event) }.map { gameState ->
+            gameState.withNotifications(
+                buildList {
+                    add(ABidWasPlaced(event.playerId))
+
+                    if (gameState.gameState!!.allBidsHaveBeenPlaced) {
+                        add(AllBidsHaveBeenPlaced(gameState.gameState.bids))
+                    }
+                },
+            )
+        }
+
+    private fun apply(event: CardPlayedEvent) =
+        withNotifications(
+            buildList {
+                val playedCard = PlayedCard(event.card, event.playerId)
+                add(ACardWasPlayed(playedCard))
+
+                // FIXME: the winner is wrong. drive out correct behaviour through a test.
+                add(TheTrickHasEnded(event.playerId))
+            },
+        ).asSuccess()
 
     private fun updateGameState(block: (GameState) -> Result4k<GameState, LobbyErrorCode>): Result4k<LobbyState, LobbyErrorCode> {
         if (gameState == null) return GameNotInProgress().asFailure()
