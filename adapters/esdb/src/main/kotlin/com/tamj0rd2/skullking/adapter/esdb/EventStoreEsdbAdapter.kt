@@ -31,7 +31,6 @@ class EventStoreEsdbAdapter<ID, E : Event<ID>>(
     private val subscriptionStreamName: String,
     private val subscriptionGroup: String = "subscriptions",
     clientSettings: EventStoreDBClientSettings = EventStoreDBConnectionString.parseOrThrow("esdb://localhost:2113?tls=false"),
-    initialSubscribers: List<EventStoreSubscriber<ID, E>> = emptyList(),
 ) : EventStore<ID, E> {
     data class StreamNameProvider<ID>(
         private val prefix: String,
@@ -40,7 +39,7 @@ class EventStoreEsdbAdapter<ID, E : Event<ID>>(
         fun streamNameFor(id: ID) = "$prefix-${idToString(id)}"
     }
 
-    private val subscribers = mutableListOf(*initialSubscribers.toTypedArray())
+    private val subscribers = mutableListOf<EventStoreSubscriber<ID, E>>()
     private val client = EventStoreDBClient.create(clientSettings)
     private val subscriptionClient = EventStoreDBPersistentSubscriptionsClient.create(clientSettings)
 
