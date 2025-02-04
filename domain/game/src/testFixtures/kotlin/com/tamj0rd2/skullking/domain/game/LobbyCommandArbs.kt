@@ -18,9 +18,9 @@ object LobbyCommandArbs {
             )
         }
 
-    private val startLobbyCommandArb =
+    private val startGameLobbyCommandArb =
         arbitrary {
-            LobbyCommand.Start
+            LobbyCommand.StartGame
         }
 
     private val placeBidLobbyCommandArb =
@@ -36,7 +36,7 @@ object LobbyCommandArbs {
     private val lobbyCommandArb =
         Arb.choice(
             addPlayerLobbyCommandArb,
-            startLobbyCommandArb,
+            startGameLobbyCommandArb,
             placeBidLobbyCommandArb,
             playACardLobbyCommandArb,
         )
@@ -49,7 +49,7 @@ object LobbyCommandArbs {
                 val addPlayerActions = Arb.set(addPlayerLobbyCommandArb, Lobby.MINIMUM_PLAYER_COUNT..<Lobby.MAXIMUM_PLAYER_COUNT).bind()
                 addAll(addPlayerActions)
 
-                add(startLobbyCommandArb.bind())
+                add(startGameLobbyCommandArb.bind())
 
                 // FIXME: this action stuff sucks now :(
                 val bidPlacedActions =

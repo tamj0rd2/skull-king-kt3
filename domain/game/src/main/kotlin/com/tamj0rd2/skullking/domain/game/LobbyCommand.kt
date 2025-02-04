@@ -5,7 +5,7 @@ sealed class LobbyCommand {
         val playerId: PlayerId,
     ) : LobbyCommand()
 
-    data object Start : LobbyCommand()
+    data object StartGame : LobbyCommand()
 
     data class PlaceBid(
         val playerId: PlayerId,

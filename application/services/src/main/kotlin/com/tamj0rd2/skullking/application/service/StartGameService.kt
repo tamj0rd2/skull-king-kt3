@@ -15,7 +15,7 @@ class StartGameService(
 ) : StartGameUseCase {
     override fun invoke(command: StartGameCommand): Result4k<StartGameOutput, LobbyErrorCode> {
         val game = lobbyRepository.load(command.lobbyId)
-        game.execute(LobbyCommand.Start).onFailure { return it }
+        game.execute(LobbyCommand.StartGame).onFailure { return it }
         lobbyRepository.save(game)
         return StartGameOutput.asSuccess()
     }

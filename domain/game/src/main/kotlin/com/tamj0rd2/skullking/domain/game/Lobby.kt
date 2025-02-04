@@ -4,7 +4,7 @@ import com.tamj0rd2.extensions.asSuccess
 import com.tamj0rd2.skullking.domain.game.LobbyCommand.AddPlayer
 import com.tamj0rd2.skullking.domain.game.LobbyCommand.PlaceBid
 import com.tamj0rd2.skullking.domain.game.LobbyCommand.PlayACard
-import com.tamj0rd2.skullking.domain.game.LobbyCommand.Start
+import com.tamj0rd2.skullking.domain.game.LobbyCommand.StartGame
 import dev.forkhandles.result4k.Result4k
 import dev.forkhandles.result4k.onFailure
 import dev.forkhandles.result4k.orThrow
@@ -59,7 +59,7 @@ class Lobby private constructor(
                     PlayerJoinedEvent(id, action.playerId),
                 )
 
-            is Start ->
+            is StartGame ->
                 appendEvents(
                     GameStartedEvent(id),
                     CardDealtEvent(id),
