@@ -5,6 +5,7 @@ import org.http4k.websocket.Websocket
 import org.http4k.websocket.WsMessage
 import org.http4k.websocket.WsResponse
 import org.http4k.websocket.WsStatus
+import org.slf4j.LoggerFactory
 
 internal class WsSession(
     private val ws: Websocket,
@@ -41,7 +42,7 @@ internal class WsSession(
     }
 
     private fun log(message: String) {
-        println("server: $playerId: $message")
+        logger.info("server: $playerId: $message")
     }
 
     companion object {
@@ -49,6 +50,8 @@ internal class WsSession(
             playerId: PlayerId,
             setup: WsSession.() -> WsMessageHandler,
         ) = WsResponse { ws -> WsSession(ws, playerId, setup) }
+
+        private val logger = LoggerFactory.getLogger(WsSession::class.java.simpleName)
     }
 }
 

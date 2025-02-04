@@ -16,6 +16,7 @@ import org.http4k.routing.websockets
 import org.http4k.server.Undertow
 import org.http4k.server.asServer
 import org.http4k.websocket.WsHandler
+import org.slf4j.LoggerFactory
 import java.net.ServerSocket
 import org.http4k.routing.ws.bind as bindWs
 
@@ -60,7 +61,12 @@ class WebServer(
 
     private val http4kServer = wsRouter.asServer(Undertow(port))
 
-    fun start() = http4kServer.start()
+    private val logger = LoggerFactory.getLogger(this::class.java.simpleName)
+
+    fun start() =
+        http4kServer.start().also {
+            logger.info("🚀 server started on localhost:${it.port()}")
+        }
 
     companion object {
         private fun createOutputPorts(): OutputPorts =

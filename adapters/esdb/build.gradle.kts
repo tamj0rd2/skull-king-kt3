@@ -5,6 +5,7 @@ plugins {
 dependencies {
     forImplementation(libs.bundles.json)
     forImplementation(libs.eventstoredb)
+    forImplementation(libs.slf4j)
     forImplementation(project(":domain:game"))
     forImplementation(project(":application:output-ports"), alsoUseForTesting = true)
     forImplementation(project(":lib:common-json"))

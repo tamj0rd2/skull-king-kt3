@@ -25,7 +25,7 @@ kotest-property = { module = "io.kotest:kotest-property", version.ref = "kotest"
 kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin-gradle-plugin" }
 result4k = { module = "dev.forkhandles:result4k", version.ref = "forkhandles" }
 retrytests-plugin = { module = "org.gradle:test-retry-gradle-plugin", version = "1.6.0"}
-slf4j = { module = "org.slf4j:slf4j-simple", version = "2.0.16"}
+slf4j = { module = "org.slf4j:slf4j-jdk14", version = "2.0.16"}
 strikt-core = { module = "io.strikt:strikt-core", version = "0.34.0" }
 values4k = { module = "dev.forkhandles:values4k", version.ref = "forkhandles" }
 

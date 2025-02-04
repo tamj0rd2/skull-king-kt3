@@ -23,6 +23,7 @@ import com.tamj0rd2.skullking.domain.game.LobbyId
 import com.tamj0rd2.skullking.domain.game.Version
 import com.tamj0rd2.skullking.serialization.json.JLobbyEvent
 import com.ubertob.kondor.json.JSealed
+import org.slf4j.LoggerFactory
 import java.util.concurrent.ExecutionException
 
 class EventStoreEsdbAdapter<ID, E : Event<ID>>(
@@ -39,6 +40,7 @@ class EventStoreEsdbAdapter<ID, E : Event<ID>>(
         fun streamNameFor(id: ID) = "$prefix-${idToString(id)}"
     }
 
+    private val logger = LoggerFactory.getLogger(this::class.java)
     private val subscribers = mutableListOf<EventStoreSubscriber<ID, E>>()
     private val client = EventStoreDBClient.create(clientSettings)
     private val subscriptionClient = EventStoreDBPersistentSubscriptionsClient.create(clientSettings)
@@ -143,7 +145,7 @@ class EventStoreEsdbAdapter<ID, E : Event<ID>>(
                         subscription: PersistentSubscription?,
                         exception: Throwable?,
                     ) {
-                        println("ESDB - subscription cancelled")
+                        logger.info("ESDB - subscription cancelled")
                         if (exception != null) throw exception
                     }
 

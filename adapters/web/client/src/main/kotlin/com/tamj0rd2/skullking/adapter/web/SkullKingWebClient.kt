@@ -31,6 +31,7 @@ import dev.forkhandles.result4k.Result4k
 import org.http4k.client.WebsocketClient
 import org.http4k.core.Uri
 import org.http4k.websocket.Websocket
+import org.slf4j.LoggerFactory
 import java.time.Duration
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit.MILLISECONDS
@@ -135,26 +136,27 @@ class SkullKingWebClient(
         playerId: PlayerId,
         lobbyNotificationListener: LobbyNotificationListener,
     ): Websocket {
+        val logger = LoggerFactory.getLogger(playerId.toString())
         val ws =
             WebsocketClient.nonBlocking(
                 uri = baseUri.scheme("ws").path(path),
                 headers = listOf("player_id" to PlayerId.show(playerId)),
                 timeout = Duration.ofSeconds(1),
                 onConnect = { ws ->
-                    println("client: $playerId: connected")
+                    logger.info("client: $playerId: connected")
                     ws.onMessage {
                         val message = messageToClient(it)
-                        println("client: $playerId: received: $message")
+                        logger.info("client: $playerId: received: $message")
 
                         if (message is LobbyNotificationMessage) {
                             lobbyNotificationListener.receive(message.lobbyNotification)
                         }
                     }
                 },
-                onError = { println("client: $playerId: error: $it") },
+                onError = { logger.info("client: $playerId: error: $it") },
             )
-        ws.onClose { println("client: $playerId: closed: $it") }
-        ws.onError { println("client: $playerId: error: $it") }
+        ws.onClose { logger.info("client: $playerId: closed: $it") }
+        ws.onError { logger.info("client: $playerId: error: $it") }
         return ws
     }
 }

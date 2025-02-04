@@ -9,3 +9,34 @@ plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
     application
 }
+
+// otel stuff from https://github.com/open-telemetry/opentelemetry-java-examples/blob/main/javaagent/build.gradle.kts
+val agent = configurations.create("agent")
+val extension = configurations.create("extension")
+
+dependencies {
+    implementation("io.opentelemetry:opentelemetry-api:1.46.0")
+    agent("io.opentelemetry.javaagent:opentelemetry-javaagent:2.12.0")
+    extension("io.opentelemetry.contrib:opentelemetry-samplers:1.43.0-alpha") {
+        isTransitive = false
+    }
+}
+
+val copyAgent =
+    tasks.register<Copy>("copyAgent") {
+        from(agent.singleFile)
+        into(layout.buildDirectory.dir("agent"))
+        rename("opentelemetry-javaagent-.*\\.jar", "opentelemetry-javaagent.jar")
+    }
+
+val copyExtension =
+    tasks.register<Copy>("copyExtension") {
+        from(extension.singleFile)
+        into(layout.buildDirectory.dir("agent"))
+        rename(".*\\.jar", "opentelemetry-javaagent-extension.jar")
+    }
+
+tasks.named<Jar>("jar") {
+    dependsOn(copyAgent)
+    dependsOn(copyExtension)
+}
