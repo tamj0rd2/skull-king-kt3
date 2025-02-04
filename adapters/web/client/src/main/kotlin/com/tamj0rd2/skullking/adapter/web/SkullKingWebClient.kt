@@ -35,8 +35,7 @@ import java.time.Duration
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit.MILLISECONDS
 
-class
-SkullKingWebClient(
+class SkullKingWebClient(
     private val baseUri: Uri,
     private val timeoutMs: Long = 500,
 ) : SkullKingUseCases,
@@ -56,12 +55,10 @@ SkullKingWebClient(
             )
 
         val message = ws.waitForMessage<LobbyCreatedMessage>()
-        check(message.playerId != PlayerId.NONE) { "got a zero playerId" }
         check(message.lobbyId != LobbyId.NONE) { "got a zero lobbyId" }
 
         return CreateNewLobbyOutput(
             lobbyId = message.lobbyId,
-            playerId = message.playerId,
         )
     }
 
@@ -73,10 +70,8 @@ SkullKingWebClient(
                 lobbyNotificationListener = command.lobbyNotificationListener,
             )
 
-        val message = ws.waitForMessage<JoinAcknowledgedMessage>()
-        check(message.playerId != PlayerId.NONE) { "got a zero playerId" }
-
-        return JoinALobbyOutput(playerId = message.playerId).asSuccess()
+        ws.waitForMessage<JoinAcknowledgedMessage>()
+        return JoinALobbyOutput.asSuccess()
     }
 
     override fun invoke(command: StartGameCommand): Result4k<StartGameOutput, LobbyErrorCode> {

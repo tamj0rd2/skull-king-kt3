@@ -15,8 +15,5 @@ interface JoinALobbyUseCase {
         val lobbyNotificationListener: LobbyNotificationListener,
     )
 
-    data class JoinALobbyOutput(
-        // TODO: remove this.
-        val playerId: PlayerId,
-    )
+    data object JoinALobbyOutput
 }

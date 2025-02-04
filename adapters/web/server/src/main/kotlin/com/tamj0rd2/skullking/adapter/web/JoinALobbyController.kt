@@ -27,14 +27,13 @@ internal class JoinALobbyController(
                 lobbyNotificationListener = lobbyNotificationListener,
             )
 
-        val output =
-            joinALobbyUseCase.invoke(command).onFailure {
-                ws.send(ErrorMessage(it.reason))
-                throw it.reason
-            }
+        joinALobbyUseCase.invoke(command).onFailure {
+            ws.send(ErrorMessage(it.reason))
+            throw it.reason
+        }
 
-        ws.send(JoinAcknowledgedMessage(output.playerId))
-        return PlayerSession(ws = ws, lobbyId = lobbyId, playerId = output.playerId)
+        ws.send(JoinAcknowledgedMessage)
+        return PlayerSession(ws = ws, lobbyId = lobbyId, playerId = ws.playerId)
     }
 
     companion object {

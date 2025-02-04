@@ -20,6 +20,6 @@ class JoinALobbyService(
         lobbyRepository.save(game)
 
         lobbyNotifier.subscribe(game.id, command.lobbyNotificationListener)
-        return JoinALobbyOutput(command.playerId).asSuccess()
+        return JoinALobbyOutput.asSuccess()
     }
 }

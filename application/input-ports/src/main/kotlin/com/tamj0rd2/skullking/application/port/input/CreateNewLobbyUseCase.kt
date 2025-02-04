@@ -14,7 +14,5 @@ interface CreateNewLobbyUseCase {
 
     data class CreateNewLobbyOutput(
         val lobbyId: LobbyId,
-        // TODO: remove
-        val playerId: PlayerId,
     )
 }

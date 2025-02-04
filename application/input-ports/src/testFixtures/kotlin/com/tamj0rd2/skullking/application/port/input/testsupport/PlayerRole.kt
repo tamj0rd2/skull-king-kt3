@@ -69,7 +69,6 @@ class PlayerRole(
                 ),
             )
 
-        expectThat(output.playerId).isNotEqualTo(PlayerId.NONE)
         expectThat(output.lobbyId).isNotEqualTo(LobbyId.NONE)
         this.lobbyId = output.lobbyId
         return output.lobbyId
@@ -87,9 +86,7 @@ class PlayerRole(
                 lobbyNotificationListener = this,
             )
 
-        driver.invoke(command).orThrow().playerId.also {
-            expectThat(it).isNotEqualTo(PlayerId.NONE)
-        }
+        driver.invoke(command).orThrow()
     }
 
     fun `join the lobby again`() {

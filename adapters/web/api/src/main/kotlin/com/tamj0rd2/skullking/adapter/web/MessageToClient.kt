@@ -20,7 +20,6 @@ import com.tamj0rd2.skullking.domain.game.LobbyNotification.AllBidsHaveBeenPlace
 import com.tamj0rd2.skullking.domain.game.LobbyNotification.TheGameHasStarted
 import com.tamj0rd2.skullking.domain.game.LobbyNotification.TheTrickHasEnded
 import com.tamj0rd2.skullking.domain.game.PlayedCard
-import com.tamj0rd2.skullking.domain.game.PlayerId
 import com.tamj0rd2.skullking.domain.game.StartGameErrorCode.TooFewPlayers
 import com.tamj0rd2.skullking.serialization.json.JBid
 import com.tamj0rd2.skullking.serialization.json.JLobbyId
@@ -39,12 +38,9 @@ import org.http4k.websocket.WsMessage
 sealed interface MessageToClient {
     data class LobbyCreatedMessage(
         val lobbyId: LobbyId,
-        val playerId: PlayerId,
     ) : MessageToClient
 
-    data class JoinAcknowledgedMessage(
-        val playerId: PlayerId,
-    ) : MessageToClient
+    data object JoinAcknowledgedMessage : MessageToClient
 
     data class LobbyNotificationMessage(
         val lobbyNotification: LobbyNotification,
@@ -63,12 +59,10 @@ val messageToClient =
 
 private object JLobbyCreatedMessage : JAny<LobbyCreatedMessage>() {
     private val lobbyId by str(JLobbyId, LobbyCreatedMessage::lobbyId)
-    private val createdBy by str(JPlayerId, LobbyCreatedMessage::playerId)
 
     override fun JsonNodeObject.deserializeOrThrow() =
         LobbyCreatedMessage(
             lobbyId = +lobbyId,
-            playerId = +createdBy,
         )
 }
 
@@ -78,7 +72,7 @@ private object JMessageToClient : JSealed<MessageToClient>() {
     override val subConverters: Map<String, ObjectNodeConverter<out MessageToClient>> =
         mapOf(
             "game-created" to JLobbyCreatedMessage,
-            "join-acknowledged" to JAcknowledged,
+            "join-acknowledged" to JSingleton(JoinAcknowledgedMessage),
             "game-update" to JLobbyNotificationMessage,
             "error-message" to JErrorMessage,
         )
@@ -90,15 +84,6 @@ private object JMessageToClient : JSealed<MessageToClient>() {
             is LobbyNotificationMessage -> "game-update"
             is ErrorMessage -> "error-message"
         }
-}
-
-private object JAcknowledged : JAny<JoinAcknowledgedMessage>() {
-    private val playerId by str(JPlayerId, JoinAcknowledgedMessage::playerId)
-
-    override fun JsonNodeObject.deserializeOrThrow() =
-        JoinAcknowledgedMessage(
-            playerId = +playerId,
-        )
 }
 
 private object JLobbyNotificationMessage : JAny<LobbyNotificationMessage>() {

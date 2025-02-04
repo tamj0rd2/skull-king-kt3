@@ -20,8 +20,8 @@ internal class CreateLobbyController(
                 lobbyNotificationListener = lobbyNotificationListener,
             )
 
-        val (lobbyId, playerId) = createNewLobbyUseCase(command)
-        ws.send(LobbyCreatedMessage(lobbyId, playerId))
-        return PlayerSession(ws, lobbyId, playerId)
+        val createLobbyOutput = createNewLobbyUseCase(command)
+        ws.send(LobbyCreatedMessage(createLobbyOutput.lobbyId))
+        return PlayerSession(ws, createLobbyOutput.lobbyId, ws.playerId)
     }
 }

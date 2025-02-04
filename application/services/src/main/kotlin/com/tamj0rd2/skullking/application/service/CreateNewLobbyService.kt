@@ -17,7 +17,6 @@ class CreateNewLobbyService(
 
         return CreateNewLobbyOutput(
             lobbyId = lobby.id,
-            playerId = command.playerId,
         )
     }
 }
