@@ -21,12 +21,12 @@ interface LobbyRepositoryContract {
     @Test
     fun `modifying, saving and loading a lobby multiple times results in the same state as just modifying the lobby in memory`() =
         propertyTest {
-            checkAll(propertyTestIterations, LobbyCommandArbs.validLobbyCommandsArb) { actions ->
+            checkAll(propertyTestIterations, LobbyCommandArbs.validLobbyCommandsArb) { commands ->
                 val lobbyModifiedInMemoryOnly = Lobby.new(PlayerId.random()).also(lobbyRepository::save)
                 val lobbyId = lobbyModifiedInMemoryOnly.id
 
-                actions.forEach { lobbyModifiedInMemoryOnly.mustExecute(it) }
-                actions.forEach {
+                commands.forEach { lobbyModifiedInMemoryOnly.mustExecute(it) }
+                commands.forEach {
                     val game = lobbyRepository.load(lobbyId)
                     game.mustExecute(it)
                     lobbyRepository.save(game)

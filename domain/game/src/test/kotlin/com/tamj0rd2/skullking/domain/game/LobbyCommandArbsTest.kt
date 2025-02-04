@@ -53,11 +53,11 @@ class LobbyCommandArbsTest {
     }
 
     // This ensures the validity of the arb we use for the rest of the tests
-    // TODO: could add some statistic here, for example, to show that the actions aren't always empty.
+    // TODO: could add some statistic here, for example, to show that the commands aren't always empty.
     @Test
     fun `valid lobby commands never throw`() =
-        invariant(arb = validLobbyCommandsArb) { lobby, action ->
-            expectCatching { lobby.mustExecute(action) }.isSuccess()
+        invariant(arb = validLobbyCommandsArb) { lobby, command ->
+            expectCatching { lobby.mustExecute(command) }.isSuccess()
         }
 }
 

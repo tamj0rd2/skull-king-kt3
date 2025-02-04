@@ -52,11 +52,11 @@ class Lobby private constructor(
         return Unit.asSuccess()
     }
 
-    fun execute(action: LobbyCommand): Result4k<Unit, LobbyErrorCode> =
-        when (action) {
+    fun execute(command: LobbyCommand): Result4k<Unit, LobbyErrorCode> =
+        when (command) {
             is AddPlayer ->
                 appendEvents(
-                    PlayerJoinedEvent(id, action.playerId),
+                    PlayerJoinedEvent(id, command.playerId),
                 )
 
             is StartGame ->
@@ -67,12 +67,12 @@ class Lobby private constructor(
 
             is PlaceBid ->
                 appendEvents(
-                    BidPlacedEvent(id, action.playerId, action.bid),
+                    BidPlacedEvent(id, command.playerId, command.bid),
                 )
 
             is PlayACard ->
                 appendEvents(
-                    CardPlayedEvent(id, action.playerId, action.card),
+                    CardPlayedEvent(id, command.playerId, command.card),
                 )
         }
 

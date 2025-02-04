@@ -46,27 +46,27 @@ object LobbyCommandArbs {
     val validLobbyCommandsArb =
         arbitrary {
             buildList {
-                val addPlayerActions = Arb.set(addPlayerLobbyCommandArb, Lobby.MINIMUM_PLAYER_COUNT..<Lobby.MAXIMUM_PLAYER_COUNT).bind()
-                addAll(addPlayerActions)
+                val addPlayerCommands = Arb.set(addPlayerLobbyCommandArb, Lobby.MINIMUM_PLAYER_COUNT..<Lobby.MAXIMUM_PLAYER_COUNT).bind()
+                addAll(addPlayerCommands)
 
                 add(startGameLobbyCommandArb.bind())
 
-                // FIXME: this action stuff sucks now :(
-                val bidPlacedActions =
+                // FIXME: this command stuff sucks now :(
+                val bidPlacedCommands =
                     Arb
-                        .set(placeBidLobbyCommandArb, addPlayerActions.size, addPlayerActions.size)
+                        .set(placeBidLobbyCommandArb, addPlayerCommands.size, addPlayerCommands.size)
                         .bind()
-                        .zip(addPlayerActions)
+                        .zip(addPlayerCommands)
                         .map { (a, b) -> a.copy(playerId = b.playerId) }
-                addAll(bidPlacedActions)
+                addAll(bidPlacedCommands)
 
-                val playCardActions =
+                val playCardCommands =
                     Arb
-                        .set(playACardLobbyCommandArb, addPlayerActions.size, addPlayerActions.size)
+                        .set(playACardLobbyCommandArb, addPlayerCommands.size, addPlayerCommands.size)
                         .bind()
-                        .zip(addPlayerActions)
+                        .zip(addPlayerCommands)
                         .map { (a, b) -> a.copy(playerId = b.playerId) }
-                addAll(playCardActions)
+                addAll(playCardCommands)
             }
         }
 
@@ -77,4 +77,4 @@ object LobbyCommandArbs {
         )
 }
 
-fun Lobby.mustExecute(action: LobbyCommand) = execute(action).orThrow()
+fun Lobby.mustExecute(command: LobbyCommand) = execute(command).orThrow()

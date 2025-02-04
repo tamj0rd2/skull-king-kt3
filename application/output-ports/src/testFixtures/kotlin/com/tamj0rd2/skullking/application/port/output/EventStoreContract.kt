@@ -82,7 +82,7 @@ interface EventStoreContract {
         }.isFailure().isA<ConcurrentModificationException>()
 
         // this should work because Sammy has now used the correct expected version. In practice, the caller should
-        // re-load the events/entity, and use the updated state to decide whether the action can still be performed.
+        // re-load the events/entity, and use the updated state to decide whether the command should still be executed.
         expectCatching {
             eventStore.append(
                 entityId = lobbyId,

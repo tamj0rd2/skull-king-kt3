@@ -106,10 +106,10 @@ class LobbyTests {
 internal fun invariant(
     iterations: Int = 1000,
     checkInvariant: (Lobby) -> Unit,
-) = invariant(iterations) { lobby, action ->
-    // I don't care whether the action succeeds.
+) = invariant(iterations) { lobby, command ->
+    // I don't care whether the command succeeds.
     // I just want to ensure the invariants are always upheld regardless.
-    lobby.execute(action)
+    lobby.execute(command)
     checkInvariant(lobby)
 }
 
@@ -120,8 +120,8 @@ internal fun invariant(
 ) = propertyTest {
     arb.checkAll(iterations) { lobbyCommands ->
         val lobby = Lobby.new(PlayerId.random())
-        lobbyCommands.forEach { action ->
-            checkInvariant(lobby, action)
+        lobbyCommands.forEach { command ->
+            checkInvariant(lobby, command)
         }
     }
 }
