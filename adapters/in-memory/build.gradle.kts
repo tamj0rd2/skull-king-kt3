@@ -4,7 +4,6 @@ plugins {
 
 dependencies {
     forImplementation(project(":domain:game"))
-    forImplementation(project(":domain:auth"))
     forImplementation(project(":application:output-ports"), alsoUseForTesting = true)
 }
 

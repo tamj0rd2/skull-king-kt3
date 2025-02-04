@@ -7,9 +7,7 @@ import com.tamj0rd2.skullking.application.port.input.PlayACardUseCase
 import com.tamj0rd2.skullking.application.port.input.SkullKingUseCases
 import com.tamj0rd2.skullking.application.port.input.StartGameUseCase
 import com.tamj0rd2.skullking.application.port.output.EventStore
-import com.tamj0rd2.skullking.application.port.output.FindPlayerIdPort
 import com.tamj0rd2.skullking.application.port.output.LobbyRepository
-import com.tamj0rd2.skullking.application.port.output.SavePlayerIdPort
 import com.tamj0rd2.skullking.application.service.CreateNewLobbyService
 import com.tamj0rd2.skullking.application.service.JoinALobbyService
 import com.tamj0rd2.skullking.application.service.LobbyNotifier
@@ -34,8 +32,6 @@ class SkullKingApplication private constructor(
     PlayACardUseCase by playACardUseCase {
     data class OutputPorts(
         val lobbyEventStore: EventStore<LobbyId, LobbyEvent>,
-        val findPlayerIdPort: FindPlayerIdPort,
-        val savePlayerIdPort: SavePlayerIdPort,
     ) {
         companion object
     }

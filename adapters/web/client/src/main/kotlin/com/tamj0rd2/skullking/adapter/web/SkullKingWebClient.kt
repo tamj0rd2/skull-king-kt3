@@ -20,7 +20,6 @@ import com.tamj0rd2.skullking.application.port.input.PlayACardUseCase.PlayACardO
 import com.tamj0rd2.skullking.application.port.input.SkullKingUseCases
 import com.tamj0rd2.skullking.application.port.input.StartGameUseCase.StartGameCommand
 import com.tamj0rd2.skullking.application.port.input.StartGameUseCase.StartGameOutput
-import com.tamj0rd2.skullking.domain.auth.SessionId
 import com.tamj0rd2.skullking.domain.game.LobbyErrorCode
 import com.tamj0rd2.skullking.domain.game.LobbyId
 import com.tamj0rd2.skullking.domain.game.LobbyNotification
@@ -52,7 +51,6 @@ SkullKingWebClient(
         ws =
             connectToWs(
                 path = "/game",
-                sessionId = command.sessionId,
                 playerId = command.playerId,
                 lobbyNotificationListener = command.lobbyNotificationListener,
             )
@@ -71,7 +69,6 @@ SkullKingWebClient(
         ws =
             connectToWs(
                 path = "/game/${LobbyId.show(command.lobbyId)}",
-                sessionId = command.sessionId,
                 playerId = command.playerId,
                 lobbyNotificationListener = command.lobbyNotificationListener,
             )
@@ -140,30 +137,29 @@ SkullKingWebClient(
 
     private fun connectToWs(
         path: String,
-        sessionId: SessionId,
         playerId: PlayerId,
         lobbyNotificationListener: LobbyNotificationListener,
     ): Websocket {
         val ws =
             WebsocketClient.nonBlocking(
                 uri = baseUri.scheme("ws").path(path),
-                headers = listOf("session_id" to SessionId.show(sessionId), "player_id" to PlayerId.show(playerId)),
+                headers = listOf("player_id" to PlayerId.show(playerId)),
                 timeout = Duration.ofSeconds(1),
                 onConnect = { ws ->
-                    println("client: $sessionId: connected")
+                    println("client: $playerId: connected")
                     ws.onMessage {
                         val message = messageToClient(it)
-                        println("client: $sessionId: received: $message")
+                        println("client: $playerId: received: $message")
 
                         if (message is LobbyNotificationMessage) {
                             lobbyNotificationListener.receive(message.lobbyNotification)
                         }
                     }
                 },
-                onError = { println("client: $sessionId: error: $it") },
+                onError = { println("client: $playerId: error: $it") },
             )
-        ws.onClose { println("client: $sessionId: closed: $it") }
-        ws.onError { println("client: $sessionId: error: $it") }
+        ws.onClose { println("client: $playerId: closed: $it") }
+        ws.onError { println("client: $playerId: error: $it") }
         return ws
     }
 }

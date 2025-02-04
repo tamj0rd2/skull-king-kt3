@@ -28,13 +28,19 @@ class LobbyNotifier {
         private val updates = mutableListOf<LobbyNotification>()
 
         fun addListenerAndSendMissedUpdates(listener: LobbyNotificationListener) {
-            listeners += listener
+            synchronized(this) {
+                listeners += listener
+            }
+
             if (updates.isNotEmpty()) listener.receive(updates)
         }
 
         fun broadcast(newUpdates: List<LobbyNotification>) {
             updates.addAll(newUpdates)
-            listeners.forEach { it.receive(newUpdates) }
+
+            synchronized(this) {
+                listeners.forEach { it.receive(newUpdates) }
+            }
         }
     }
 }

@@ -3,7 +3,6 @@ plugins {
 }
 
 dependencies {
-    forImplementation(project(":domain:auth"))
     forImplementation(project(":domain:game"), alsoUseForTesting = true)
 }
 

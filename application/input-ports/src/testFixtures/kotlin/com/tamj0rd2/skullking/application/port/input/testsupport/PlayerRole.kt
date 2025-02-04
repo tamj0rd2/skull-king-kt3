@@ -11,7 +11,6 @@ import com.tamj0rd2.skullking.application.port.input.testsupport.PlayerRole.Play
 import com.tamj0rd2.skullking.application.port.input.testsupport.PlayerRole.PlayerLobbyState.Companion.cardsInTrick
 import com.tamj0rd2.skullking.application.port.input.testsupport.PlayerRole.PlayerLobbyState.Companion.players
 import com.tamj0rd2.skullking.application.port.input.testsupport.PlayerRole.PlayerLobbyState.Companion.trickWinner
-import com.tamj0rd2.skullking.domain.auth.SessionId
 import com.tamj0rd2.skullking.domain.game.Bid
 import com.tamj0rd2.skullking.domain.game.Card
 import com.tamj0rd2.skullking.domain.game.LobbyErrorCode
@@ -49,12 +48,6 @@ class PlayerRole(
 ) : LobbyNotificationListener {
     val id = PlayerId.random()
 
-    // NOTE: for now I'm assuming the client generates the sessionId. I can have the server do this instead. The user can make an HTTP request
-    // to create a session, which is returned to the user. Then the user can send that along with the request to connect to the websocket.
-    // https://devcenter.heroku.com/articles/websocket-security#authentication-authorization
-    // Essentially, in application terms, I need some kind of "command" to create and return a sessionId, before doing anything else.
-    private val sessionId = SessionId.random()
-
     override fun toString(): String = id.toString()
 
     private var lobbyId = LobbyId.NONE
@@ -71,7 +64,6 @@ class PlayerRole(
         val output =
             driver(
                 CreateNewLobbyCommand(
-                    sessionId = sessionId,
                     playerId = id,
                     lobbyNotificationListener = this,
                 ),
@@ -90,7 +82,6 @@ class PlayerRole(
 
         val command =
             JoinALobbyCommand(
-                sessionId = sessionId,
                 playerId = id,
                 lobbyId = lobbyId,
                 lobbyNotificationListener = this,

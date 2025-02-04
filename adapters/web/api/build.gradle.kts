@@ -4,7 +4,6 @@ plugins {
 
 dependencies {
     forImplementation(libs.bundles.http4k.api)
-    forImplementation(project(":domain:auth"), transitive = true)
     forImplementation(project(":domain:game"), transitive = true)
     forImplementation(project(":lib:common-json"))
     forImplementation(project(":application:inandout-ports"))

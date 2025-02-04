@@ -1,7 +1,6 @@
 package com.tamj0rd2.skullking.adapter.web
 
 import com.tamj0rd2.skullking.adapter.esdb.EventStoreEsdbAdapter
-import com.tamj0rd2.skullking.adapter.inmemory.PlayerIdStorageInMemoryAdapter
 import com.tamj0rd2.skullking.adapter.web.MessageFromClient.PlaceABidMessage
 import com.tamj0rd2.skullking.adapter.web.MessageFromClient.PlayACardMessage
 import com.tamj0rd2.skullking.adapter.web.MessageFromClient.StartGameMessage
@@ -9,7 +8,6 @@ import com.tamj0rd2.skullking.adapter.web.MessageToClient.LobbyNotificationMessa
 import com.tamj0rd2.skullking.application.SkullKingApplication
 import com.tamj0rd2.skullking.application.SkullKingApplication.OutputPorts
 import com.tamj0rd2.skullking.application.port.inandout.LobbyNotificationListener
-import com.tamj0rd2.skullking.domain.auth.SessionId
 import com.tamj0rd2.skullking.domain.game.LobbyId
 import com.tamj0rd2.skullking.domain.game.PlayerId
 import org.http4k.core.Request
@@ -40,10 +38,9 @@ class WebServer(
 
     private fun EstablishesAPlayerSession.asWsHandler(): WsHandler =
         { req: Request ->
-            val sessionId = sessionIdLens.extract(req)
             val playerId = playerIdLens.extract(req)
 
-            WsSession.asWsResponse(sessionId, playerId) {
+            WsSession.asWsResponse(playerId) {
                 val playerSession =
                     establishPlayerSession(
                         req = req,
@@ -66,15 +63,10 @@ class WebServer(
     fun start() = http4kServer.start()
 
     companion object {
-        private fun createOutputPorts(): OutputPorts {
-            val playerIdStorage = PlayerIdStorageInMemoryAdapter()
-
-            return OutputPorts(
+        private fun createOutputPorts(): OutputPorts =
+            OutputPorts(
                 lobbyEventStore = EventStoreEsdbAdapter.forLobbyEvents(),
-                findPlayerIdPort = playerIdStorage,
-                savePlayerIdPort = playerIdStorage,
             )
-        }
 
         private tailrec fun getUnusedPort(): Int =
             ServerSocket(0).use {
@@ -82,13 +74,6 @@ class WebServer(
                 if (port == Main.DEFAULT_PORT) return getUnusedPort()
                 return port
             }
-
-        private val sessionIdLens =
-            Header
-                .map(
-                    nextIn = { SessionId.parse(it) },
-                    nextOut = { SessionId.show(it) },
-                ).required("session_id")
 
         private val playerIdLens =
             Header

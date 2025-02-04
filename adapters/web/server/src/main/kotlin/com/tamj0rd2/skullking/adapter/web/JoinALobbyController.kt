@@ -22,7 +22,6 @@ internal class JoinALobbyController(
 
         val command =
             JoinALobbyCommand(
-                sessionId = ws.sessionId,
                 playerId = ws.playerId,
                 lobbyId = lobbyId,
                 lobbyNotificationListener = lobbyNotificationListener,

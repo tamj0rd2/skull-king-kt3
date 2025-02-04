@@ -21,7 +21,6 @@ include(
     ":application:input-ports",
     ":application:output-ports",
     ":application:services",
-    ":domain:auth",
     ":domain:game",
     ":lib:forkhandles-extensions",
     ":lib:common-json",
