@@ -36,7 +36,8 @@ import java.time.Duration
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit.MILLISECONDS
 
-class SkullKingWebClient(
+class
+SkullKingWebClient(
     private val baseUri: Uri,
     private val timeoutMs: Long = 500,
 ) : SkullKingUseCases,
@@ -52,6 +53,7 @@ class SkullKingWebClient(
             connectToWs(
                 path = "/game",
                 sessionId = command.sessionId,
+                playerId = command.playerId,
                 lobbyNotificationListener = command.lobbyNotificationListener,
             )
 
@@ -70,6 +72,7 @@ class SkullKingWebClient(
             connectToWs(
                 path = "/game/${LobbyId.show(command.lobbyId)}",
                 sessionId = command.sessionId,
+                playerId = command.playerId,
                 lobbyNotificationListener = command.lobbyNotificationListener,
             )
 
@@ -138,12 +141,13 @@ class SkullKingWebClient(
     private fun connectToWs(
         path: String,
         sessionId: SessionId,
+        playerId: PlayerId,
         lobbyNotificationListener: LobbyNotificationListener,
     ): Websocket {
         val ws =
             WebsocketClient.nonBlocking(
                 uri = baseUri.scheme("ws").path(path),
-                headers = listOf("session_id" to SessionId.show(sessionId)),
+                headers = listOf("session_id" to SessionId.show(sessionId), "player_id" to PlayerId.show(playerId)),
                 timeout = Duration.ofSeconds(1),
                 onConnect = { ws ->
                     println("client: $sessionId: connected")

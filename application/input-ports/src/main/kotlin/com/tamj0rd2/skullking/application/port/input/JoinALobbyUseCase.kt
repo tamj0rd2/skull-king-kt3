@@ -11,12 +11,15 @@ interface JoinALobbyUseCase {
     operator fun invoke(command: JoinALobbyCommand): Result4k<JoinALobbyOutput, LobbyErrorCode>
 
     data class JoinALobbyCommand(
+        // TODO: remove this.
         val sessionId: SessionId,
+        val playerId: PlayerId,
         val lobbyId: LobbyId,
         val lobbyNotificationListener: LobbyNotificationListener,
     )
 
     data class JoinALobbyOutput(
+        // TODO: remove this.
         val playerId: PlayerId,
     )
 }

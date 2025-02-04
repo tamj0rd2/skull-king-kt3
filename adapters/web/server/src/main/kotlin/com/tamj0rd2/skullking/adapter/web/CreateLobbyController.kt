@@ -17,6 +17,7 @@ internal class CreateLobbyController(
         val command =
             CreateNewLobbyCommand(
                 sessionId = ws.sessionId,
+                playerId = ws.playerId,
                 lobbyNotificationListener = lobbyNotificationListener,
             )
 

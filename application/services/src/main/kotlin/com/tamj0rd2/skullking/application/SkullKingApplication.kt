@@ -56,14 +56,11 @@ class SkullKingApplication private constructor(
                     CreateNewLobbyService(
                         lobbyRepository = lobbyRepository,
                         lobbyNotifier = lobbyNotifier,
-                        savePlayerIdPort = outputPorts.savePlayerIdPort,
                     ),
                 joinALobbyUseCase =
                     JoinALobbyService(
                         lobbyRepository = lobbyRepository,
                         lobbyNotifier = lobbyNotifier,
-                        findPlayerIdPort = outputPorts.findPlayerIdPort,
-                        savePlayerIdPort = outputPorts.savePlayerIdPort,
                     ),
                 startGameUseCase =
                     StartGameService(

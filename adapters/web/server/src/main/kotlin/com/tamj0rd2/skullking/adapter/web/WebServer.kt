@@ -41,8 +41,9 @@ class WebServer(
     private fun EstablishesAPlayerSession.asWsHandler(): WsHandler =
         { req: Request ->
             val sessionId = sessionIdLens.extract(req)
+            val playerId = playerIdLens.extract(req)
 
-            WsSession.asWsResponse(sessionId) {
+            WsSession.asWsResponse(sessionId, playerId) {
                 val playerSession =
                     establishPlayerSession(
                         req = req,
@@ -88,6 +89,13 @@ class WebServer(
                     nextIn = { SessionId.parse(it) },
                     nextOut = { SessionId.show(it) },
                 ).required("session_id")
+
+        private val playerIdLens =
+            Header
+                .map(
+                    nextIn = { PlayerId.parse(it) },
+                    nextOut = { PlayerId.show(it) },
+                ).required("player_id")
     }
 }
 

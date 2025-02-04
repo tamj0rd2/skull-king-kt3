@@ -47,12 +47,7 @@ import java.time.Instant
 class PlayerRole(
     private val driver: SkullKingUseCases,
 ) : LobbyNotificationListener {
-    var id = PlayerId.NONE
-        private set
-        get() {
-            expectThat(field).isNotEqualTo(PlayerId.NONE)
-            return field
-        }
+    val id = PlayerId.random()
 
     // NOTE: for now I'm assuming the client generates the sessionId. I can have the server do this instead. The user can make an HTTP request
     // to create a session, which is returned to the user. Then the user can send that along with the request to connect to the websocket.
@@ -77,13 +72,12 @@ class PlayerRole(
             driver(
                 CreateNewLobbyCommand(
                     sessionId = sessionId,
+                    playerId = id,
                     lobbyNotificationListener = this,
                 ),
             )
 
         expectThat(output.playerId).isNotEqualTo(PlayerId.NONE)
-        id = output.playerId
-
         expectThat(output.lobbyId).isNotEqualTo(LobbyId.NONE)
         this.lobbyId = output.lobbyId
         return output.lobbyId
@@ -97,13 +91,13 @@ class PlayerRole(
         val command =
             JoinALobbyCommand(
                 sessionId = sessionId,
+                playerId = id,
                 lobbyId = lobbyId,
                 lobbyNotificationListener = this,
             )
 
         driver.invoke(command).orThrow().playerId.also {
             expectThat(it).isNotEqualTo(PlayerId.NONE)
-            id = it
         }
     }
 
@@ -126,7 +120,7 @@ class PlayerRole(
     }
 
     fun `gets the error`(expectedErrorCode: LobbyErrorCode) {
-        expectThat(latestErrorCode).isNotNull().isA(expectedErrorCode::class.java)
+        expectThat(latestErrorCode).describedAs("latestErrorCode").isNotNull().isA(expectedErrorCode::class.java)
         latestErrorCode = null
     }
 

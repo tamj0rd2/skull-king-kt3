@@ -9,12 +9,15 @@ interface CreateNewLobbyUseCase {
     operator fun invoke(command: CreateNewLobbyCommand): CreateNewLobbyOutput
 
     data class CreateNewLobbyCommand(
+        // TODO: remove
         val sessionId: SessionId,
+        val playerId: PlayerId,
         val lobbyNotificationListener: LobbyNotificationListener,
     )
 
     data class CreateNewLobbyOutput(
         val lobbyId: LobbyId,
+        // TODO: remove
         val playerId: PlayerId,
     )
 }
