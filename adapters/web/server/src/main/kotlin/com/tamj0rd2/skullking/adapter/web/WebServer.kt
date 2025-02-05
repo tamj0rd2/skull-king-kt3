@@ -103,3 +103,10 @@ internal fun interface EstablishesAPlayerSession {
         lobbyNotificationListener: LobbyNotificationListener,
     ): PlayerSession
 }
+
+internal interface MessageReceiver<M : MessageFromClient> {
+    operator fun invoke(
+        session: PlayerSession,
+        message: M,
+    )
+}

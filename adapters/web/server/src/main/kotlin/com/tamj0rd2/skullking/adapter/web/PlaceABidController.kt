@@ -7,12 +7,12 @@ import dev.forkhandles.result4k.orThrow
 
 internal class PlaceABidController(
     private val placeABidUseCase: PlaceABidUseCase,
-) {
-    operator fun invoke(
-        playerSession: PlayerSession,
+) : MessageReceiver<PlaceABidMessage> {
+    override operator fun invoke(
+        session: PlayerSession,
         message: PlaceABidMessage,
     ) {
-        val command = PlaceABidCommand(playerSession.lobbyId, playerSession.playerId, message.bid)
+        val command = PlaceABidCommand(session.lobbyId, session.playerId, message.bid)
         placeABidUseCase.invoke(command).orThrow()
     }
 }

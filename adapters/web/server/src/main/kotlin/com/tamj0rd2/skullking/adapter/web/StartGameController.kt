@@ -8,8 +8,8 @@ import dev.forkhandles.result4k.peekFailure
 
 internal class StartGameController(
     private val startGameUseCase: StartGameUseCase,
-) {
-    operator fun invoke(
+) : MessageReceiver<StartGameMessage> {
+    override operator fun invoke(
         session: PlayerSession,
         message: StartGameMessage,
     ) {

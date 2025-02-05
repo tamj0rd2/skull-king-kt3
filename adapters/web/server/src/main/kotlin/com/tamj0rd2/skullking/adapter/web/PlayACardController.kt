@@ -9,15 +9,15 @@ import dev.forkhandles.result4k.orThrow
 //  It shouldn't return anything. It should handle its own errors.
 internal class PlayACardController(
     private val playACardUseCase: PlayACardUseCase,
-) {
-    operator fun invoke(
-        playerSession: PlayerSession,
+) : MessageReceiver<PlayACardMessage> {
+    override operator fun invoke(
+        session: PlayerSession,
         message: PlayACardMessage,
     ) {
         val command =
             PlayACardCommand(
-                lobbyId = playerSession.lobbyId,
-                playerId = playerSession.playerId,
+                lobbyId = session.lobbyId,
+                playerId = session.playerId,
                 card = message.card,
             )
 
