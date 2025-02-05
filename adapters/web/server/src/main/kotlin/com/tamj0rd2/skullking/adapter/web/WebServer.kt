@@ -4,12 +4,16 @@ import com.tamj0rd2.skullking.adapter.esdb.EventStoreEsdbAdapter
 import com.tamj0rd2.skullking.adapter.web.MessageFromClient.PlaceABidMessage
 import com.tamj0rd2.skullking.adapter.web.MessageFromClient.PlayACardMessage
 import com.tamj0rd2.skullking.adapter.web.MessageFromClient.StartGameMessage
+import com.tamj0rd2.skullking.adapter.web.MessageToClient.ErrorMessage
 import com.tamj0rd2.skullking.adapter.web.MessageToClient.LobbyNotificationMessage
 import com.tamj0rd2.skullking.application.SkullKingApplication
 import com.tamj0rd2.skullking.application.SkullKingApplication.OutputPorts
 import com.tamj0rd2.skullking.application.port.inandout.LobbyNotificationListener
+import com.tamj0rd2.skullking.domain.game.LobbyErrorCode
 import com.tamj0rd2.skullking.domain.game.LobbyId
 import com.tamj0rd2.skullking.domain.game.PlayerId
+import dev.forkhandles.result4k.Result4k
+import dev.forkhandles.result4k.peekFailure
 import org.http4k.core.Request
 import org.http4k.lens.Header
 import org.http4k.routing.websockets
@@ -53,46 +57,39 @@ class WebServer(
 
                 WsMessageHandler { wsMessage ->
                     handleMessageFromClient(
-                        wsSession = wsSession,
                         playerId = playerId,
                         lobbyId = lobbyId,
                         message = messageFromClient(wsMessage),
-                    )
+                    ).peekFailure { wsSession.send(ErrorMessage(it)) }
                 }
             }
         }
 
     private fun handleMessageFromClient(
-        wsSession: WsSession,
         playerId: PlayerId,
         lobbyId: LobbyId,
         message: MessageFromClient,
-    ) {
-        when (message) {
-            is StartGameMessage ->
-                startGameController.receive(
-                    wsSession,
-                    playerId,
-                    lobbyId,
-                    message,
-                )
+    ) = when (message) {
+        is StartGameMessage ->
+            startGameController.receive(
+                playerId,
+                lobbyId,
+                message,
+            )
 
-            is PlaceABidMessage ->
-                placeABidController.receive(
-                    wsSession,
-                    playerId,
-                    lobbyId,
-                    message,
-                )
+        is PlaceABidMessage ->
+            placeABidController.receive(
+                playerId,
+                lobbyId,
+                message,
+            )
 
-            is PlayACardMessage ->
-                playACardController.receive(
-                    wsSession,
-                    playerId,
-                    lobbyId,
-                    message,
-                )
-        }
+        is PlayACardMessage ->
+            playACardController.receive(
+                playerId,
+                lobbyId,
+                message,
+            )
     }
 
     private val http4kServer = wsRouter.asServer(Undertow(port))
@@ -136,9 +133,8 @@ internal fun interface EstablishesAPlayerSession {
 
 internal interface MessageReceiver<M : MessageFromClient> {
     fun receive(
-        ws: MessageSender,
         playerId: PlayerId,
         lobbyId: LobbyId,
         message: M,
-    )
+    ): Result4k<*, LobbyErrorCode>
 }
