@@ -13,13 +13,14 @@ import com.tamj0rd2.skullking.domain.game.LobbyErrorCode
 import com.tamj0rd2.skullking.domain.game.LobbyId
 import com.tamj0rd2.skullking.domain.game.PlayerId
 import dev.forkhandles.result4k.Result4k
-import dev.forkhandles.result4k.peekFailure
+import dev.forkhandles.result4k.failureOrNull
 import org.http4k.core.Request
 import org.http4k.lens.Header
 import org.http4k.routing.websockets
 import org.http4k.server.Undertow
 import org.http4k.server.asServer
 import org.http4k.websocket.WsHandler
+import org.http4k.websocket.WsResponse
 import org.slf4j.LoggerFactory
 import java.net.ServerSocket
 import org.http4k.routing.ws.bind as bindWs
@@ -45,23 +46,20 @@ class WebServer(
         { req: Request ->
             val playerId = playerIdLens.extract(req)
 
-            WsSession.asWsResponse(playerId) {
-                val sendAMessage = this
+            WsResponse {
+                val ws = PerPlayerWebsocket(ws = it, playerId = playerId)
 
                 val lobbyId =
                     establishPlayerSession(
                         req = req,
-                        sendAMessage = sendAMessage,
+                        sendAMessage = ws,
                         playerId = playerId,
-                        lobbyNotificationListener = { updates -> updates.map(::LobbyNotificationMessage).forEach(::send) },
+                        lobbyNotificationListener = { updates -> updates.map(::LobbyNotificationMessage).forEach(ws::send) },
                     )
 
-                WsMessageHandler { wsMessage ->
-                    handleMessageFromClient(
-                        playerId = playerId,
-                        lobbyId = lobbyId,
-                        message = messageFromClient(wsMessage),
-                    ).peekFailure { sendAMessage(ErrorMessage(it)) }
+                ws.onMessageReceived { message ->
+                    val error = handleMessageFromClient(playerId, lobbyId, message).failureOrNull()
+                    if (error != null) ws.send(ErrorMessage(error))
                 }
             }
         }
@@ -131,6 +129,12 @@ internal fun interface EstablishesAPlayerSession {
         playerId: PlayerId,
         lobbyNotificationListener: LobbyNotificationListener,
     ): LobbyId
+}
+
+interface SendAMessage {
+    fun send(message: MessageToClient)
+
+    operator fun invoke(message: MessageToClient) = send(message)
 }
 
 internal interface MessageReceiver<M : MessageFromClient> {
