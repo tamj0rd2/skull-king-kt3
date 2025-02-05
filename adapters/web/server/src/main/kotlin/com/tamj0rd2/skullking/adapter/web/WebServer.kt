@@ -51,8 +51,8 @@ class WebServer(
 
                 WsMessageHandler { wsMessage ->
                     when (val message = messageFromClient(wsMessage)) {
-                        is StartGameMessage -> startGameController(playerSession)
-                        is PlaceABidMessage -> placeABidController(playerSession, message.bid)
+                        is StartGameMessage -> startGameController(playerSession, message)
+                        is PlaceABidMessage -> placeABidController(playerSession, message)
                         is PlayACardMessage -> playACardController(playerSession, message)
                     }
                 }

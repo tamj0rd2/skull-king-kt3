@@ -1,8 +1,8 @@
 package com.tamj0rd2.skullking.adapter.web
 
+import com.tamj0rd2.skullking.adapter.web.MessageFromClient.PlaceABidMessage
 import com.tamj0rd2.skullking.application.port.input.PlaceABidUseCase
 import com.tamj0rd2.skullking.application.port.input.PlaceABidUseCase.PlaceABidCommand
-import com.tamj0rd2.skullking.domain.game.Bid
 import dev.forkhandles.result4k.orThrow
 
 internal class PlaceABidController(
@@ -10,9 +10,9 @@ internal class PlaceABidController(
 ) {
     operator fun invoke(
         playerSession: PlayerSession,
-        bid: Bid,
+        message: PlaceABidMessage,
     ) {
-        val command = PlaceABidCommand(playerSession.lobbyId, playerSession.playerId, bid)
+        val command = PlaceABidCommand(playerSession.lobbyId, playerSession.playerId, message.bid)
         placeABidUseCase.invoke(command).orThrow()
     }
 }
