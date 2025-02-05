@@ -69,26 +69,9 @@ class WebServer(
         lobbyId: LobbyId,
         message: MessageFromClient,
     ) = when (message) {
-        is StartGameMessage ->
-            startGameController.receive(
-                playerId,
-                lobbyId,
-                message,
-            )
-
-        is PlaceABidMessage ->
-            placeABidController.receive(
-                playerId,
-                lobbyId,
-                message,
-            )
-
-        is PlayACardMessage ->
-            playACardController.receive(
-                playerId,
-                lobbyId,
-                message,
-            )
+        is StartGameMessage -> startGameController.receive(playerId, lobbyId, message)
+        is PlaceABidMessage -> placeABidController.receive(playerId, lobbyId, message)
+        is PlayACardMessage -> playACardController.receive(playerId, lobbyId, message)
     }
 
     private val http4kServer = wsRouter.asServer(Undertow(port))
