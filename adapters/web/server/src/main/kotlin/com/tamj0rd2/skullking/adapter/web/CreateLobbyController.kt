@@ -13,7 +13,7 @@ internal class CreateLobbyController(
 ) : EstablishesAPlayerSession {
     override fun establishPlayerSession(
         req: Request,
-        messageSender: MessageSender,
+        sendAMessage: SendAMessage,
         playerId: PlayerId,
         lobbyNotificationListener: LobbyNotificationListener,
     ): LobbyId {
@@ -24,7 +24,7 @@ internal class CreateLobbyController(
             )
 
         val createLobbyOutput = createNewLobbyUseCase(command)
-        messageSender.send(LobbyCreatedMessage(createLobbyOutput.lobbyId))
+        sendAMessage(LobbyCreatedMessage(createLobbyOutput.lobbyId))
         return createLobbyOutput.lobbyId
     }
 }

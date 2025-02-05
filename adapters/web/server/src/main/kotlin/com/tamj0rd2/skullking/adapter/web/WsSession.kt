@@ -7,15 +7,17 @@ import org.http4k.websocket.WsResponse
 import org.http4k.websocket.WsStatus
 import org.slf4j.LoggerFactory
 
-interface MessageSender {
+interface SendAMessage {
     fun send(message: MessageToClient)
+
+    operator fun invoke(message: MessageToClient) = send(message)
 }
 
 internal class WsSession(
     val ws: Websocket,
     val playerId: PlayerId,
     setup: WsSession.() -> WsMessageHandler,
-) : MessageSender {
+) : SendAMessage {
     init {
         log("connected")
         ws.onError { log("error - $it") }

@@ -46,13 +46,13 @@ class WebServer(
             val playerId = playerIdLens.extract(req)
 
             WsSession.asWsResponse(playerId) {
-                val wsSession = this
+                val sendAMessage = this
 
                 val lobbyId =
                     establishPlayerSession(
                         req = req,
-                        messageSender = wsSession,
-                        playerId = wsSession.playerId,
+                        sendAMessage = sendAMessage,
+                        playerId = playerId,
                         lobbyNotificationListener = { updates -> updates.map(::LobbyNotificationMessage).forEach(::send) },
                     )
 
@@ -61,7 +61,7 @@ class WebServer(
                         playerId = playerId,
                         lobbyId = lobbyId,
                         message = messageFromClient(wsMessage),
-                    ).peekFailure { wsSession.send(ErrorMessage(it)) }
+                    ).peekFailure { sendAMessage(ErrorMessage(it)) }
                 }
             }
         }
@@ -127,7 +127,7 @@ class WebServer(
 internal fun interface EstablishesAPlayerSession {
     fun establishPlayerSession(
         req: Request,
-        messageSender: MessageSender,
+        sendAMessage: SendAMessage,
         playerId: PlayerId,
         lobbyNotificationListener: LobbyNotificationListener,
     ): LobbyId

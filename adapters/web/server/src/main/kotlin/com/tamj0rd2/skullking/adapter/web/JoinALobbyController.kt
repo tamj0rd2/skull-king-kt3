@@ -16,7 +16,7 @@ internal class JoinALobbyController(
 ) : EstablishesAPlayerSession {
     override fun establishPlayerSession(
         req: Request,
-        messageSender: MessageSender,
+        sendAMessage: SendAMessage,
         playerId: PlayerId,
         lobbyNotificationListener: LobbyNotificationListener,
     ): LobbyId {
@@ -30,11 +30,11 @@ internal class JoinALobbyController(
             )
 
         joinALobbyUseCase.invoke(command).onFailure {
-            messageSender.send(ErrorMessage(it.reason))
+            sendAMessage(ErrorMessage(it.reason))
             throw it.reason
         }
 
-        messageSender.send(JoinAcknowledgedMessage)
+        sendAMessage(JoinAcknowledgedMessage)
         return lobbyId
     }
 
