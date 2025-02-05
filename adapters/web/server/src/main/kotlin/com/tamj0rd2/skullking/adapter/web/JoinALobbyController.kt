@@ -6,6 +6,7 @@ import com.tamj0rd2.skullking.application.port.inandout.LobbyNotificationListene
 import com.tamj0rd2.skullking.application.port.input.JoinALobbyUseCase
 import com.tamj0rd2.skullking.application.port.input.JoinALobbyUseCase.JoinALobbyCommand
 import com.tamj0rd2.skullking.domain.game.LobbyId
+import com.tamj0rd2.skullking.domain.game.PlayerId
 import dev.forkhandles.result4k.onFailure
 import org.http4k.core.Request
 import org.http4k.lens.Path
@@ -15,24 +16,25 @@ internal class JoinALobbyController(
 ) : EstablishesAPlayerSession {
     override fun establishPlayerSession(
         req: Request,
-        ws: WsSession,
+        messageSender: MessageSender,
+        playerId: PlayerId,
         lobbyNotificationListener: LobbyNotificationListener,
     ): LobbyId {
         val lobbyId = LobbyId.parse(lobbyIdLens(req))
 
         val command =
             JoinALobbyCommand(
-                playerId = ws.playerId,
+                playerId = playerId,
                 lobbyId = lobbyId,
                 lobbyNotificationListener = lobbyNotificationListener,
             )
 
         joinALobbyUseCase.invoke(command).onFailure {
-            ws.send(ErrorMessage(it.reason))
+            messageSender.send(ErrorMessage(it.reason))
             throw it.reason
         }
 
-        ws.send(JoinAcknowledgedMessage)
+        messageSender.send(JoinAcknowledgedMessage)
         return lobbyId
     }
 

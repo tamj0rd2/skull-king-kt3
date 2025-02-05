@@ -51,7 +51,8 @@ class WebServer(
                 val lobbyId =
                     establishPlayerSession(
                         req = req,
-                        ws = wsSession,
+                        messageSender = wsSession,
+                        playerId = wsSession.playerId,
                         lobbyNotificationListener = { updates -> updates.map(::LobbyNotificationMessage).forEach(::send) },
                     )
 
@@ -126,7 +127,8 @@ class WebServer(
 internal fun interface EstablishesAPlayerSession {
     fun establishPlayerSession(
         req: Request,
-        ws: WsSession,
+        messageSender: MessageSender,
+        playerId: PlayerId,
         lobbyNotificationListener: LobbyNotificationListener,
     ): LobbyId
 }

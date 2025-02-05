@@ -5,6 +5,7 @@ import com.tamj0rd2.skullking.application.port.inandout.LobbyNotificationListene
 import com.tamj0rd2.skullking.application.port.input.CreateNewLobbyUseCase
 import com.tamj0rd2.skullking.application.port.input.CreateNewLobbyUseCase.CreateNewLobbyCommand
 import com.tamj0rd2.skullking.domain.game.LobbyId
+import com.tamj0rd2.skullking.domain.game.PlayerId
 import org.http4k.core.Request
 
 internal class CreateLobbyController(
@@ -12,17 +13,18 @@ internal class CreateLobbyController(
 ) : EstablishesAPlayerSession {
     override fun establishPlayerSession(
         req: Request,
-        ws: WsSession,
+        messageSender: MessageSender,
+        playerId: PlayerId,
         lobbyNotificationListener: LobbyNotificationListener,
     ): LobbyId {
         val command =
             CreateNewLobbyCommand(
-                playerId = ws.playerId,
+                playerId = playerId,
                 lobbyNotificationListener = lobbyNotificationListener,
             )
 
         val createLobbyOutput = createNewLobbyUseCase(command)
-        ws.send(LobbyCreatedMessage(createLobbyOutput.lobbyId))
+        messageSender.send(LobbyCreatedMessage(createLobbyOutput.lobbyId))
         return createLobbyOutput.lobbyId
     }
 }
