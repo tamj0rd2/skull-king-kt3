@@ -10,7 +10,7 @@ import dev.forkhandles.result4k.orThrow
 internal class PlaceABidController(
     private val placeABidUseCase: PlaceABidUseCase,
 ) : MessageReceiver<PlaceABidMessage> {
-    override operator fun invoke(
+    override fun receive(
         ws: MessageSender,
         playerId: PlayerId,
         lobbyId: LobbyId,

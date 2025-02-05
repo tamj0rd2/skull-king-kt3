@@ -11,7 +11,7 @@ import dev.forkhandles.result4k.peekFailure
 internal class StartGameController(
     private val startGameUseCase: StartGameUseCase,
 ) : MessageReceiver<StartGameMessage> {
-    override operator fun invoke(
+    override fun receive(
         ws: MessageSender,
         playerId: PlayerId,
         lobbyId: LobbyId,

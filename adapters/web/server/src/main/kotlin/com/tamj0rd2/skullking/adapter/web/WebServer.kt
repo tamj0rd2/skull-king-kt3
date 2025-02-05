@@ -54,21 +54,21 @@ class WebServer(
                 WsMessageHandler { wsMessage ->
                     when (val message = messageFromClient(wsMessage)) {
                         is StartGameMessage ->
-                            startGameController(
+                            startGameController.receive(
                                 wsSession,
                                 playerId,
                                 lobbyId,
                                 message,
                             )
                         is PlaceABidMessage ->
-                            placeABidController(
+                            placeABidController.receive(
                                 wsSession,
                                 playerId,
                                 lobbyId,
                                 message,
                             )
                         is PlayACardMessage ->
-                            playACardController(
+                            playACardController.receive(
                                 wsSession,
                                 playerId,
                                 lobbyId,
@@ -119,7 +119,7 @@ internal fun interface EstablishesAPlayerSession {
 }
 
 internal interface MessageReceiver<M : MessageFromClient> {
-    operator fun invoke(
+    fun receive(
         ws: MessageSender,
         playerId: PlayerId,
         lobbyId: LobbyId,

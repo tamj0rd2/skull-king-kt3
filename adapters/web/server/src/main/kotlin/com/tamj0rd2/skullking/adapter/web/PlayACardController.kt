@@ -12,7 +12,7 @@ import dev.forkhandles.result4k.orThrow
 internal class PlayACardController(
     private val playACardUseCase: PlayACardUseCase,
 ) : MessageReceiver<PlayACardMessage> {
-    override operator fun invoke(
+    override fun receive(
         ws: MessageSender,
         playerId: PlayerId,
         lobbyId: LobbyId,
