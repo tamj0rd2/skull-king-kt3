@@ -51,9 +51,27 @@ class WebServer(
 
                 WsMessageHandler { wsMessage ->
                     when (val message = messageFromClient(wsMessage)) {
-                        is StartGameMessage -> startGameController(playerSession, message)
-                        is PlaceABidMessage -> placeABidController(playerSession, message)
-                        is PlayACardMessage -> playACardController(playerSession, message)
+                        is StartGameMessage ->
+                            startGameController(
+                                playerSession.ws,
+                                playerSession.playerId,
+                                playerSession.lobbyId,
+                                message,
+                            )
+                        is PlaceABidMessage ->
+                            placeABidController(
+                                playerSession.ws,
+                                playerSession.playerId,
+                                playerSession.lobbyId,
+                                message,
+                            )
+                        is PlayACardMessage ->
+                            playACardController(
+                                playerSession.ws,
+                                playerSession.playerId,
+                                playerSession.lobbyId,
+                                message,
+                            )
                     }
                 }
             }
@@ -106,7 +124,9 @@ internal fun interface EstablishesAPlayerSession {
 
 internal interface MessageReceiver<M : MessageFromClient> {
     operator fun invoke(
-        session: PlayerSession,
+        ws: MessageSender,
+        playerId: PlayerId,
+        lobbyId: LobbyId,
         message: M,
     )
 }
