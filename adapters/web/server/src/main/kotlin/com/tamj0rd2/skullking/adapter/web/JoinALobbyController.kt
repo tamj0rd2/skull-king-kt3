@@ -17,7 +17,7 @@ internal class JoinALobbyController(
         req: Request,
         ws: WsSession,
         lobbyNotificationListener: LobbyNotificationListener,
-    ): PlayerSession {
+    ): LobbyId {
         val lobbyId = LobbyId.parse(lobbyIdLens(req))
 
         val command =
@@ -33,7 +33,7 @@ internal class JoinALobbyController(
         }
 
         ws.send(JoinAcknowledgedMessage)
-        return PlayerSession(lobbyId = lobbyId)
+        return lobbyId
     }
 
     companion object {

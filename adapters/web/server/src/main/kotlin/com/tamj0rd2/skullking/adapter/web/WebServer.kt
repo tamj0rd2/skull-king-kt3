@@ -44,7 +44,7 @@ class WebServer(
             WsSession.asWsResponse(playerId) {
                 val wsSession = this
 
-                val playerSession =
+                val lobbyId =
                     establishPlayerSession(
                         req = req,
                         ws = wsSession,
@@ -57,21 +57,21 @@ class WebServer(
                             startGameController(
                                 wsSession,
                                 playerId,
-                                playerSession.lobbyId,
+                                lobbyId,
                                 message,
                             )
                         is PlaceABidMessage ->
                             placeABidController(
                                 wsSession,
                                 playerId,
-                                playerSession.lobbyId,
+                                lobbyId,
                                 message,
                             )
                         is PlayACardMessage ->
                             playACardController(
                                 wsSession,
                                 playerId,
-                                playerSession.lobbyId,
+                                lobbyId,
                                 message,
                             )
                     }
@@ -119,7 +119,7 @@ internal fun interface EstablishesAPlayerSession {
         req: Request,
         ws: WsSession,
         lobbyNotificationListener: LobbyNotificationListener,
-    ): PlayerSession
+    ): LobbyId
 }
 
 internal interface MessageReceiver<M : MessageFromClient> {
