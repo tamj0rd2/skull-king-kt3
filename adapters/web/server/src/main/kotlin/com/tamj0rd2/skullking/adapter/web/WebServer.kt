@@ -110,10 +110,6 @@ class WebServer(
     }
 }
 
-internal data class PlayerSession(
-    val lobbyId: LobbyId,
-)
-
 internal fun interface EstablishesAPlayerSession {
     fun establishPlayerSession(
         req: Request,
