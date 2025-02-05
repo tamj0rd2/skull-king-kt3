@@ -42,10 +42,12 @@ class WebServer(
             val playerId = playerIdLens.extract(req)
 
             WsSession.asWsResponse(playerId) {
+                val wsSession = this
+
                 val playerSession =
                     establishPlayerSession(
                         req = req,
-                        ws = this,
+                        ws = wsSession,
                         lobbyNotificationListener = { updates -> updates.map(::LobbyNotificationMessage).forEach(::send) },
                     )
 
@@ -53,21 +55,21 @@ class WebServer(
                     when (val message = messageFromClient(wsMessage)) {
                         is StartGameMessage ->
                             startGameController(
-                                playerSession.ws,
+                                wsSession,
                                 playerId,
                                 playerSession.lobbyId,
                                 message,
                             )
                         is PlaceABidMessage ->
                             placeABidController(
-                                playerSession.ws,
+                                wsSession,
                                 playerId,
                                 playerSession.lobbyId,
                                 message,
                             )
                         is PlayACardMessage ->
                             playACardController(
-                                playerSession.ws,
+                                wsSession,
                                 playerId,
                                 playerSession.lobbyId,
                                 message,
@@ -109,7 +111,6 @@ class WebServer(
 }
 
 internal data class PlayerSession(
-    val ws: WsSession,
     val lobbyId: LobbyId,
 )
 
