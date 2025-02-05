@@ -52,32 +52,48 @@ class WebServer(
                     )
 
                 WsMessageHandler { wsMessage ->
-                    when (val message = messageFromClient(wsMessage)) {
-                        is StartGameMessage ->
-                            startGameController.receive(
-                                wsSession,
-                                playerId,
-                                lobbyId,
-                                message,
-                            )
-                        is PlaceABidMessage ->
-                            placeABidController.receive(
-                                wsSession,
-                                playerId,
-                                lobbyId,
-                                message,
-                            )
-                        is PlayACardMessage ->
-                            playACardController.receive(
-                                wsSession,
-                                playerId,
-                                lobbyId,
-                                message,
-                            )
-                    }
+                    handleMessageFromClient(
+                        wsSession = wsSession,
+                        playerId = playerId,
+                        lobbyId = lobbyId,
+                        message = messageFromClient(wsMessage),
+                    )
                 }
             }
         }
+
+    private fun handleMessageFromClient(
+        wsSession: WsSession,
+        playerId: PlayerId,
+        lobbyId: LobbyId,
+        message: MessageFromClient,
+    ) {
+        when (message) {
+            is StartGameMessage ->
+                startGameController.receive(
+                    wsSession,
+                    playerId,
+                    lobbyId,
+                    message,
+                )
+
+            is PlaceABidMessage ->
+                placeABidController.receive(
+                    wsSession,
+                    playerId,
+                    lobbyId,
+                    message,
+                )
+
+            is PlayACardMessage ->
+                playACardController.receive(
+                    wsSession,
+                    playerId,
+                    lobbyId,
+                    message,
+                )
+        }
+    }
 
     private val http4kServer = wsRouter.asServer(Undertow(port))
 
