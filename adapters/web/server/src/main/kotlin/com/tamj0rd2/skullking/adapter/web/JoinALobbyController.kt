@@ -33,7 +33,7 @@ internal class JoinALobbyController(
         }
 
         ws.send(JoinAcknowledgedMessage)
-        return PlayerSession(ws = ws, lobbyId = lobbyId, playerId = ws.playerId)
+        return PlayerSession(ws = ws, lobbyId = lobbyId)
     }
 
     companion object {

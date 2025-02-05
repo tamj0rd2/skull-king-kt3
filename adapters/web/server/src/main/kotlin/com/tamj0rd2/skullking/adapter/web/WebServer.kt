@@ -54,21 +54,21 @@ class WebServer(
                         is StartGameMessage ->
                             startGameController(
                                 playerSession.ws,
-                                playerSession.playerId,
+                                playerId,
                                 playerSession.lobbyId,
                                 message,
                             )
                         is PlaceABidMessage ->
                             placeABidController(
                                 playerSession.ws,
-                                playerSession.playerId,
+                                playerId,
                                 playerSession.lobbyId,
                                 message,
                             )
                         is PlayACardMessage ->
                             playACardController(
                                 playerSession.ws,
-                                playerSession.playerId,
+                                playerId,
                                 playerSession.lobbyId,
                                 message,
                             )
@@ -111,7 +111,6 @@ class WebServer(
 internal data class PlayerSession(
     val ws: WsSession,
     val lobbyId: LobbyId,
-    val playerId: PlayerId,
 )
 
 internal fun interface EstablishesAPlayerSession {
