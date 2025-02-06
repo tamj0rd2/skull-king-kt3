@@ -17,13 +17,13 @@ import dev.forkhandles.result4k.failureOrNull
 import org.http4k.core.Request
 import org.http4k.lens.Header
 import org.http4k.routing.websockets
+import org.http4k.routing.ws.bind
 import org.http4k.server.Undertow
 import org.http4k.server.asServer
 import org.http4k.websocket.WsHandler
 import org.http4k.websocket.WsResponse
 import org.slf4j.LoggerFactory
 import java.net.ServerSocket
-import org.http4k.routing.ws.bind as bindWs
 
 class WebServer(
     outputPorts: OutputPorts = createOutputPorts(),
@@ -38,8 +38,8 @@ class WebServer(
 
     private val wsRouter =
         websockets(
-            "/game" bindWs createLobbyController.asWsHandler(),
-            "/game/{lobbyId}" bindWs joinALobbyController.asWsHandler(),
+            "/game" bind createLobbyController.asWsHandler(),
+            "/game/{lobbyId}" bind joinALobbyController.asWsHandler(),
         )
 
     private fun EstablishesAPlayerSession.asWsHandler(): WsHandler =
