@@ -2,3 +2,4 @@
 build
 .kotlin
 **/.jqwik-database
+.DS_Store
