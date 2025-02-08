@@ -12,6 +12,7 @@ interface EventStore<ID : AggregateId, E : Event<ID>> {
     )
 
     // TODO: work using Lists instead of Collections.
+    // TODO: maybe I should combine the read methods using the Specification pattern
     fun read(entityId: ID): Collection<E>
 
     fun read(

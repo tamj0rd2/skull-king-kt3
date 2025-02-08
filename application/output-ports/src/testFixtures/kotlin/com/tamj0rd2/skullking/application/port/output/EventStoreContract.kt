@@ -12,13 +12,11 @@ import com.tamj0rd2.skullking.domain.game.Version
 import dev.forkhandles.values.random
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
-import strikt.api.expectCatching
 import strikt.api.expectThat
 import strikt.api.expectThrows
 import strikt.assertions.isEqualTo
 import strikt.assertions.isNotEmpty
 import strikt.assertions.isNotEqualTo
-import strikt.assertions.isSuccess
 import strikt.assertions.single
 import java.time.Instant
 
@@ -101,22 +99,18 @@ interface EventStoreContract {
         val eventsToAppend = listOf(PlayerJoinedEvent(lobbyId, PlayerId.random()))
 
         // this should work because there is no contention.
-        expectCatching {
-            eventStore.append(
-                entityId = lobbyId,
-                expectedVersion = Version.of(1),
-                events = eventsToAppend,
-            )
-        }.isSuccess()
+        eventStore.append(
+            entityId = lobbyId,
+            expectedVersion = Version.of(1),
+            events = eventsToAppend,
+        )
 
         // should work because the version and events are identical
-        expectCatching {
-            eventStore.append(
-                entityId = lobbyId,
-                expectedVersion = Version.of(1),
-                events = eventsToAppend,
-            )
-        }.isSuccess()
+        eventStore.append(
+            entityId = lobbyId,
+            expectedVersion = Version.of(1),
+            events = eventsToAppend,
+        )
     }
 
     companion object {

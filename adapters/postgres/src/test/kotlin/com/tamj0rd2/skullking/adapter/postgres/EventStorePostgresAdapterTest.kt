@@ -23,14 +23,4 @@ class EventStorePostgresAdapterTest :
     override fun `can subscribe to receive game events`() {
         super.`can subscribe to receive game events`()
     }
-
-    @Disabled
-    override fun `writes are idempotent if trying to make exactly the same change for exactly the same version`() {
-        super.`writes are idempotent if trying to make exactly the same change for exactly the same version`()
-    }
-
-    @Disabled
-    override fun `modifying, saving and loading a lobby multiple times results in the same state as just modifying the lobby in memory`() {
-        super.`modifying, saving and loading a lobby multiple times results in the same state as just modifying the lobby in memory`()
-    }
 }

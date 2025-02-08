@@ -54,32 +54,16 @@ class EventStorePostgresAdapter<ID : AggregateId, E : Event<ID>>(
     ) {
         // TODO: table name should not be hardcoded!!
         startTransaction { connection ->
-            connection
-                .prepareStatement(
-                    // language=PostgreSQL
-                    """
-                    |insert into lobby_revisions (lobbyid, latest_revision)
-                    |values (?, ?)
-                    |on conflict (lobbyid)
-                    |do update set latest_revision = ?
-                    |where lobby_revisions.latest_revision = ?
-                    """.trimMargin(),
-                ).use { preparedStatement ->
-                    val updatedLatestRevision = expectedVersion.plus(events.size).value
-
-                    preparedStatement.setObject(1, entityId.value)
-                    preparedStatement.setInt(2, updatedLatestRevision)
-                    preparedStatement.setInt(3, updatedLatestRevision)
-                    preparedStatement.setInt(4, expectedVersion.value)
-
-                    val affectedRowCount = preparedStatement.executeUpdate()
-
-                    if (affectedRowCount != 1) {
-                        throw ConcurrentModificationException(
-                            "Expected most recent entity version to be $expectedVersion but it wasn't",
-                        )
-                    }
-                }
+            try {
+                updateRevisionTable(connection, entityId, expectedVersion, events)
+            } catch (e: ConcurrentModificationException) {
+                // FIXME: this could become quite non-performant at some point. I might want to think about removing
+                //  this idempotency thing, although it's kinda cool.
+                //  Or rather than removing it, an improvement could be to only ready events after the expected version.
+                val savedEvents = read(entityId).drop(expectedVersion.value)
+                if (savedEvents == events) return@startTransaction
+                throw e
+            }
 
             connection
                 .prepareStatement(
@@ -139,6 +123,40 @@ class EventStorePostgresAdapter<ID : AggregateId, E : Event<ID>>(
                 throw e
             }
         }
+
+    private fun updateRevisionTable(
+        connection: Connection,
+        entityId: ID,
+        expectedVersion: Version,
+        events: Collection<E>,
+    ) {
+        val affectedRowCount =
+            connection
+                .prepareStatement(
+                    // language=PostgreSQL
+                    """
+                |insert into lobby_revisions (lobbyid, latest_revision)
+                |values (?, ?)
+                |on conflict (lobbyid)
+                |do update set latest_revision = ?
+                |where lobby_revisions.latest_revision = ?
+                    """.trimMargin(),
+                ).use { preparedStatement ->
+                    val updatedLatestRevision = expectedVersion.plus(events.size).value
+
+                    preparedStatement.setObject(1, entityId.value)
+                    preparedStatement.setInt(2, updatedLatestRevision)
+                    preparedStatement.setInt(3, updatedLatestRevision)
+                    preparedStatement.setInt(4, expectedVersion.value)
+                    preparedStatement.executeUpdate()
+                }
+
+        if (affectedRowCount != 1) {
+            throw ConcurrentModificationException(
+                "Expected most recent entity version to be $expectedVersion but it wasn't",
+            )
+        }
+    }
 
     companion object {
         fun forLobbyEvents() =
