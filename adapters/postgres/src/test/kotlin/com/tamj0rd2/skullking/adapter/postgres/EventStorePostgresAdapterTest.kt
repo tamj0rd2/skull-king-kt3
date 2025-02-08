@@ -30,11 +30,6 @@ class EventStorePostgresAdapterTest :
     }
 
     @Disabled
-    override fun `when optimistic concurrency fails, an error is thrown`() {
-        super.`when optimistic concurrency fails, an error is thrown`()
-    }
-
-    @Disabled
     override fun `modifying, saving and loading a lobby multiple times results in the same state as just modifying the lobby in memory`() {
         super.`modifying, saving and loading a lobby multiple times results in the same state as just modifying the lobby in memory`()
     }

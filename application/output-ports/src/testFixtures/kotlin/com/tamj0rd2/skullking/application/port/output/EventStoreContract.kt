@@ -14,9 +14,8 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import strikt.api.expectCatching
 import strikt.api.expectThat
-import strikt.assertions.isA
+import strikt.api.expectThrows
 import strikt.assertions.isEqualTo
-import strikt.assertions.isFailure
 import strikt.assertions.isNotEmpty
 import strikt.assertions.isNotEqualTo
 import strikt.assertions.isSuccess
@@ -69,32 +68,28 @@ interface EventStoreContract {
         expectThat(eventThatBobWantsToAppend).isNotEqualTo(eventThatSammyWantsToAppend)
 
         // this should work because there is no contention.
-        expectCatching {
-            eventStore.append(
-                entityId = lobbyId,
-                expectedVersion = Version.of(1),
-                events = listOf(eventThatBobWantsToAppend),
-            )
-        }.isSuccess()
+        eventStore.append(
+            entityId = lobbyId,
+            expectedVersion = Version.of(1),
+            events = listOf(eventThatBobWantsToAppend),
+        )
 
         // should fail because the latest event version has changed as a side effect of Bob committing his changes.
-        expectCatching {
+        expectThrows<ConcurrentModificationException> {
             eventStore.append(
                 entityId = lobbyId,
                 expectedVersion = Version.of(1),
                 events = listOf(eventThatSammyWantsToAppend),
             )
-        }.isFailure().isA<ConcurrentModificationException>()
+        }
 
         // this should work because Sammy has now used the correct expected version. In practice, the caller should
         // re-load the events/entity, and use the updated state to decide whether the command should still be executed.
-        expectCatching {
-            eventStore.append(
-                entityId = lobbyId,
-                expectedVersion = Version.of(2),
-                events = listOf(eventThatSammyWantsToAppend),
-            )
-        }.isSuccess()
+        eventStore.append(
+            entityId = lobbyId,
+            expectedVersion = Version.of(2),
+            events = listOf(eventThatSammyWantsToAppend),
+        )
     }
 
     // TODO: I should make sure that every event has an actor, just to be triply sure things are ok.
