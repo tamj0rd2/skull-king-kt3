@@ -27,8 +27,9 @@ class EventStorePostgresAdapter<ID : AggregateId, E : Event<ID>>(
                     // language=PostgreSQL
                     """
                     |create table if not exists lobby_events (
-                    |    lobbyId uuid not null primary key,
-                    |    payload jsonb
+                    |    lobbyId uuid not null,
+                    |    payload jsonb,
+                    |    revision integer
                     |)
                     """.trimMargin(),
                 ).execute()
@@ -46,13 +47,14 @@ class EventStorePostgresAdapter<ID : AggregateId, E : Event<ID>>(
                 .prepareStatement(
                     // language=PostgreSQL
                     """
-                    |insert into lobby_events (lobbyid, payload)
-                    |VALUES (?, CAST(? as jsonb))
+                    |insert into lobby_events (lobbyid, revision, payload)
+                    |VALUES (?, ?, CAST(? as jsonb))
                     """.trimMargin(),
                 ).use { preparedStatement ->
-                    events.forEach { event ->
+                    events.forEachIndexed { index, event ->
                         preparedStatement.setObject(1, entityId.value)
-                        preparedStatement.setString(2, eventConverter.toJson(event))
+                        preparedStatement.setInt(2, expectedVersion.plus(index + 1).value)
+                        preparedStatement.setString(3, eventConverter.toJson(event))
                         preparedStatement.addBatch()
                     }
 
@@ -69,6 +71,7 @@ class EventStorePostgresAdapter<ID : AggregateId, E : Event<ID>>(
                     """
                     |select payload from lobby_events
                     |where lobbyid = ?
+                    |order by revision
                     """.trimMargin(),
                 ).use { preparedStatement ->
                     preparedStatement.setObject(1, entityId.value)

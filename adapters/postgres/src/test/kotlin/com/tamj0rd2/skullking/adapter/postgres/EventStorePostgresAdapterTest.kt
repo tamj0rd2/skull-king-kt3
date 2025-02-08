@@ -25,11 +25,6 @@ class EventStorePostgresAdapterTest :
     }
 
     @Disabled
-    override fun `can load a lobby at a specific version`() {
-        super.`can load a lobby at a specific version`()
-    }
-
-    @Disabled
     override fun `writes are idempotent if trying to make exactly the same change for exactly the same version`() {
         super.`writes are idempotent if trying to make exactly the same change for exactly the same version`()
     }
