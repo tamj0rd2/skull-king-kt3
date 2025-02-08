@@ -1,9 +1,10 @@
 package com.tamj0rd2.skullking.application.port.output
 
+import com.tamj0rd2.skullking.domain.EntityId
 import com.tamj0rd2.skullking.domain.Event
 import com.tamj0rd2.skullking.domain.game.Version
 
-interface EventStore<ID, E : Event<ID>> {
+interface EventStore<ID : EntityId, E : Event<ID>> {
     fun append(
         entityId: ID,
         expectedVersion: Version,
@@ -29,7 +30,7 @@ interface EventStore<ID, E : Event<ID>> {
     }
 }
 
-fun interface EventStoreSubscriber<ID, E : Event<ID>> {
+fun interface EventStoreSubscriber<ID : EntityId, E : Event<ID>> {
     fun onEventReceived(
         entityId: ID,
         version: Version,

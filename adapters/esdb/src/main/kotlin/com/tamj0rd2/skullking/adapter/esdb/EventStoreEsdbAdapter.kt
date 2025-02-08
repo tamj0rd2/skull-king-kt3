@@ -18,6 +18,7 @@ import com.eventstore.dbclient.SubscribePersistentSubscriptionOptions
 import com.eventstore.dbclient.WrongExpectedVersionException
 import com.tamj0rd2.skullking.application.port.output.EventStore
 import com.tamj0rd2.skullking.application.port.output.EventStoreSubscriber
+import com.tamj0rd2.skullking.domain.EntityId
 import com.tamj0rd2.skullking.domain.Event
 import com.tamj0rd2.skullking.domain.game.LobbyId
 import com.tamj0rd2.skullking.domain.game.Version
@@ -26,7 +27,7 @@ import com.ubertob.kondor.json.JSealed
 import org.slf4j.LoggerFactory
 import java.util.concurrent.ExecutionException
 
-class EventStoreEsdbAdapter<ID, E : Event<ID>>(
+class EventStoreEsdbAdapter<ID : EntityId, E : Event<ID>>(
     private val streamNameProvider: StreamNameProvider<ID>,
     private val converter: JSealed<E>,
     private val subscriptionStreamName: String,

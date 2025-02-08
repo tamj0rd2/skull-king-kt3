@@ -1,5 +1,6 @@
 package com.tamj0rd2.skullking.application.port.output
 
+import com.tamj0rd2.skullking.domain.EntityId
 import com.tamj0rd2.skullking.domain.Event
 import com.tamj0rd2.skullking.domain.game.Lobby
 import com.tamj0rd2.skullking.domain.game.LobbyCreatedEvent
@@ -138,7 +139,7 @@ interface EventStoreContract {
         }
     }
 
-    private class SpyEventStoreSubscriber<ID, E : Event<ID>> : EventStoreSubscriber<ID, E> {
+    private class SpyEventStoreSubscriber<ID : EntityId, E : Event<ID>> : EventStoreSubscriber<ID, E> {
         data class Call<ID>(
             val entityId: ID,
             val version: Version,
