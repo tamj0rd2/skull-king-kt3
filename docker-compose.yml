@@ -11,11 +11,20 @@ services:
     ports:
       - "2113:2113"
 
-  lgtm:
-    image: docker.io/grafana/otel-lgtm:0.8.3
-    ports:
-      - "3000:3000"
-      - "4317:4317"
-      - "4318:4318"
+  postgres:
+    image: postgres:17-alpine
     environment:
-      OTEL_METRIC_EXPORT_INTERVAL: "5000"
+      POSTGRES_PASSWORD: "password"
+    ports:
+      - "5432:5432"
+    volumes:
+      - "./skull-king-init.sql:/docker-entrypoint-initdb.d/skull-king-init.sql"
+
+#  lgtm:
+#    image: docker.io/grafana/otel-lgtm:0.8.3
+#    ports:
+#      - "3000:3000"
+#      - "4317:4317"
+#      - "4318:4318"
+#    environment:
+#      OTEL_METRIC_EXPORT_INTERVAL: "5000"

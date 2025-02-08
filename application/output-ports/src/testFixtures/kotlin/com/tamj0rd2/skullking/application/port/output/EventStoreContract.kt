@@ -17,6 +17,7 @@ import strikt.api.expectThat
 import strikt.assertions.isA
 import strikt.assertions.isEqualTo
 import strikt.assertions.isFailure
+import strikt.assertions.isNotEmpty
 import strikt.assertions.isNotEqualTo
 import strikt.assertions.isSuccess
 import strikt.assertions.single
@@ -32,7 +33,10 @@ interface EventStoreContract {
 
         eventStore.append(lobby.id, Version.NONE, lobby.newEventsSinceLobbyWasLoaded)
 
-        expectThat(eventStore.read(lobby.id)).isEqualTo(lobby.newEventsSinceLobbyWasLoaded)
+        expectThat(eventStore.read(lobby.id))
+            .describedAs("retrieved events")
+            .isNotEmpty()
+            .isEqualTo(lobby.newEventsSinceLobbyWasLoaded)
     }
 
     @Test

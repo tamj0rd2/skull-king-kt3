@@ -1,0 +1,31 @@
+plugins {
+    id("buildlogic.kotlin-library-conventions")
+}
+
+dependencies {
+    forImplementation(libs.bundles.json)
+    runtimeOnly("org.postgresql:postgresql:42.7.5")
+    forImplementation(libs.slf4j)
+    forImplementation(project(":domain:game"))
+    forImplementation(project(":application:output-ports"), alsoUseForTesting = true)
+    forImplementation(project(":lib:common-json"))
+}
+
+private fun DependencyHandlerScope.forImplementation(
+    dependency: Any,
+    transitive: Boolean = false,
+    alsoUseForTesting: Boolean = false,
+) {
+    if (transitive) api(dependency) else implementation(dependency)
+    if (alsoUseForTesting) forTesting(dependency)
+}
+
+private fun DependencyHandlerScope.forTesting(dependency: Any) {
+    testImplementation(dependency)
+    testFixturesImplementation(dependency)
+
+    if (dependency is ProjectDependency) {
+        testImplementation(testFixtures(dependency))
+        testFixturesImplementation(testFixtures(dependency))
+    }
+}
