@@ -18,7 +18,7 @@ import com.eventstore.dbclient.SubscribePersistentSubscriptionOptions
 import com.eventstore.dbclient.WrongExpectedVersionException
 import com.tamj0rd2.skullking.application.port.output.EventStore
 import com.tamj0rd2.skullking.application.port.output.EventStoreSubscriber
-import com.tamj0rd2.skullking.domain.EntityId
+import com.tamj0rd2.skullking.domain.AggregateId
 import com.tamj0rd2.skullking.domain.Event
 import com.tamj0rd2.skullking.domain.game.LobbyId
 import com.tamj0rd2.skullking.domain.game.Version
@@ -27,7 +27,7 @@ import com.ubertob.kondor.json.JSealed
 import org.slf4j.LoggerFactory
 import java.util.concurrent.ExecutionException
 
-class EventStoreEsdbAdapter<ID : EntityId, E : Event<ID>>(
+class EventStoreEsdbAdapter<ID : AggregateId, E : Event<ID>>(
     private val streamNameProvider: StreamNameProvider<ID>,
     private val converter: JSealed<E>,
     private val subscriptionStreamName: String,
@@ -159,7 +159,7 @@ class EventStoreEsdbAdapter<ID : EntityId, E : Event<ID>>(
                         //  a way to deserialize just the ID.
                         val event = converter.fromJson(resolvedEvent.dataAsString()).orThrow()
                         val version = resolvedEvent.asVersion()
-                        subscribers.forEach { it.onEventReceived(event.entityId, version) }
+                        subscribers.forEach { it.onEventReceived(event.aggregateId, version) }
                         subscription.ack(resolvedEvent)
                     }
                 },

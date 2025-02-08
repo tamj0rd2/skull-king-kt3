@@ -40,7 +40,7 @@ class LobbyTests {
     fun `all events within a lobby relate to that specific lobby`() =
         // specifying the iterations because 1000 iterations * 100 events is just too many to run the tests in a reasonable timeframe.
         invariant(iterations = 200) { lobby ->
-            expectThat(lobby.allEvents).all { get { this.entityId }.isEqualTo(lobby.id) }
+            expectThat(lobby.allEvents).all { get { this.aggregateId }.isEqualTo(lobby.id) }
         }
 
     @Test

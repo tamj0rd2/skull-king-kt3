@@ -31,14 +31,14 @@ class Lobby private constructor(
         id = LobbyId.random(),
         loadedAtVersion = Version.NONE,
     ) {
-        appendEvents(LobbyCreatedEvent(entityId = id, createdBy = createdBy))
+        appendEvents(LobbyCreatedEvent(aggregateId = id, createdBy = createdBy))
     }
 
     private constructor(history: List<LobbyEvent>) : this(
-        id = history.first().entityId,
+        id = history.first().aggregateId,
         loadedAtVersion = Version.of(history.size),
     ) {
-        check(history.all { it.entityId == id }) { "LobbyId mismatch" }
+        check(history.all { it.aggregateId == id }) { "LobbyId mismatch" }
         check(history.count { it is LobbyCreatedEvent } == 1) { "There was more than 1 game created event" }
         appendEvents(*history.toTypedArray()).orThrow()
     }

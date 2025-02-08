@@ -2,11 +2,11 @@ package com.tamj0rd2.skullking.adapter.inmemory
 
 import com.tamj0rd2.skullking.application.port.output.EventStore
 import com.tamj0rd2.skullking.application.port.output.EventStoreSubscriber
-import com.tamj0rd2.skullking.domain.EntityId
+import com.tamj0rd2.skullking.domain.AggregateId
 import com.tamj0rd2.skullking.domain.Event
 import com.tamj0rd2.skullking.domain.game.Version
 
-class EventStoreInMemoryAdapter<ID : EntityId, E : Event<ID>>(
+class EventStoreInMemoryAdapter<ID : AggregateId, E : Event<ID>>(
     initialSubscribers: List<EventStoreSubscriber<ID, E>> = emptyList(),
 ) : EventStore<ID, E> {
     private val savedEvents = mutableMapOf<ID, List<E>>()
