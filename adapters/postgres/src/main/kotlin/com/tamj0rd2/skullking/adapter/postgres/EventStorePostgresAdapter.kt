@@ -1,8 +1,8 @@
 package com.tamj0rd2.skullking.adapter.postgres
 
-import com.tamj0rd2.skullking.adapter.postgres.tables.records.LobbyEventsRecord
-import com.tamj0rd2.skullking.adapter.postgres.tables.references.LOBBY_EVENTS
-import com.tamj0rd2.skullking.adapter.postgres.tables.references.LOBBY_REVISIONS
+import com.tamj0rd2.skullking.adapter.postgres.tables.records.EventsRecord
+import com.tamj0rd2.skullking.adapter.postgres.tables.references.AGGREGATES
+import com.tamj0rd2.skullking.adapter.postgres.tables.references.EVENTS
 import com.tamj0rd2.skullking.application.port.output.EventStore
 import com.tamj0rd2.skullking.application.port.output.EventStoreSubscriber
 import com.tamj0rd2.skullking.domain.AggregateId
@@ -32,7 +32,7 @@ class EventStorePostgresAdapter<ID : AggregateId, E : Event<ID>>(
         // TODO: the transaction should be passed by the caller. look up suggested approaches for this.
         startTransaction {
             try {
-                updateRevisionTable(entityId, expectedVersion, events)
+                updateAggregatesTable(entityId, expectedVersion, events)
             } catch (e: ConcurrentModificationException) {
                 // FIXME: this could become quite non-performant at some point. I might want to think about removing
                 //  this idempotency thing, although it's kinda cool.
@@ -42,11 +42,10 @@ class EventStorePostgresAdapter<ID : AggregateId, E : Event<ID>>(
                 throw e
             }
 
-            // TODO: if I want a generic event store, I need to do something differently.
             val recordsToInsert =
                 events.mapIndexed { index, event ->
-                    LobbyEventsRecord(
-                        lobbyid = entityId.value,
+                    EventsRecord(
+                        id = entityId.value,
                         payload = jsonb(eventConverter.toJson(event)),
                         revision = expectedVersion.plus(index + 1).value,
                     )
@@ -58,9 +57,9 @@ class EventStorePostgresAdapter<ID : AggregateId, E : Event<ID>>(
 
     override fun read(entityId: ID): Collection<E> =
         startTransaction {
-            selectFrom(LOBBY_EVENTS)
-                .where(LOBBY_EVENTS.LOBBYID.eq(entityId.value))
-                .orderBy(LOBBY_EVENTS.REVISION)
+            selectFrom(EVENTS)
+                .where(EVENTS.ID.eq(entityId.value))
+                .orderBy(EVENTS.REVISION)
                 .fetch()
                 .map { eventConverter.fromJson(it.payload!!.data()).orThrow() }
         }
@@ -82,7 +81,7 @@ class EventStorePostgresAdapter<ID : AggregateId, E : Event<ID>>(
             }
         }
 
-    private fun DSLContext.updateRevisionTable(
+    private fun DSLContext.updateAggregatesTable(
         entityId: ID,
         expectedVersion: Version,
         events: Collection<E>,
@@ -90,13 +89,13 @@ class EventStorePostgresAdapter<ID : AggregateId, E : Event<ID>>(
         val latestRevisionToSet = expectedVersion.plus(events.size).value
 
         val affectedRowCount =
-            insertInto(LOBBY_REVISIONS)
-                .columns(LOBBY_REVISIONS.LOBBYID, LOBBY_REVISIONS.LATEST_REVISION)
+            insertInto(AGGREGATES)
+                .columns(AGGREGATES.ID, AGGREGATES.LATEST_REVISION)
                 .values(entityId.value, latestRevisionToSet)
-                .onConflict(LOBBY_REVISIONS.LOBBYID)
+                .onConflict(AGGREGATES.ID)
                 .doUpdate()
-                .set(LOBBY_REVISIONS.LATEST_REVISION, latestRevisionToSet)
-                .where(LOBBY_REVISIONS.LATEST_REVISION.eq(expectedVersion.value))
+                .set(AGGREGATES.LATEST_REVISION, latestRevisionToSet)
+                .where(AGGREGATES.LATEST_REVISION.eq(expectedVersion.value))
                 .execute()
 
         if (affectedRowCount != 1) {
