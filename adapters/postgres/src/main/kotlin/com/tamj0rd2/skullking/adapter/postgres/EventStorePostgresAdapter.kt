@@ -45,7 +45,7 @@ class EventStorePostgresAdapter<ID : AggregateId, E : Event<ID>>(
             val recordsToInsert =
                 events.mapIndexed { index, event ->
                     EventsRecord(
-                        id = entityId.value,
+                        aggregateId = entityId.value,
                         payload = jsonb(eventConverter.toJson(event)),
                         revision = expectedVersion.plus(index + 1).value,
                     )
@@ -58,7 +58,7 @@ class EventStorePostgresAdapter<ID : AggregateId, E : Event<ID>>(
     override fun read(entityId: ID): Collection<E> =
         startTransaction {
             selectFrom(EVENTS)
-                .where(EVENTS.ID.eq(entityId.value))
+                .where(EVENTS.AGGREGATE_ID.eq(entityId.value))
                 .orderBy(EVENTS.REVISION)
                 .fetch()
                 .map { eventConverter.fromJson(it.payload!!.data()).orThrow() }
