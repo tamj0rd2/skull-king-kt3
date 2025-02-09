@@ -7,6 +7,7 @@ import com.tamj0rd2.skullking.application.port.output.EventStore
 import com.tamj0rd2.skullking.application.port.output.EventStoreSubscriber
 import com.tamj0rd2.skullking.domain.AggregateId
 import com.tamj0rd2.skullking.domain.Event
+import com.tamj0rd2.skullking.domain.game.LobbyId
 import com.tamj0rd2.skullking.domain.game.Version
 import com.tamj0rd2.skullking.serialization.json.JLobbyEvent
 import com.ubertob.kondor.json.ObjectNodeConverter
@@ -17,19 +18,26 @@ import org.jooq.impl.DSL
 import java.sql.Connection
 import java.sql.Connection.TRANSACTION_SERIALIZABLE
 import java.sql.DriverManager
+import java.util.*
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit.MILLISECONDS
+import java.util.concurrent.TimeUnit.SECONDS
+import java.util.concurrent.atomic.AtomicLong
 
 // NOTE: this is a treasure trove - https://github.com/eugene-khyst/postgresql-event-sourcing/blob/main/README.md
 // TODO: at some point, use a connection pool instead.
 class EventStorePostgresAdapter<ID : AggregateId, E : Event<ID>>(
     private val connectionString: String,
+    private val uuidToEntityId: (UUID) -> ID,
     private val eventConverter: ObjectNodeConverter<E>,
-) : EventStore<ID, E> {
+) : EventStore<ID, E>,
+    AutoCloseable {
     override fun append(
         entityId: ID,
         expectedVersion: Version,
         events: Collection<E>,
     ) {
-        // TODO: the transaction should be passed by the caller. look up suggested approaches for this.
+        // TODO: the transac tion should be passed by the caller. look up suggested approaches for this.
         startTransaction {
             try {
                 updateAggregatesTable(entityId, expectedVersion, events)
@@ -64,8 +72,50 @@ class EventStorePostgresAdapter<ID : AggregateId, E : Event<ID>>(
                 .map { eventConverter.fromJson(it.payload!!.data()).orThrow() }
         }
 
+    // TODO: encapsulate this subscription stuff in a separate class
+    private val scheduledThreadPool = Executors.newScheduledThreadPool(100, Thread.ofVirtual().factory())
+
+    override fun close() {
+        scheduledThreadPool.shutdown()
+        scheduledThreadPool.awaitTermination(2, SECONDS)
+    }
+
     override fun subscribe(subscriber: EventStoreSubscriber<ID, E>) {
-        TODO("Not yet implemented")
+        data class AggregateChange(
+            val id: Long,
+            val aggregateId: ID,
+            val revision: Version,
+        )
+
+        val lastProcessedChange = AtomicLong(0)
+        scheduledThreadPool.scheduleAtFixedRate(
+            {
+                val aggregateChangeList = startTransaction {
+                    select(EVENTS.ID, EVENTS.AGGREGATE_ID, EVENTS.REVISION)
+                        .from(EVENTS)
+                        .where(EVENTS.ID.greaterThan(lastProcessedChange.get()))
+                        .limit(100)
+                        .fetch()
+                        .toList()
+                        .map {
+                            AggregateChange(
+                                id = it[EVENTS.ID]!!,
+                                aggregateId = uuidToEntityId(it[EVENTS.AGGREGATE_ID]!!),
+                                revision = Version.of(it[EVENTS.REVISION]!!)
+                            )
+                        }
+                }
+
+                aggregateChangeList.forEach { change ->
+                    // guarantees at-least-once delivery
+                    subscriber.onEventReceived(change.aggregateId, change.revision)
+                    lastProcessedChange.getAndAdd(1)
+                }
+            },
+            0,
+            50,
+            MILLISECONDS,
+        )
     }
 
     private infix fun <T> startTransaction(block: DSLContext.() -> T): T =
@@ -111,6 +161,7 @@ class EventStorePostgresAdapter<ID : AggregateId, E : Event<ID>>(
                 // TODO: don't hardcode passwords :D
                 connectionString = "jdbc:postgresql://localhost:5432/skullking?user=skullking&password=password",
                 eventConverter = JLobbyEvent,
+                uuidToEntityId = LobbyId.Companion::of
             )
 
         private fun <T> Connection.dsl(block: DSLContext.() -> T) = DSL.using(this, POSTGRES).run(block)
