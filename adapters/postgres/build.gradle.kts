@@ -1,35 +1,77 @@
+import org.jooq.meta.jaxb.Logging.WARN
+
 plugins {
     id("buildlogic.kotlin-library-conventions")
     id("org.flywaydb.flyway") version "11.3.1"
+    id("org.jooq.jooq-codegen-gradle") version "3.19.18"
 }
 
 buildscript {
     dependencies {
         classpath("org.flywaydb:flyway-database-postgresql:11.3.1")
+        classpath("org.jooq:jooq:3.19.18")
+        classpath("org.jooq:jooq-meta:3.19.18")
+        classpath("org.jooq:jooq-codegen:3.19.18")
+        classpath("org.postgresql:postgresql:42.7.5")
     }
 }
 
 dependencies {
     forImplementation(libs.bundles.json)
-    implementation("org.postgresql:postgresql:42.7.5")
+    runtimeOnly("org.postgresql:postgresql:42.7.5")
+    jooqCodegen("org.postgresql:postgresql:42.7.5")
     forImplementation("org.jooq:jooq:3.19.18")
+    forImplementation("org.jooq:jooq-meta:3.19.18")
+    forImplementation("org.jooq:jooq-codegen:3.19.18")
     forImplementation(libs.slf4j)
     forImplementation(project(":domain:game"))
     forImplementation(project(":application:output-ports"), alsoUseForTesting = true)
     forImplementation(project(":lib:common-json"))
 }
 
+// FIXME: password in plain text
+val connectionString = "jdbc:postgresql://localhost:5432/skullking?user=skullking&password=password"
+val defaultDbSchema = "skullking"
+
 flyway {
     driver = "org.postgresql.Driver"
-    // FIXME: password in plain text
-    url = "jdbc:postgresql://localhost:5432/skullking?user=skullking&password=password"
-    user = "skullking"
+    url = connectionString
     validateMigrationNaming = true
-    defaultSchema = "skullking"
+    defaultSchema = defaultDbSchema
 }
 
-tasks.named("processResources") {
+// https://www.jooq.org/doc/latest/manual/code-generation/codegen-configuration/
+jooq {
+    configuration {
+        logging = WARN
+
+        jdbc {
+            driver = "org.postgresql.Driver"
+            url = connectionString
+        }
+
+        generator {
+            name = "org.jooq.codegen.KotlinGenerator"
+
+            database {
+                name = "org.jooq.meta.postgres.PostgresDatabase"
+                inputSchema = defaultDbSchema
+
+                target {
+                    packageName = "com.tamj0rd2.skullking.adapter.postgres"
+                }
+            }
+        }
+    }
+}
+
+// make sure flyway migrate happens before jooq codegen
+tasks.named("jooqCodegen") {
     dependsOn("flywayMigrate")
+}
+
+tasks.compileKotlin {
+    dependsOn("jooqCodegen")
 }
 
 private fun DependencyHandlerScope.forImplementation(
