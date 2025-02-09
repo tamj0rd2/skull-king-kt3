@@ -1,14 +1,35 @@
 plugins {
     id("buildlogic.kotlin-library-conventions")
+    id("org.flywaydb.flyway") version "11.3.1"
+}
+
+buildscript {
+    dependencies {
+        classpath("org.flywaydb:flyway-database-postgresql:11.3.1")
+    }
 }
 
 dependencies {
     forImplementation(libs.bundles.json)
-    runtimeOnly("org.postgresql:postgresql:42.7.5")
+    implementation("org.postgresql:postgresql:42.7.5")
+    forImplementation("org.jooq:jooq:3.19.18")
     forImplementation(libs.slf4j)
     forImplementation(project(":domain:game"))
     forImplementation(project(":application:output-ports"), alsoUseForTesting = true)
     forImplementation(project(":lib:common-json"))
+}
+
+flyway {
+    driver = "org.postgresql.Driver"
+    // FIXME: password in plain text
+    url = "jdbc:postgresql://localhost:5432/skullking?user=skullking&password=password"
+    user = "skullking"
+    validateMigrationNaming = true
+    defaultSchema = "skullking"
+}
+
+tasks.named("processResources") {
+    dependsOn("flywayMigrate")
 }
 
 private fun DependencyHandlerScope.forImplementation(

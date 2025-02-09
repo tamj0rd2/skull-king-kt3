@@ -12,47 +12,18 @@ import java.sql.Connection.TRANSACTION_SERIALIZABLE
 import java.sql.DriverManager
 import java.sql.ResultSet
 
+// NOTE: this is a treasure trove - https://github.com/eugene-khyst/postgresql-event-sourcing/blob/main/README.md
 // TODO: at some point, use a connection pool instead.
 class EventStorePostgresAdapter<ID : AggregateId, E : Event<ID>>(
     private val connectionString: String,
     private val eventConverter: ObjectNodeConverter<E>,
 ) : EventStore<ID, E> {
-    // TODO: the transaction should be passed by the caller. look up suggested approaches for this.
-    init {
-        // TODO: table name should not be hardcoded!!
-        // TODO: eventually, use migrations instead.
-        startTransaction { connection ->
-            connection
-                .prepareStatement(
-                    // language=PostgreSQL
-                    """
-                    |create table if not exists lobby_events (
-                    |    lobbyId uuid not null,
-                    |    payload jsonb,
-                    |    revision integer
-                    |)
-                    """.trimMargin(),
-                )
-
-            connection
-                .prepareStatement(
-                    // language=PostgreSQL
-                    """
-                    |create table if not exists lobby_revisions (
-                    |    lobbyId uuid not null primary key,
-                    |    latest_revision integer
-                    |)
-                    """.trimMargin(),
-                ).execute()
-        }
-    }
-
     override fun append(
         entityId: ID,
         expectedVersion: Version,
         events: Collection<E>,
     ) {
-        // TODO: table name should not be hardcoded!!
+        // TODO: the transaction should be passed by the caller. look up suggested approaches for this.
         startTransaction { connection ->
             try {
                 updateRevisionTable(connection, entityId, expectedVersion, events)
@@ -65,6 +36,7 @@ class EventStorePostgresAdapter<ID : AggregateId, E : Event<ID>>(
                 throw e
             }
 
+            // TODO: table name should not be hardcoded!!
             connection
                 .prepareStatement(
                     // language=PostgreSQL
@@ -135,11 +107,11 @@ class EventStorePostgresAdapter<ID : AggregateId, E : Event<ID>>(
                 .prepareStatement(
                     // language=PostgreSQL
                     """
-                |insert into lobby_revisions (lobbyid, latest_revision)
-                |values (?, ?)
-                |on conflict (lobbyid)
-                |do update set latest_revision = ?
-                |where lobby_revisions.latest_revision = ?
+                    |insert into lobby_revisions (lobbyid, latest_revision)
+                    |values (?, ?)
+                    |on conflict (lobbyid)
+                    |do update set latest_revision = ?
+                    |where lobby_revisions.latest_revision = ?
                     """.trimMargin(),
                 ).use { preparedStatement ->
                     val updatedLatestRevision = expectedVersion.plus(events.size).value
