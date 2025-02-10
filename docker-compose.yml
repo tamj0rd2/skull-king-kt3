@@ -13,6 +13,7 @@ services:
 
   postgres:
     image: postgres:17-alpine
+    command: "postgres -N 200"
     environment:
       POSTGRES_PASSWORD: "password"
     ports:
