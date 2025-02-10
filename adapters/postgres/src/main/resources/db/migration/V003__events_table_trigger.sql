@@ -1,0 +1,18 @@
+CREATE OR REPLACE FUNCTION CHANNEL_EVENT_NOTIFY_FCT()
+    RETURNS TRIGGER AS
+$BODY$
+DECLARE
+    aggregate_type  TEXT;
+BEGIN
+--     SELECT a.AGGREGATE_TYPE INTO aggregate_type FROM aggregates a WHERE a.ID = NEW.AGGREGATE_ID;
+--     PERFORM pg_notify('channel_event_notify', aggregate_type);
+    PERFORM pg_notify('channel_event_notify', 'lobby');
+    RETURN NEW;
+END;
+$BODY$
+    LANGUAGE PLPGSQL;
+
+CREATE OR REPLACE TRIGGER CHANNEL_EVENT_NOTIFY_TRG
+    AFTER INSERT ON events
+    FOR EACH ROW
+EXECUTE PROCEDURE CHANNEL_EVENT_NOTIFY_FCT();

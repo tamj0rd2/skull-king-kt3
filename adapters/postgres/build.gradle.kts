@@ -18,7 +18,7 @@ buildscript {
 
 dependencies {
     forImplementation(libs.bundles.json)
-    runtimeOnly("org.postgresql:postgresql:42.7.5")
+    forImplementation("org.postgresql:postgresql:42.7.5")
     jooqCodegen("org.postgresql:postgresql:42.7.5")
     forImplementation("org.jooq:jooq:3.19.18")
     forImplementation("org.jooq:jooq-meta:3.19.18")

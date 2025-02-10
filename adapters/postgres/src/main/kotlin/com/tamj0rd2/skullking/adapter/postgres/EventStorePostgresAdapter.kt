@@ -15,12 +15,12 @@ import org.jooq.DSLContext
 import org.jooq.JSONB.jsonb
 import org.jooq.SQLDialect.POSTGRES
 import org.jooq.impl.DSL
+import org.postgresql.jdbc.PgConnection
 import java.sql.Connection
 import java.sql.Connection.TRANSACTION_SERIALIZABLE
 import java.sql.DriverManager
-import java.util.*
+import java.util.UUID
 import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit.MILLISECONDS
 import java.util.concurrent.TimeUnit.SECONDS
 import java.util.concurrent.atomic.AtomicLong
 
@@ -37,7 +37,7 @@ class EventStorePostgresAdapter<ID : AggregateId, E : Event<ID>>(
         expectedVersion: Version,
         events: Collection<E>,
     ) {
-        // TODO: the transac tion should be passed by the caller. look up suggested approaches for this.
+        // TODO: the transaction should be passed by the caller. look up suggested approaches for this.
         startTransaction {
             try {
                 updateAggregatesTable(entityId, expectedVersion, events)
@@ -73,49 +73,82 @@ class EventStorePostgresAdapter<ID : AggregateId, E : Event<ID>>(
         }
 
     // TODO: encapsulate this subscription stuff in a separate class
-    private val scheduledThreadPool = Executors.newScheduledThreadPool(100, Thread.ofVirtual().factory())
+    private val listenerConnection = DriverManager.getConnection(connectionString)
+    private val databaseListenerExecutor = Executors.newVirtualThreadPerTaskExecutor()
+    private val scheduledExecutor = Executors.newScheduledThreadPool(100, Thread.ofVirtual().factory())
 
     override fun close() {
-        scheduledThreadPool.shutdown()
-        scheduledThreadPool.awaitTermination(2, SECONDS)
+        listenerConnection.close()
+        databaseListenerExecutor.shutdown()
+        scheduledExecutor.shutdown()
+        scheduledExecutor.awaitTermination(2, SECONDS)
     }
 
-    override fun subscribe(subscriber: EventStoreSubscriber<ID, E>) {
-        data class AggregateChange(
-            val id: Long,
-            val aggregateId: ID,
-            val revision: Version,
-        )
+    private data class AggregateChange<ID>(
+        val id: Long,
+        val aggregateId: ID,
+        val revision: Version,
+    )
 
-        val lastProcessedChange = AtomicLong(0)
-        scheduledThreadPool.scheduleAtFixedRate(
-            {
-                val aggregateChangeList = startTransaction {
+    private val subscribers = mutableMapOf<EventStoreSubscriber<ID, E>, AtomicLong>()
+
+    init {
+        databaseListenerExecutor.execute {
+            listenerConnection.dsl { execute("listen channel_event_notify") }
+
+            while (!listenerConnection.isClosed) {
+                val notifications = (listenerConnection as PgConnection).getNotifications(0)
+                if (notifications.isNotEmpty()) {
+                    notifySubscribers(notifications.size)
+                }
+            }
+        }
+
+        scheduledExecutor.scheduleAtFixedRate(
+            { notifySubscribers(100) },
+            0,
+            5,
+            SECONDS,
+        )
+    }
+
+    private fun notifySubscribers(limit: Int) {
+        // this code could be non-performant or just not work correctly with multiple subscribers. That behaviour needs test driving.
+        if (subscribers.size > 1) TODO("multiple subscribers not supported")
+
+        subscribers.forEach { (subscriber, lastProcessedChange) ->
+            val aggregateChangeList =
+                startTransaction {
                     select(EVENTS.ID, EVENTS.AGGREGATE_ID, EVENTS.REVISION)
                         .from(EVENTS)
                         .where(EVENTS.ID.greaterThan(lastProcessedChange.get()))
-                        .limit(100)
+                        .limit(limit)
                         .fetch()
                         .toList()
                         .map {
                             AggregateChange(
                                 id = it[EVENTS.ID]!!,
                                 aggregateId = uuidToEntityId(it[EVENTS.AGGREGATE_ID]!!),
-                                revision = Version.of(it[EVENTS.REVISION]!!)
+                                revision = Version.of(it[EVENTS.REVISION]!!),
                             )
                         }
                 }
 
-                aggregateChangeList.forEach { change ->
-                    // guarantees at-least-once delivery
-                    subscriber.onEventReceived(change.aggregateId, change.revision)
-                    lastProcessedChange.getAndAdd(1)
-                }
-            },
-            0,
-            50,
-            MILLISECONDS,
-        )
+            aggregateChangeList.forEach { change ->
+                // guarantees at-least-once delivery
+                subscriber.onEventReceived(change.aggregateId, change.revision)
+                lastProcessedChange.getAndIncrement()
+            }
+        }
+    }
+
+    override fun subscribe(subscriber: EventStoreSubscriber<ID, E>) {
+        if (subscriber in subscribers) return
+        if (subscribers.isNotEmpty()) TODO("multiple subscribers not supported yet")
+        subscribers[subscriber] = AtomicLong(0)
+
+        val totalEventCount = startTransaction { fetchCount(EVENTS) }
+        notifySubscribers(totalEventCount)
     }
 
     private infix fun <T> startTransaction(block: DSLContext.() -> T): T =
@@ -161,7 +194,7 @@ class EventStorePostgresAdapter<ID : AggregateId, E : Event<ID>>(
                 // TODO: don't hardcode passwords :D
                 connectionString = "jdbc:postgresql://localhost:5432/skullking?user=skullking&password=password",
                 eventConverter = JLobbyEvent,
-                uuidToEntityId = LobbyId.Companion::of
+                uuidToEntityId = LobbyId.Companion::of,
             )
 
         private fun <T> Connection.dsl(block: DSLContext.() -> T) = DSL.using(this, POSTGRES).run(block)

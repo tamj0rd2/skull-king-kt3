@@ -116,7 +116,7 @@ interface EventStoreContract {
     companion object {
         // TODO: this was duplicated. put this into a shared module.
         private fun <T> eventually(block: () -> T): T {
-            val stopAt = Instant.now().plusMillis(1000)
+            val stopAt = Instant.now().plusMillis(200)
             var lastError: AssertionError? = null
             do {
                 try {
