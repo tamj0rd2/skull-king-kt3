@@ -13,8 +13,10 @@ import com.tamj0rd2.skullking.domain.game.LobbyNotification.ACardWasPlayed
 import com.tamj0rd2.skullking.domain.game.LobbyNotification.AllBidsHaveBeenPlaced
 import com.tamj0rd2.skullking.domain.game.LobbyNotification.TheTrickHasEnded
 import com.tamj0rd2.skullking.domain.game.StartGameErrorCode.TooFewPlayers
+import dev.forkhandles.result4k.Result
 import dev.forkhandles.result4k.Result4k
-import dev.forkhandles.result4k.map
+import dev.forkhandles.result4k.Success
+import dev.forkhandles.result4k.onFailure
 
 data class LobbyState private constructor(
     val atVersion: Version,
@@ -35,64 +37,64 @@ data class LobbyState private constructor(
         }
 
     private fun apply(event: LobbyCreatedEvent): Result4k<LobbyState, LobbyErrorCode> =
-        copy(players = listOf(event.createdBy))
-            .withNotification(LobbyNotification.APlayerHasJoined(event.createdBy))
-            .asSuccess()
+        copy(
+            players = listOf(event.createdBy),
+            notifications = listOf(LobbyNotification.APlayerHasJoined(event.createdBy)),
+        ).asSuccess()
 
     private fun apply(event: PlayerJoinedEvent): Result4k<LobbyState, AddPlayerErrorCode> {
         if (gameState != null) return GameHasAlreadyStarted().asFailure()
         if (players.size >= MAXIMUM_PLAYER_COUNT) return LobbyIsFull().asFailure()
         if (players.contains(event.playerId)) return PlayerHasAlreadyJoined().asFailure()
-        return copy(players = players + event.playerId)
-            .withNotification(LobbyNotification.APlayerHasJoined(event.playerId))
-            .asSuccess()
+
+        return copy(
+            players = players + event.playerId,
+            notifications = listOf(LobbyNotification.APlayerHasJoined(event.playerId)),
+        ).asSuccess()
     }
 
     private fun apply(
         @Suppress("UNUSED_PARAMETER") event: GameStartedEvent,
     ): Result4k<LobbyState, StartGameErrorCode> {
         if (players.size < MINIMUM_PLAYER_COUNT) return TooFewPlayers().asFailure()
-        return copy(gameState = GameState.new(players))
-            .withNotification(LobbyNotification.TheGameHasStarted)
-            .asSuccess()
+
+        return copy(
+            gameState = GameState.new(players),
+            notifications = listOf(LobbyNotification.TheGameHasStarted),
+        ).asSuccess()
     }
 
     private fun apply(
         @Suppress("UNUSED_PARAMETER") event: CardDealtEvent,
-    ) = withNotification(ACardWasDealt(Card)).asSuccess()
+    ) = copy(notifications = listOf(ACardWasDealt(Card))).asSuccess()
 
-    private fun apply(event: BidPlacedEvent) =
-        updateGameState { it.apply(event) }.map { gameState ->
-            gameState.withNotifications(
-                buildList {
-                    add(ABidWasPlaced(event.playerId))
+    private fun apply(event: BidPlacedEvent): Result<LobbyState, LobbyErrorCode> {
+        if (gameState == null) return GameNotInProgress().asFailure()
+        val updatedGameState = gameState.apply(event).onFailure { return it }
+        val newNotifications =
+            buildList {
+                add(ABidWasPlaced(event.playerId))
+                if (updatedGameState.allBidsHaveBeenPlaced) add(AllBidsHaveBeenPlaced(updatedGameState.bids))
+            }
 
-                    if (gameState.gameState!!.allBidsHaveBeenPlaced) {
-                        add(AllBidsHaveBeenPlaced(gameState.gameState.bids))
-                    }
-                },
-            )
-        }
+        return copy(
+            gameState = updatedGameState,
+            notifications = newNotifications,
+        ).asSuccess()
+    }
 
-    private fun apply(event: CardPlayedEvent) =
-        withNotifications(
+    private fun apply(event: CardPlayedEvent): Success<LobbyState> {
+        val newNotifications =
             buildList {
                 val playedCard = PlayedCard(event.card, event.playerId)
                 add(ACardWasPlayed(playedCard))
 
                 // FIXME: the winner is wrong. drive out correct behaviour through a test.
                 add(TheTrickHasEnded(event.playerId))
-            },
-        ).asSuccess()
+            }
 
-    private fun updateGameState(block: (GameState) -> Result4k<GameState, LobbyErrorCode>): Result4k<LobbyState, LobbyErrorCode> {
-        if (gameState == null) return GameNotInProgress().asFailure()
-        return block(gameState).map { updatedGameState -> copy(gameState = updatedGameState) }
+        return copy(notifications = newNotifications).asSuccess()
     }
-
-    private fun withNotifications(newNotifications: List<LobbyNotification>) = copy(notifications = newNotifications)
-
-    private fun withNotification(newNotification: LobbyNotification) = withNotifications(listOf(newNotification))
 
     companion object {
         internal fun new() =
