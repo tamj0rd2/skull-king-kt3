@@ -13,7 +13,7 @@ class CreateNewLobbyService(
     override fun invoke(command: CreateNewLobbyCommand): CreateNewLobbyOutput {
         val lobby = Lobby.new(createdBy = command.playerId)
         lobbyRepository.save(lobby)
-        lobbyNotifier.subscribe(lobby.id, command.lobbyNotificationListener)
+        lobbyNotifier.subscribe(lobby.id, command.playerId, command.lobbyNotificationListener)
 
         return CreateNewLobbyOutput(
             lobbyId = lobby.id,

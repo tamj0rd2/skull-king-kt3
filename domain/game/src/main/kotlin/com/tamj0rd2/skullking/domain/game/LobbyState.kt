@@ -8,10 +8,11 @@ import com.tamj0rd2.skullking.domain.game.AddPlayerErrorCode.PlayerHasAlreadyJoi
 import com.tamj0rd2.skullking.domain.game.Lobby.Companion.MAXIMUM_PLAYER_COUNT
 import com.tamj0rd2.skullking.domain.game.Lobby.Companion.MINIMUM_PLAYER_COUNT
 import com.tamj0rd2.skullking.domain.game.LobbyNotification.ABidWasPlaced
-import com.tamj0rd2.skullking.domain.game.LobbyNotification.ACardWasDealt
 import com.tamj0rd2.skullking.domain.game.LobbyNotification.ACardWasPlayed
 import com.tamj0rd2.skullking.domain.game.LobbyNotification.AllBidsHaveBeenPlaced
+import com.tamj0rd2.skullking.domain.game.LobbyNotification.CardsWereDealt
 import com.tamj0rd2.skullking.domain.game.LobbyNotification.TheTrickHasEnded
+import com.tamj0rd2.skullking.domain.game.LobbyNotificationRecipient.Someone
 import com.tamj0rd2.skullking.domain.game.StartGameErrorCode.TooFewPlayers
 import dev.forkhandles.result4k.Result
 import dev.forkhandles.result4k.Result4k
@@ -30,7 +31,7 @@ data class LobbyState private constructor(
                 is LobbyCreatedEvent -> apply(event)
                 is PlayerJoinedEvent -> apply(event)
                 is GameStartedEvent -> apply(event)
-                is CardDealtEvent -> apply(event)
+                is RoundStartedEvent -> apply(event)
                 is BidPlacedEvent -> apply(event)
                 is CardPlayedEvent -> apply(event)
             }
@@ -65,8 +66,16 @@ data class LobbyState private constructor(
     }
 
     private fun apply(
-        @Suppress("UNUSED_PARAMETER") event: CardDealtEvent,
-    ) = copy(notifications = listOf(ACardWasDealt(Card))).asSuccess()
+        @Suppress("UNUSED_PARAMETER") event: RoundStartedEvent,
+    ) = copy(
+        notifications =
+            players.map { playerId ->
+                CardsWereDealt(
+                    recipient = Someone(playerId),
+                    cards = listOf(element = Card),
+                )
+            },
+    ).asSuccess()
 
     private fun apply(event: BidPlacedEvent): Result<LobbyState, LobbyErrorCode> {
         if (gameState == null) return GameNotInProgress().asFailure()

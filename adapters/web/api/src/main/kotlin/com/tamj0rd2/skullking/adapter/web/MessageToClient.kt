@@ -13,12 +13,13 @@ import com.tamj0rd2.skullking.domain.game.LobbyErrorCode
 import com.tamj0rd2.skullking.domain.game.LobbyId
 import com.tamj0rd2.skullking.domain.game.LobbyNotification
 import com.tamj0rd2.skullking.domain.game.LobbyNotification.ABidWasPlaced
-import com.tamj0rd2.skullking.domain.game.LobbyNotification.ACardWasDealt
 import com.tamj0rd2.skullking.domain.game.LobbyNotification.ACardWasPlayed
 import com.tamj0rd2.skullking.domain.game.LobbyNotification.APlayerHasJoined
 import com.tamj0rd2.skullking.domain.game.LobbyNotification.AllBidsHaveBeenPlaced
+import com.tamj0rd2.skullking.domain.game.LobbyNotification.CardsWereDealt
 import com.tamj0rd2.skullking.domain.game.LobbyNotification.TheGameHasStarted
 import com.tamj0rd2.skullking.domain.game.LobbyNotification.TheTrickHasEnded
+import com.tamj0rd2.skullking.domain.game.LobbyNotificationRecipient.Someone
 import com.tamj0rd2.skullking.domain.game.PlayedCard
 import com.tamj0rd2.skullking.domain.game.StartGameErrorCode.TooFewPlayers
 import com.tamj0rd2.skullking.serialization.json.JBid
@@ -29,6 +30,7 @@ import com.ubertob.kondor.json.JAny
 import com.ubertob.kondor.json.JMap
 import com.ubertob.kondor.json.JSealed
 import com.ubertob.kondor.json.ObjectNodeConverter
+import com.ubertob.kondor.json.array
 import com.ubertob.kondor.json.jsonnode.JsonNodeObject
 import com.ubertob.kondor.json.obj
 import com.ubertob.kondor.json.str
@@ -96,7 +98,7 @@ private object JLobbyNotification : JSealed<LobbyNotification>() {
         listOf(
             Triple(APlayerHasJoined::class, "player-joined", JPlayerJoined),
             Triple(TheGameHasStarted::class, "game-started", JSingleton(TheGameHasStarted)),
-            Triple(ACardWasDealt::class, "card-dealt", JCardDealt),
+            Triple(CardsWereDealt::class, "cards-dealt", JCardDealt),
             Triple(ABidWasPlaced::class, "bid-placed", JBidPlaced),
             Triple(AllBidsHaveBeenPlaced::class, "all-bids-placed", JAllBidsPlaced),
             Triple(ACardWasPlayed::class, "card-played", JCardPlayed),
@@ -119,10 +121,15 @@ private object JPlayerJoined : JAny<APlayerHasJoined>() {
     override fun JsonNodeObject.deserializeOrThrow() = APlayerHasJoined(playerId = +playerId)
 }
 
-private object JCardDealt : JAny<ACardWasDealt>() {
-    private val card by obj(JSingleton(Card), ACardWasDealt::card)
+private object JCardDealt : JAny<CardsWereDealt>() {
+    private val cards by array(JSingleton(Card), CardsWereDealt::cards)
+    private val recipient by str(JPlayerId) { recipient.playerId }
 
-    override fun JsonNodeObject.deserializeOrThrow() = ACardWasDealt(card = +card)
+    override fun JsonNodeObject.deserializeOrThrow() =
+        CardsWereDealt(
+            cards = +cards,
+            recipient = Someone(+recipient),
+        )
 }
 
 private object JBidPlaced : JAny<ABidWasPlaced>() {

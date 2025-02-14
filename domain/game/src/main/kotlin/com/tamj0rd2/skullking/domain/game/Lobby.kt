@@ -59,11 +59,12 @@ class Lobby private constructor(
                     PlayerJoinedEvent(id, command.playerId),
                 )
 
-            is StartGame ->
+            is StartGame -> {
                 appendEvents(
                     GameStartedEvent(id),
-                    CardDealtEvent(id),
+                    RoundStartedEvent(id, state.players.associateWith { listOf(Card) }),
                 )
+            }
 
             is PlaceBid ->
                 appendEvents(

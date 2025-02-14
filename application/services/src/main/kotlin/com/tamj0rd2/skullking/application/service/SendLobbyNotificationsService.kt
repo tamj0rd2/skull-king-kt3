@@ -16,6 +16,7 @@ class SendLobbyNotificationsService(
     ) {
         val lobby = lobbyRepository.load(entityId, version)
         val notifications = lobby.state.notifications
+        // TODO: rename this to send
         lobbyNotifier.broadcast(entityId, notifications)
     }
 }

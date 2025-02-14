@@ -19,7 +19,7 @@ class JoinALobbyService(
         game.execute(LobbyCommand.AddPlayer(command.playerId)).onFailure { return it }
         lobbyRepository.save(game)
 
-        lobbyNotifier.subscribe(game.id, command.lobbyNotificationListener)
+        lobbyNotifier.subscribe(game.id, command.playerId, command.lobbyNotificationListener)
         return JoinALobbyOutput.asSuccess()
     }
 }

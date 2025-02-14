@@ -17,10 +17,10 @@ import com.tamj0rd2.skullking.domain.game.LobbyErrorCode
 import com.tamj0rd2.skullking.domain.game.LobbyId
 import com.tamj0rd2.skullking.domain.game.LobbyNotification
 import com.tamj0rd2.skullking.domain.game.LobbyNotification.ABidWasPlaced
-import com.tamj0rd2.skullking.domain.game.LobbyNotification.ACardWasDealt
 import com.tamj0rd2.skullking.domain.game.LobbyNotification.ACardWasPlayed
 import com.tamj0rd2.skullking.domain.game.LobbyNotification.APlayerHasJoined
 import com.tamj0rd2.skullking.domain.game.LobbyNotification.AllBidsHaveBeenPlaced
+import com.tamj0rd2.skullking.domain.game.LobbyNotification.CardsWereDealt
 import com.tamj0rd2.skullking.domain.game.LobbyNotification.TheGameHasStarted
 import com.tamj0rd2.skullking.domain.game.LobbyNotification.TheTrickHasEnded
 import com.tamj0rd2.skullking.domain.game.PlayedCard
@@ -148,7 +148,7 @@ class PlayerRole(
             state =
                 state.run {
                     when (it) {
-                        is ACardWasDealt -> copy(hand = hand + it.card)
+                        is CardsWereDealt -> copy(hand = it.cards)
                         is TheGameHasStarted -> copy(roundNumber = roundNumber.next())
                         is APlayerHasJoined -> copy(players = players + it.playerId)
                         is ABidWasPlaced -> copy(bids = bids + Pair(it.playerId, null))

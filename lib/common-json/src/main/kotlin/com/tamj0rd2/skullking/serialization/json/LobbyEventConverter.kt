@@ -2,17 +2,20 @@ package com.tamj0rd2.skullking.serialization.json
 
 import com.tamj0rd2.skullking.domain.game.BidPlacedEvent
 import com.tamj0rd2.skullking.domain.game.Card
-import com.tamj0rd2.skullking.domain.game.CardDealtEvent
 import com.tamj0rd2.skullking.domain.game.CardPlayedEvent
 import com.tamj0rd2.skullking.domain.game.GameStartedEvent
 import com.tamj0rd2.skullking.domain.game.LobbyCreatedEvent
 import com.tamj0rd2.skullking.domain.game.LobbyEvent
 import com.tamj0rd2.skullking.domain.game.PlayerJoinedEvent
+import com.tamj0rd2.skullking.domain.game.RoundStartedEvent
 import com.ubertob.kondor.json.JAny
+import com.ubertob.kondor.json.JList
+import com.ubertob.kondor.json.JMap
 import com.ubertob.kondor.json.JSealed
 import com.ubertob.kondor.json.ObjectNodeConverter
 import com.ubertob.kondor.json.jsonnode.JsonNodeObject
 import com.ubertob.kondor.json.num
+import com.ubertob.kondor.json.obj
 import com.ubertob.kondor.json.str
 
 object JLobbyEvent : JSealed<LobbyEvent>() {
@@ -21,7 +24,7 @@ object JLobbyEvent : JSealed<LobbyEvent>() {
             Triple(LobbyCreatedEvent::class, "game-created", JLobbyCreated),
             Triple(PlayerJoinedEvent::class, "player-joined", JPlayerJoined),
             Triple(GameStartedEvent::class, "game-started", JGameStarted),
-            Triple(CardDealtEvent::class, "card-dealt-event", JCardDealt),
+            Triple(RoundStartedEvent::class, "round-started-event", JCardDealt),
             Triple(BidPlacedEvent::class, "bid-placed", JBidPlaced),
             Triple(CardPlayedEvent::class, "card-played", JCardPlayed),
         )
@@ -67,12 +70,14 @@ private object JGameStarted : JAny<GameStartedEvent>() {
         )
 }
 
-private object JCardDealt : JAny<CardDealtEvent>() {
-    private val lobbyId by str(JLobbyId, CardDealtEvent::aggregateId)
+private object JCardDealt : JAny<RoundStartedEvent>() {
+    private val lobbyId by str(JLobbyId, RoundStartedEvent::aggregateId)
+    private val cardsDealt by obj(JMap(JPlayerId, JList(JSingleton(Card))), RoundStartedEvent::cardsDealt)
 
     override fun JsonNodeObject.deserializeOrThrow() =
-        CardDealtEvent(
+        RoundStartedEvent(
             aggregateId = +lobbyId,
+            cardsDealt = +cardsDealt,
         )
 }
 

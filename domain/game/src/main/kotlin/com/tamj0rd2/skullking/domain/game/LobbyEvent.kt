@@ -20,8 +20,9 @@ data class GameStartedEvent(
     override val aggregateId: LobbyId,
 ) : LobbyEvent
 
-data class CardDealtEvent(
+data class RoundStartedEvent(
     override val aggregateId: LobbyId,
+    val cardsDealt: Map<PlayerId, List<Card>>,
 ) : LobbyEvent
 
 data class BidPlacedEvent(
