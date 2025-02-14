@@ -4,9 +4,12 @@ import com.tamj0rd2.skullking.application.port.output.EventStoreContract
 import com.tamj0rd2.skullking.application.port.output.LobbyRepository
 import com.tamj0rd2.skullking.application.port.output.LobbyRepositoryContract
 import org.junit.jupiter.api.AutoClose
+import org.junit.jupiter.api.parallel.Execution
+import org.junit.jupiter.api.parallel.ExecutionMode.SAME_THREAD
 import org.junit.platform.commons.annotation.Testable
 
 // TODO: these tests fail when run in parallel
+@Execution(SAME_THREAD)
 @Testable
 class EventStorePostgresAdapterTest :
     EventStoreContract,
