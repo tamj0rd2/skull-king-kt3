@@ -67,23 +67,22 @@ private object JLobbyCreatedMessage : JAny<LobbyCreatedMessage>() {
 }
 
 private object JMessageToClient : JSealed<MessageToClient>() {
-    override val discriminatorFieldName: String = "type"
-
-    override val subConverters: Map<String, ObjectNodeConverter<out MessageToClient>> =
-        mapOf(
-            "game-created" to JLobbyCreatedMessage,
-            "join-acknowledged" to JSingleton(JoinAcknowledgedMessage),
-            "game-update" to JLobbyNotificationMessage,
-            "error-message" to JErrorMessage,
+    private val config =
+        listOf(
+            Triple(LobbyCreatedMessage::class, "game-created", JLobbyCreatedMessage),
+            Triple(JoinAcknowledgedMessage::class, "join-acknowledged", JSingleton(JoinAcknowledgedMessage)),
+            Triple(LobbyNotificationMessage::class, "game-update", JLobbyNotificationMessage),
+            Triple(ErrorMessage::class, "error-message", JErrorMessage),
         )
 
-    override fun extractTypeName(obj: MessageToClient): String =
-        when (obj) {
-            is LobbyCreatedMessage -> "game-created"
-            is JoinAcknowledgedMessage -> "join-acknowledged"
-            is LobbyNotificationMessage -> "game-update"
-            is ErrorMessage -> "error-message"
-        }
+    override val subConverters: Map<String, ObjectNodeConverter<out MessageToClient>>
+        get() = config.associate { (_, eventType, converter) -> eventType to converter }
+
+    override fun extractTypeName(obj: MessageToClient): String {
+        val configForThisObj = config.firstOrNull { (clazz, _, _) -> clazz == obj::class }
+        checkNotNull(configForThisObj) { "Configure parsing for message to client ${obj::class.java.simpleName}" }
+        return configForThisObj.second
+    }
 }
 
 private object JLobbyNotificationMessage : JAny<LobbyNotificationMessage>() {
@@ -93,30 +92,25 @@ private object JLobbyNotificationMessage : JAny<LobbyNotificationMessage>() {
 }
 
 private object JLobbyNotification : JSealed<LobbyNotification>() {
-    override val discriminatorFieldName: String = "type"
+    private val config =
+        listOf(
+            Triple(APlayerHasJoined::class, "player-joined", JPlayerJoined),
+            Triple(TheGameHasStarted::class, "game-started", JSingleton(TheGameHasStarted)),
+            Triple(ACardWasDealt::class, "card-dealt", JCardDealt),
+            Triple(ABidWasPlaced::class, "bid-placed", JBidPlaced),
+            Triple(AllBidsHaveBeenPlaced::class, "all-bids-placed", JAllBidsPlaced),
+            Triple(ACardWasPlayed::class, "card-played", JCardPlayed),
+            Triple(TheTrickHasEnded::class, "trick-ended", JTrickEnded),
+        )
 
     override val subConverters: Map<String, ObjectNodeConverter<out LobbyNotification>>
-        get() =
-            mapOf(
-                "player-joined" to JPlayerJoined,
-                "game-started" to JSingleton(TheGameHasStarted),
-                "card-dealt" to JCardDealt,
-                "bid-placed" to JBidPlaced,
-                "all-bids-placed" to JAllBidsPlaced,
-                "card-played" to JCardPlayed,
-                "trick-ended" to JTrickEnded,
-            )
+        get() = config.associate { (_, eventType, converter) -> eventType to converter }
 
-    override fun extractTypeName(obj: LobbyNotification): String =
-        when (obj) {
-            is APlayerHasJoined -> "player-joined"
-            is TheGameHasStarted -> "game-started"
-            is ACardWasDealt -> "card-dealt"
-            is ABidWasPlaced -> "bid-placed"
-            is AllBidsHaveBeenPlaced -> "all-bids-placed"
-            is ACardWasPlayed -> "card-played"
-            is TheTrickHasEnded -> "trick-ended"
-        }
+    override fun extractTypeName(obj: LobbyNotification): String {
+        val configForThisObj = config.firstOrNull { (clazz, _, _) -> clazz == obj::class }
+        checkNotNull(configForThisObj) { "Configure parsing for lobby notification type ${obj::class.java.simpleName}" }
+        return configForThisObj.second
+    }
 }
 
 private object JPlayerJoined : JAny<APlayerHasJoined>() {
