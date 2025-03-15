@@ -23,6 +23,7 @@ include(
     ":application:output-ports",
     ":application:services",
     ":domain:game",
+    ":domain:gamev2",
     ":lib:forkhandles-extensions",
     ":lib:common-json",
 )
