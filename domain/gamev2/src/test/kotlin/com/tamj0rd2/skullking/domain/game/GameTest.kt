@@ -4,6 +4,7 @@ import com.tamj0rd2.skullking.domain.game.GameErrorCode.NotEnoughPlayersToStartG
 import com.tamj0rd2.skullking.domain.game.GameEvent.BidPlaced
 import com.tamj0rd2.skullking.domain.game.GameEvent.CardPlayed
 import com.tamj0rd2.skullking.domain.game.GameEvent.RoundStarted
+import com.tamj0rd2.skullking.domain.game.GameEvent.TrickCompleted
 import com.tamj0rd2.skullking.domain.game.GameEvent.TrickStarted
 import dev.forkhandles.result4k.orThrow
 import dev.forkhandles.values.random
@@ -168,6 +169,44 @@ class GameTest {
         @Test
         @Disabled
         fun `a card can only be played by the player whose turn it is`() {
+            TODO("not yet implemented")
+        }
+    }
+
+    @Nested
+    inner class CompletingATrick {
+        @Test
+        fun `when a bid is played, a CardPlayed event is emitted`() {
+            val command =
+                GameCommand.CompleteTrick(
+                    trickNumber = TrickNumber.of(1),
+                )
+
+            val game = Game(somePlayers)
+            game.mustExecute(command)
+
+            val trickCompletedEvent = game.events.filterIsInstance<TrickCompleted>().single()
+            expectThat(trickCompletedEvent) {
+                get { gameId }.isEqualTo(game.id)
+                get { trickNumber }.isEqualTo(command.trickNumber)
+            }
+        }
+
+        @Test
+        @Disabled
+        fun `can only complete a trick if all players have played a card`() {
+            TODO("not yet implemented")
+        }
+
+        @Test
+        @Disabled
+        fun `cannot complete a trick that has already been completed`() {
+            TODO("not yet implemented")
+        }
+
+        @Test
+        @Disabled
+        fun `cannot complete a trick that hasn't started`() {
             TODO("not yet implemented")
         }
     }

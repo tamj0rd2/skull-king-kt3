@@ -33,6 +33,7 @@ sealed interface GameEvent {
 
     data class TrickCompleted(
         override val gameId: GameId,
+        val trickNumber: TrickNumber,
     ) : GameEvent
 
     data class RoundCompleted(

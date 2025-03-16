@@ -20,7 +20,7 @@ data class GameState private constructor(
     val cardsPerPlayer: CardsPerPlayer,
 ) {
     fun applyEvent(event: GameEvent): Result4k<GameState, GameErrorCode> {
-        return when (event) {
+        when (event) {
             is BidPlaced -> {
                 return this.asSuccess()
             }
@@ -28,20 +28,20 @@ data class GameState private constructor(
                 return this.asSuccess()
             }
             is GameCompleted -> {
-                NotImplemented().asFailure()
+                return NotImplemented().asFailure()
             }
             is GameStarted -> {
                 if (event.players.size < 2) return NotEnoughPlayersToStartGame().asFailure()
                 return copy(players = event.players).asSuccess()
             }
             is RoundCompleted -> {
-                NotImplemented().asFailure()
+                return NotImplemented().asFailure()
             }
             is RoundStarted -> {
                 return copy(cardsPerPlayer = event.dealtCards).asSuccess()
             }
             is TrickCompleted -> {
-                NotImplemented().asFailure()
+                return this.asSuccess()
             }
             is TrickStarted -> {
                 return this.asSuccess()

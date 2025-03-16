@@ -18,4 +18,8 @@ sealed interface GameCommand {
         val card: Card,
         val actor: PlayerId,
     ) : GameCommand
+
+    data class CompleteTrick(
+        val trickNumber: TrickNumber,
+    ) : GameCommand
 }
