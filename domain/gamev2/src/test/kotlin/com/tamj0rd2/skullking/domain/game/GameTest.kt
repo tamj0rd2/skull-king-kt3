@@ -3,6 +3,7 @@ package com.tamj0rd2.skullking.domain.game
 import com.tamj0rd2.skullking.domain.game.GameErrorCode.NotEnoughPlayersToStartGame
 import com.tamj0rd2.skullking.domain.game.GameEvent.BidPlaced
 import com.tamj0rd2.skullking.domain.game.GameEvent.CardPlayed
+import com.tamj0rd2.skullking.domain.game.GameEvent.RoundCompleted
 import com.tamj0rd2.skullking.domain.game.GameEvent.RoundStarted
 import com.tamj0rd2.skullking.domain.game.GameEvent.TrickCompleted
 import com.tamj0rd2.skullking.domain.game.GameEvent.TrickStarted
@@ -207,6 +208,44 @@ class GameTest {
         @Test
         @Disabled
         fun `cannot complete a trick that hasn't started`() {
+            TODO("not yet implemented")
+        }
+    }
+
+    @Nested
+    inner class CompletingARound {
+        @Test
+        fun `when a round is completed, a RoundCompleted event is emitted`() {
+            val command =
+                GameCommand.CompleteRound(
+                    roundNumber = RoundNumber.of(1),
+                )
+
+            val game = Game(somePlayers)
+            game.mustExecute(command)
+
+            val roundCompletedEvent = game.events.filterIsInstance<RoundCompleted>().single()
+            expectThat(roundCompletedEvent) {
+                get { gameId }.isEqualTo(game.id)
+                get { roundNumber }.isEqualTo(command.roundNumber)
+            }
+        }
+
+        @Test
+        @Disabled
+        fun `can only complete a round if all tricks are complete`() {
+            TODO("not yet implemented")
+        }
+
+        @Test
+        @Disabled
+        fun `cannot complete a round that has already been completed`() {
+            TODO("not yet implemented")
+        }
+
+        @Test
+        @Disabled
+        fun `cannot complete a round that hasn't started`() {
             TODO("not yet implemented")
         }
     }

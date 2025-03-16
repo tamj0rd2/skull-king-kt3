@@ -35,7 +35,7 @@ data class GameState private constructor(
                 return copy(players = event.players).asSuccess()
             }
             is RoundCompleted -> {
-                return NotImplemented().asFailure()
+                return this.asSuccess()
             }
             is RoundStarted -> {
                 return copy(cardsPerPlayer = event.dealtCards).asSuccess()

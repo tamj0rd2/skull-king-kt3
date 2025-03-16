@@ -22,4 +22,8 @@ sealed interface GameCommand {
     data class CompleteTrick(
         val trickNumber: TrickNumber,
     ) : GameCommand
+
+    data class CompleteRound(
+        val roundNumber: RoundNumber,
+    ) : GameCommand
 }
