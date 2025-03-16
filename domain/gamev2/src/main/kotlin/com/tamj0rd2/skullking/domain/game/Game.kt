@@ -1,6 +1,7 @@
 package com.tamj0rd2.skullking.domain.game
 
 import com.tamj0rd2.extensions.asSuccess
+import com.tamj0rd2.skullking.domain.game.GameCommand.CompleteGame
 import com.tamj0rd2.skullking.domain.game.GameCommand.CompleteRound
 import com.tamj0rd2.skullking.domain.game.GameCommand.CompleteTrick
 import com.tamj0rd2.skullking.domain.game.GameCommand.PlaceABid
@@ -9,6 +10,7 @@ import com.tamj0rd2.skullking.domain.game.GameCommand.StartRound
 import com.tamj0rd2.skullking.domain.game.GameCommand.StartTrick
 import com.tamj0rd2.skullking.domain.game.GameEvent.BidPlaced
 import com.tamj0rd2.skullking.domain.game.GameEvent.CardPlayed
+import com.tamj0rd2.skullking.domain.game.GameEvent.GameCompleted
 import com.tamj0rd2.skullking.domain.game.GameEvent.GameStarted
 import com.tamj0rd2.skullking.domain.game.GameEvent.RoundCompleted
 import com.tamj0rd2.skullking.domain.game.GameEvent.RoundStarted
@@ -92,6 +94,13 @@ class Game private constructor(
                     RoundCompleted(
                         gameId = id,
                         roundNumber = command.roundNumber,
+                    ),
+                )
+
+            is CompleteGame ->
+                appendEvent(
+                    GameCompleted(
+                        gameId = id,
                     ),
                 )
         }

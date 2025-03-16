@@ -2,6 +2,7 @@ package com.tamj0rd2.skullking.domain.game
 
 import com.tamj0rd2.skullking.domain.game.GameEvent.BidPlaced
 import com.tamj0rd2.skullking.domain.game.GameEvent.CardPlayed
+import com.tamj0rd2.skullking.domain.game.GameEvent.GameCompleted
 import com.tamj0rd2.skullking.domain.game.GameEvent.RoundCompleted
 import com.tamj0rd2.skullking.domain.game.GameEvent.RoundStarted
 import com.tamj0rd2.skullking.domain.game.GameEvent.TrickCompleted
@@ -242,6 +243,34 @@ class GameTest {
         @Test
         @Disabled
         fun `cannot complete a round that hasn't started`() {
+            TODO("not yet implemented")
+        }
+    }
+
+    @Nested
+    inner class CompletingAGame {
+        @Test
+        fun `when a game is completed, a GameCompleted event is emitted`() {
+            val command = GameCommand.CompleteGame
+
+            val game = Game(somePlayers)
+            game.mustExecute(command)
+
+            val gameCompletedEvent = game.events.filterIsInstance<GameCompleted>().single()
+            expectThat(gameCompletedEvent) {
+                get { gameId }.isEqualTo(game.id)
+            }
+        }
+
+        @Test
+        @Disabled
+        fun `cannot complete the game if the final round has not been completed`() {
+            TODO("not yet implemented")
+        }
+
+        @Test
+        @Disabled
+        fun `cannot complete a game that is already complete`() {
             TODO("not yet implemented")
         }
     }
