@@ -48,7 +48,7 @@ class Game private constructor(
                 appendEvent(
                     RoundStarted(
                         gameId = id,
-                        roundNumber = state.roundNumber.next,
+                        roundNumber = command.roundNumber,
                         dealtCards = CardsPerPlayer(state.players.associateWith { setOf(CannedCard) }),
                     ),
                 )

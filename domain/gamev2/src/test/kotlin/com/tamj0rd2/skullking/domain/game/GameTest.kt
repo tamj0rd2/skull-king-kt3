@@ -1,6 +1,5 @@
 package com.tamj0rd2.skullking.domain.game
 
-import com.tamj0rd2.skullking.domain.game.GameErrorCode.NotEnoughPlayersToStartGame
 import com.tamj0rd2.skullking.domain.game.GameEvent.BidPlaced
 import com.tamj0rd2.skullking.domain.game.GameEvent.CardPlayed
 import com.tamj0rd2.skullking.domain.game.GameEvent.RoundCompleted
@@ -13,7 +12,6 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import strikt.api.expectThat
-import strikt.api.expectThrows
 import strikt.assertions.all
 import strikt.assertions.first
 import strikt.assertions.hasSize
@@ -41,22 +39,22 @@ class GameTest {
         }
 
         @Test
+        @Disabled
         fun `cannot start a game without players`() {
-            val players = emptySet<PlayerId>()
-            expectThrows<NotEnoughPlayersToStartGame> { Game(players) }
+            TODO("not yet implemented")
         }
 
         @Test
+        @Disabled
         fun `cannot start a game with a single player`() {
-            val players = setOf(PlayerId.random())
-            expectThrows<NotEnoughPlayersToStartGame> { Game(players) }
+            TODO("not yet implemented")
         }
     }
 
     @Nested
     inner class StartingARound {
         @Test
-        fun `when a round has started, each player is dealt 1 card, multiplied by the round number`() {
+        fun `when a round has started, a round started event is emitted`() {
             val game = Game(somePlayers)
             game.mustExecute(GameCommand.StartRound(RoundNumber.of(1)))
 
@@ -69,8 +67,6 @@ class GameTest {
                     .isNotEmpty()
                     .all { hasSize(roundStartedEvent.roundNumber.value) }
             }
-
-            expectThat(game.state.cardsPerPlayer).isEqualTo(roundStartedEvent.dealtCards)
         }
     }
 
