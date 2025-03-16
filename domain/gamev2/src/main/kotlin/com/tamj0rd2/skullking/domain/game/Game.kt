@@ -4,10 +4,12 @@ import com.tamj0rd2.extensions.asSuccess
 import com.tamj0rd2.skullking.domain.game.GameCommand.PlaceABid
 import com.tamj0rd2.skullking.domain.game.GameCommand.PlayACard
 import com.tamj0rd2.skullking.domain.game.GameCommand.StartRound
+import com.tamj0rd2.skullking.domain.game.GameCommand.StartTrick
 import com.tamj0rd2.skullking.domain.game.GameEvent.BidPlaced
 import com.tamj0rd2.skullking.domain.game.GameEvent.CardPlayed
 import com.tamj0rd2.skullking.domain.game.GameEvent.GameStarted
 import com.tamj0rd2.skullking.domain.game.GameEvent.RoundStarted
+import com.tamj0rd2.skullking.domain.game.GameEvent.TrickStarted
 import dev.forkhandles.result4k.Result4k
 import dev.forkhandles.result4k.onFailure
 import dev.forkhandles.result4k.orThrow
@@ -53,6 +55,14 @@ class Game private constructor(
                         gameId = id,
                         bid = command.bid,
                         placedBy = command.actor,
+                    ),
+                )
+
+            is StartTrick ->
+                appendEvent(
+                    TrickStarted(
+                        gameId = id,
+                        trickNumber = command.trickNumber,
                     ),
                 )
 

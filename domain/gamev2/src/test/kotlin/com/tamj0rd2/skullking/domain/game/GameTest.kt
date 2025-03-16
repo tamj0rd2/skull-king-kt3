@@ -4,6 +4,7 @@ import com.tamj0rd2.skullking.domain.game.GameErrorCode.NotEnoughPlayersToStartG
 import com.tamj0rd2.skullking.domain.game.GameEvent.BidPlaced
 import com.tamj0rd2.skullking.domain.game.GameEvent.CardPlayed
 import com.tamj0rd2.skullking.domain.game.GameEvent.RoundStarted
+import com.tamj0rd2.skullking.domain.game.GameEvent.TrickStarted
 import dev.forkhandles.result4k.orThrow
 import dev.forkhandles.values.random
 import org.junit.jupiter.api.Disabled
@@ -112,6 +113,32 @@ class GameTest {
     }
 
     @Nested
+    inner class StartingATrick {
+        @Test
+        fun `when a trick is started, a TrickStartedEvent is emitted`() {
+            val command =
+                GameCommand.StartTrick(
+                    trickNumber = TrickNumber.of(1),
+                )
+
+            val game = Game(somePlayers)
+            game.mustExecute(command)
+
+            val trickStartedEvent = game.events.filterIsInstance<TrickStarted>().single()
+            expectThat(trickStartedEvent) {
+                get { gameId }.isEqualTo(game.id)
+                get { trickNumber }.isEqualTo(command.trickNumber)
+            }
+        }
+
+        @Test
+        @Disabled
+        fun `cannot start a trick that has already started`() {
+            TODO("not yet implemented")
+        }
+    }
+
+    @Nested
     inner class PlayingACard {
         @Test
         fun `when a bid is played, a CardPlayed event is emitted`() {
@@ -130,6 +157,12 @@ class GameTest {
                 get { playedBy }.isEqualTo(command.actor)
                 get { card }.isEqualTo(command.card)
             }
+        }
+
+        @Test
+        @Disabled
+        fun `a card can only be played during a trick`() {
+            TODO("not yet implemented")
         }
 
         @Test

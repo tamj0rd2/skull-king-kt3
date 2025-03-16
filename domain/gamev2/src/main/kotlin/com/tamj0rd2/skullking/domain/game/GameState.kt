@@ -11,6 +11,7 @@ import com.tamj0rd2.skullking.domain.game.GameEvent.GameStarted
 import com.tamj0rd2.skullking.domain.game.GameEvent.RoundCompleted
 import com.tamj0rd2.skullking.domain.game.GameEvent.RoundStarted
 import com.tamj0rd2.skullking.domain.game.GameEvent.TrickCompleted
+import com.tamj0rd2.skullking.domain.game.GameEvent.TrickStarted
 import dev.forkhandles.result4k.Result4k
 
 data class GameState private constructor(
@@ -41,6 +42,9 @@ data class GameState private constructor(
             }
             is TrickCompleted -> {
                 NotImplemented().asFailure()
+            }
+            is TrickStarted -> {
+                return this.asSuccess()
             }
         }
     }

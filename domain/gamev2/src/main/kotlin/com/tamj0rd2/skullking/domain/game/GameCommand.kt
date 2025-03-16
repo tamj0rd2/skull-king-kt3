@@ -10,6 +10,10 @@ sealed interface GameCommand {
         val actor: PlayerId,
     ) : GameCommand
 
+    data class StartTrick(
+        val trickNumber: TrickNumber,
+    ) : GameCommand
+
     data class PlayACard(
         val card: Card,
         val actor: PlayerId,
