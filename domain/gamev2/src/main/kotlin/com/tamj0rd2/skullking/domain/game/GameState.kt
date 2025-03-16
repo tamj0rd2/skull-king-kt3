@@ -21,7 +21,7 @@ data class GameState private constructor(
     fun applyEvent(event: GameEvent): Result4k<GameState, GameErrorCode> {
         return when (event) {
             is BidPlaced -> {
-                NotImplemented().asFailure()
+                return this.asSuccess()
             }
             is CardPlayed -> {
                 NotImplemented().asFailure()

@@ -16,6 +16,8 @@ sealed interface GameEvent {
 
     data class BidPlaced(
         override val gameId: GameId,
+        val bid: Bid,
+        val placedBy: PlayerId,
     ) : GameEvent
 
     data class CardPlayed(

@@ -1,7 +1,9 @@
 package com.tamj0rd2.skullking.domain.game
 
 import com.tamj0rd2.extensions.asSuccess
+import com.tamj0rd2.skullking.domain.game.GameCommand.PlaceABid
 import com.tamj0rd2.skullking.domain.game.GameCommand.StartRound
+import com.tamj0rd2.skullking.domain.game.GameEvent.BidPlaced
 import com.tamj0rd2.skullking.domain.game.GameEvent.GameStarted
 import com.tamj0rd2.skullking.domain.game.GameEvent.RoundStarted
 import dev.forkhandles.result4k.Result4k
@@ -19,14 +21,14 @@ data class GameId private constructor(
 }
 
 class Game private constructor(
-    private val gameId: GameId,
+    val id: GameId,
 ) {
     val events = mutableListOf<GameEvent>()
 
     constructor(players: Set<PlayerId>) : this(
-        gameId = GameId.random(),
+        id = GameId.random(),
     ) {
-        appendEvent(GameStarted(gameId = gameId, players = players)).orThrow()
+        appendEvent(GameStarted(gameId = id, players = players)).orThrow()
     }
 
     var state = GameState.new
@@ -37,15 +39,24 @@ class Game private constructor(
             is StartRound ->
                 appendEvent(
                     RoundStarted(
-                        gameId = gameId,
+                        gameId = id,
                         roundNumber = state.roundNumber.next,
                         dealtCards = CardsPerPlayer(state.players.associateWith { setOf(CannedCard) }),
+                    ),
+                )
+
+            is PlaceABid ->
+                appendEvent(
+                    BidPlaced(
+                        gameId = id,
+                        bid = command.bid,
+                        placedBy = command.actor,
                     ),
                 )
         }
 
     private fun appendEvent(event: GameEvent): Result4k<Unit, GameErrorCode> {
-        check(event.gameId == gameId) { "GameId mismatch" }
+        check(event.gameId == id) { "GameId mismatch" }
         state = state.applyEvent(event).onFailure { return it }
         events.add(event)
         return Unit.asSuccess()
