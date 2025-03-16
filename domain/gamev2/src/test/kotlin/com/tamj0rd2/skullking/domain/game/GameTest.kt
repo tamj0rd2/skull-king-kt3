@@ -142,7 +142,7 @@ class GameTest {
     @Nested
     inner class PlayingACard {
         @Test
-        fun `when a bid is played, a CardPlayed event is emitted`() {
+        fun `when a card is played, a CardPlayed event is emitted`() {
             val command =
                 GameCommand.PlayACard(
                     card = CannedCard,
@@ -176,7 +176,7 @@ class GameTest {
     @Nested
     inner class CompletingATrick {
         @Test
-        fun `when a bid is played, a CardPlayed event is emitted`() {
+        fun `when a trick is completed, a TrickCompleted event is emitted`() {
             val command =
                 GameCommand.CompleteTrick(
                     trickNumber = TrickNumber.of(1),
