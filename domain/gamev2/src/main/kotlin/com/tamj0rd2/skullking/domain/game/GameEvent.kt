@@ -22,6 +22,8 @@ sealed interface GameEvent {
 
     data class CardPlayed(
         override val gameId: GameId,
+        val card: Card,
+        val playedBy: PlayerId,
     ) : GameEvent
 
     data class TrickCompleted(

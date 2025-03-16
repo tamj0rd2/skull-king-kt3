@@ -2,6 +2,7 @@ package com.tamj0rd2.skullking.domain.game
 
 import com.tamj0rd2.skullking.domain.game.GameErrorCode.NotEnoughPlayersToStartGame
 import com.tamj0rd2.skullking.domain.game.GameEvent.BidPlaced
+import com.tamj0rd2.skullking.domain.game.GameEvent.CardPlayed
 import com.tamj0rd2.skullking.domain.game.GameEvent.RoundStarted
 import dev.forkhandles.result4k.orThrow
 import dev.forkhandles.values.random
@@ -106,6 +107,34 @@ class GameTest {
         @Test
         @Disabled
         fun `cannot place a bid less than 0`() {
+            TODO("not yet implemented")
+        }
+    }
+
+    @Nested
+    inner class PlayingACard {
+        @Test
+        fun `when a bid is played, a CardPlayed event is emitted`() {
+            val command =
+                GameCommand.PlayACard(
+                    card = CannedCard,
+                    actor = PlayerId.random(),
+                )
+
+            val game = Game(somePlayers)
+            game.mustExecute(command)
+
+            val cardPlayedEvent = game.events.filterIsInstance<CardPlayed>().single()
+            expectThat(cardPlayedEvent) {
+                get { gameId }.isEqualTo(game.id)
+                get { playedBy }.isEqualTo(command.actor)
+                get { card }.isEqualTo(command.card)
+            }
+        }
+
+        @Test
+        @Disabled
+        fun `a card can only be played by the player whose turn it is`() {
             TODO("not yet implemented")
         }
     }

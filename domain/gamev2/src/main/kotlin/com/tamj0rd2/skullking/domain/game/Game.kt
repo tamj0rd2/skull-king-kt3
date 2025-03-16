@@ -2,8 +2,10 @@ package com.tamj0rd2.skullking.domain.game
 
 import com.tamj0rd2.extensions.asSuccess
 import com.tamj0rd2.skullking.domain.game.GameCommand.PlaceABid
+import com.tamj0rd2.skullking.domain.game.GameCommand.PlayACard
 import com.tamj0rd2.skullking.domain.game.GameCommand.StartRound
 import com.tamj0rd2.skullking.domain.game.GameEvent.BidPlaced
+import com.tamj0rd2.skullking.domain.game.GameEvent.CardPlayed
 import com.tamj0rd2.skullking.domain.game.GameEvent.GameStarted
 import com.tamj0rd2.skullking.domain.game.GameEvent.RoundStarted
 import dev.forkhandles.result4k.Result4k
@@ -51,6 +53,15 @@ class Game private constructor(
                         gameId = id,
                         bid = command.bid,
                         placedBy = command.actor,
+                    ),
+                )
+
+            is PlayACard ->
+                appendEvent(
+                    CardPlayed(
+                        gameId = id,
+                        card = command.card,
+                        playedBy = command.actor,
                     ),
                 )
         }

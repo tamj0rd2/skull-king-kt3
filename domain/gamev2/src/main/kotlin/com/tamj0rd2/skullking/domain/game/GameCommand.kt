@@ -9,4 +9,9 @@ sealed interface GameCommand {
         val bid: Bid,
         val actor: PlayerId,
     ) : GameCommand
+
+    data class PlayACard(
+        val card: Card,
+        val actor: PlayerId,
+    ) : GameCommand
 }

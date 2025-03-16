@@ -24,7 +24,7 @@ data class GameState private constructor(
                 return this.asSuccess()
             }
             is CardPlayed -> {
-                NotImplemented().asFailure()
+                return this.asSuccess()
             }
             is GameCompleted -> {
                 NotImplemented().asFailure()
