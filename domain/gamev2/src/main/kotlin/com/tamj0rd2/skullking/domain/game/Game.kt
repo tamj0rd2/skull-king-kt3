@@ -8,6 +8,8 @@ import com.tamj0rd2.skullking.domain.game.GameCommand.PlaceABid
 import com.tamj0rd2.skullking.domain.game.GameCommand.PlayACard
 import com.tamj0rd2.skullking.domain.game.GameCommand.StartRound
 import com.tamj0rd2.skullking.domain.game.GameCommand.StartTrick
+import com.tamj0rd2.skullking.domain.game.GameErrorCode.NotEnoughPlayersToCreateGame
+import com.tamj0rd2.skullking.domain.game.GameErrorCode.TooManyPlayersToCreateGame
 import com.tamj0rd2.skullking.domain.game.GameEvent.BidPlaced
 import com.tamj0rd2.skullking.domain.game.GameEvent.CardPlayed
 import com.tamj0rd2.skullking.domain.game.GameEvent.GameCompleted
@@ -33,11 +35,12 @@ data class GameId private constructor(
 class Game private constructor(
     val id: GameId,
 ) {
-    val events = mutableListOf<GameEvent>()
-
     constructor(players: Set<PlayerId>) : this(
         id = GameId.random(),
     ) {
+        if (players.size < MINIMUM_PLAYER_COUNT) throw NotEnoughPlayersToCreateGame()
+        if (players.size > MAXIMUM_PLAYER_COUNT) throw TooManyPlayersToCreateGame()
+
         appendEvent(GameStarted(gameId = id, players = players)).orThrow()
     }
 
@@ -46,7 +49,7 @@ class Game private constructor(
 
     fun execute(command: GameCommand): Result4k<Unit, GameErrorCode> =
         when (command) {
-            is StartRound ->
+            is StartRound -> {
                 appendEvent(
                     RoundStarted(
                         gameId = id,
@@ -54,6 +57,7 @@ class Game private constructor(
                         dealtCards = CardsPerPlayer(state.players.associateWith { setOf(CannedCard) }),
                     ),
                 )
+            }
 
             is PlaceABid ->
                 appendEvent(
@@ -108,7 +112,11 @@ class Game private constructor(
     private fun appendEvent(event: GameEvent): Result4k<Unit, GameErrorCode> {
         check(event.gameId == id) { "GameId mismatch" }
         state = state.applyEvent(event).onFailure { return it }
-        events.add(event)
         return Unit.asSuccess()
+    }
+
+    companion object {
+        const val MINIMUM_PLAYER_COUNT = 2
+        const val MAXIMUM_PLAYER_COUNT = 6
     }
 }

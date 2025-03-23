@@ -20,7 +20,10 @@ class CompletingARound {
         val game = Game(somePlayers)
         game.mustExecute(command)
 
-        val roundCompletedEvent = game.events.filterIsInstance<RoundCompleted>().single()
+        val roundCompletedEvent =
+            game.state.events
+                .filterIsInstance<RoundCompleted>()
+                .single()
         expectThat(roundCompletedEvent) {
             get { gameId }.isEqualTo(game.id)
             get { roundNumber }.isEqualTo(command.roundNumber)

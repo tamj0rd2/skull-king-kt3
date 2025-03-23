@@ -1,35 +1,35 @@
 package com.tamj0rd2.skullking.domain.game
 
-import com.tamj0rd2.skullking.domain.game.GameEvent.GameStarted
-import org.junit.jupiter.api.Disabled
+import com.tamj0rd2.skullking.domain.game.Game.Companion.MAXIMUM_PLAYER_COUNT
+import com.tamj0rd2.skullking.domain.game.Game.Companion.MINIMUM_PLAYER_COUNT
+import com.tamj0rd2.skullking.domain.game.GameErrorCode.NotEnoughPlayersToCreateGame
+import com.tamj0rd2.skullking.domain.game.GameErrorCode.TooManyPlayersToCreateGame
+import dev.forkhandles.values.random
+import io.kotest.property.Arb
+import io.kotest.property.arbitrary.int
+import io.kotest.property.arbitrary.nonNegativeInt
+import io.kotest.property.checkAll
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import strikt.api.expectThat
-import strikt.assertions.first
-import strikt.assertions.isA
-import strikt.assertions.isEqualTo
+import strikt.api.expectThrows
 
 @Nested
 class StartingAGame {
     @Test
-    fun `a new game starts with a GameStarted event`() {
-        val game = Game(somePlayers)
-        expectThat(game.events)
-            .first()
-            .isA<GameStarted>()
-            .get { players }
-            .isEqualTo(somePlayers)
-    }
+    fun `cannot create a game with less than 2 players`() =
+        propertyTest {
+            checkAll(Arb.nonNegativeInt(max = MINIMUM_PLAYER_COUNT - 1)) { playerCount ->
+                val playerIds = buildSet { repeat(playerCount) { add(PlayerId.random()) } }
+                expectThrows<NotEnoughPlayersToCreateGame> { Game(playerIds) }
+            }
+        }
 
     @Test
-    @Disabled
-    fun `cannot start a game without players`() {
-        TODO("not yet implemented")
-    }
-
-    @Test
-    @Disabled
-    fun `cannot start a game with a single player`() {
-        TODO("not yet implemented")
-    }
+    fun `cannot create a game with more than 6 players`() =
+        propertyTest {
+            checkAll(Arb.int(min = MAXIMUM_PLAYER_COUNT + 1, max = 100)) { playerCount ->
+                val playerIds = buildSet { repeat(playerCount) { add(PlayerId.random()) } }
+                expectThrows<TooManyPlayersToCreateGame> { Game(playerIds) }
+            }
+        }
 }

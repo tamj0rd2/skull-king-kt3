@@ -13,26 +13,36 @@ import dev.forkhandles.result4k.Result4k
 
 data class GameState private constructor(
     val players: Set<PlayerId>,
+    val events: List<GameEvent>,
 ) {
-    fun applyEvent(event: GameEvent): Result4k<GameState, GameErrorCode> {
-        when (event) {
-            is GameStarted -> return copy(players = event.players).asSuccess()
+    fun applyEvent(event: GameEvent): Result4k<GameState, GameErrorCode> =
+        copy(events = events + event).run {
+            when (event) {
+                is GameStarted ->
+                    copy(players = event.players).asSuccess()
 
-            is RoundStarted,
-            is BidPlaced,
-            is TrickStarted,
-            is CardPlayed,
-            is TrickCompleted,
-            is RoundCompleted,
-            is GameCompleted,
-            -> return this.asSuccess()
+                is RoundStarted -> {
+                    require(events.count { it is RoundStarted } < 10) { "already started 10 or more rounds" }
+                    require(events.count { it is RoundCompleted } < 10) { "already completed 10 or more rounds" }
+
+                    this.asSuccess()
+                }
+
+                is BidPlaced,
+                is TrickStarted,
+                is CardPlayed,
+                is TrickCompleted,
+                is RoundCompleted,
+                is GameCompleted,
+                -> this.asSuccess()
+            }
         }
-    }
 
     companion object {
         val new =
             GameState(
                 players = emptySet(),
+                events = emptyList(),
             )
     }
 }

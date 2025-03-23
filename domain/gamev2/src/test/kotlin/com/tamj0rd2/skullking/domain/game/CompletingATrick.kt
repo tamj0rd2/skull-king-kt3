@@ -20,7 +20,10 @@ class CompletingATrick {
         val game = Game(somePlayers)
         game.mustExecute(command)
 
-        val trickCompletedEvent = game.events.filterIsInstance<TrickCompleted>().single()
+        val trickCompletedEvent =
+            game.state.events
+                .filterIsInstance<TrickCompleted>()
+                .single()
         expectThat(trickCompletedEvent) {
             get { gameId }.isEqualTo(game.id)
             get { trickNumber }.isEqualTo(command.trickNumber)

@@ -1,3 +1,7 @@
 package com.tamj0rd2.skullking.domain.game
 
-sealed class GameErrorCode : IllegalStateException()
+sealed class GameErrorCode : IllegalStateException("") {
+    class NotEnoughPlayersToCreateGame : GameErrorCode()
+
+    class TooManyPlayersToCreateGame : GameErrorCode()
+}

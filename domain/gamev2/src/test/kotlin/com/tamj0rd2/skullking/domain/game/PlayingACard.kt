@@ -22,7 +22,10 @@ class PlayingACard {
         val game = Game(somePlayers)
         game.mustExecute(command)
 
-        val cardPlayedEvent = game.events.filterIsInstance<CardPlayed>().single()
+        val cardPlayedEvent =
+            game.state.events
+                .filterIsInstance<CardPlayed>()
+                .single()
         expectThat(cardPlayedEvent) {
             get { gameId }.isEqualTo(game.id)
             get { playedBy }.isEqualTo(command.actor)

@@ -22,7 +22,10 @@ class PlacingABid {
         val game = Game(somePlayers)
         game.mustExecute(command)
 
-        val bidPlacedEvent = game.events.filterIsInstance<BidPlaced>().single()
+        val bidPlacedEvent =
+            game.state.events
+                .filterIsInstance<BidPlaced>()
+                .single()
         expectThat(bidPlacedEvent) {
             get { gameId }.isEqualTo(game.id)
             get { placedBy }.isEqualTo(command.actor)

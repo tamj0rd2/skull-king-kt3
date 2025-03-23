@@ -17,7 +17,10 @@ class CompletingAGame {
         val game = Game(somePlayers)
         game.mustExecute(command)
 
-        val gameCompletedEvent = game.events.filterIsInstance<GameCompleted>().single()
+        val gameCompletedEvent =
+            game.state.events
+                .filterIsInstance<GameCompleted>()
+                .single()
         expectThat(gameCompletedEvent) {
             get { gameId }.isEqualTo(game.id)
         }

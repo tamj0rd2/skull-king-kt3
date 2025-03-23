@@ -17,7 +17,10 @@ class StartingARound {
         val game = Game(somePlayers)
         game.mustExecute(StartRound(RoundNumber.of(1)))
 
-        val roundStartedEvent = game.events.filterIsInstance<RoundStarted>().single()
+        val roundStartedEvent =
+            game.state.events
+                .filterIsInstance<RoundStarted>()
+                .single()
 
         expectThat(roundStartedEvent) {
             get { roundNumber }.isEqualTo(RoundNumber.of(1))
