@@ -2,6 +2,7 @@ package com.tamj0rd2.skullking.domain.game
 
 import com.tamj0rd2.skullking.domain.game.GameCommand.CompleteRound
 import com.tamj0rd2.skullking.domain.game.GameEvent.RoundCompleted
+import dev.forkhandles.result4k.orThrow
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -17,7 +18,7 @@ class CompletingARound {
                 roundNumber = RoundNumber.of(1),
             )
 
-        val game = Game(somePlayers)
+        val game = Game.new(somePlayers).orThrow()
         game.mustExecute(command)
 
         val roundCompletedEvent =

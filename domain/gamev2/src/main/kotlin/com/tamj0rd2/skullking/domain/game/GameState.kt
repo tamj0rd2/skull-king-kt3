@@ -1,5 +1,6 @@
 package com.tamj0rd2.skullking.domain.game
 
+import com.tamj0rd2.extensions.asFailure
 import com.tamj0rd2.extensions.asSuccess
 import com.tamj0rd2.skullking.domain.game.GameEvent.BidPlaced
 import com.tamj0rd2.skullking.domain.game.GameEvent.CardPlayed
@@ -22,17 +23,22 @@ data class GameState private constructor(
                     copy(players = event.players).asSuccess()
 
                 is RoundStarted -> {
-                    require(events.count { it is RoundStarted } < 10) { "already started 10 or more rounds" }
-                    require(events.count { it is RoundCompleted } < 10) { "already completed 10 or more rounds" }
-
-                    this.asSuccess()
+                    when {
+                        events.count { it is RoundStarted } > 10 -> GameErrorCode.AlreadyStartedMoreThan10Rounds().asFailure()
+                        else -> this.asSuccess()
+                    }
                 }
 
+                is RoundCompleted -> {
+                    when {
+                        events.count { it is RoundCompleted } > 10 -> GameErrorCode.AlreadyCompletedMoreThan10Rounds().asFailure()
+                        else -> this.asSuccess()
+                    }
+                }
                 is BidPlaced,
                 is TrickStarted,
                 is CardPlayed,
                 is TrickCompleted,
-                is RoundCompleted,
                 is GameCompleted,
                 -> this.asSuccess()
             }

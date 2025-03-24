@@ -2,6 +2,7 @@ package com.tamj0rd2.skullking.domain.game
 
 import com.tamj0rd2.skullking.domain.game.GameCommand.PlayACard
 import com.tamj0rd2.skullking.domain.game.GameEvent.CardPlayed
+import dev.forkhandles.result4k.orThrow
 import dev.forkhandles.values.random
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
@@ -19,7 +20,7 @@ class PlayingACard {
                 actor = PlayerId.random(),
             )
 
-        val game = Game(somePlayers)
+        val game = Game.new(somePlayers).orThrow()
         game.mustExecute(command)
 
         val cardPlayedEvent =

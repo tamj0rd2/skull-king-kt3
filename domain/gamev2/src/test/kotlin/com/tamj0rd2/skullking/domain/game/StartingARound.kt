@@ -2,6 +2,7 @@ package com.tamj0rd2.skullking.domain.game
 
 import com.tamj0rd2.skullking.domain.game.GameCommand.StartRound
 import com.tamj0rd2.skullking.domain.game.GameEvent.RoundStarted
+import dev.forkhandles.result4k.orThrow
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import strikt.api.expectThat
@@ -14,7 +15,7 @@ import strikt.assertions.isNotEmpty
 class StartingARound {
     @Test
     fun `when a round has started, a round started event is emitted`() {
-        val game = Game(somePlayers)
+        val game = Game.new(somePlayers).orThrow()
         game.mustExecute(StartRound(RoundNumber.of(1)))
 
         val roundStartedEvent =

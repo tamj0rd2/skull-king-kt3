@@ -18,9 +18,11 @@ import com.tamj0rd2.skullking.domain.game.GameEvent.RoundCompleted
 import com.tamj0rd2.skullking.domain.game.GameEvent.RoundStarted
 import com.tamj0rd2.skullking.domain.game.GameEvent.TrickCompleted
 import com.tamj0rd2.skullking.domain.game.GameEvent.TrickStarted
+import dev.forkhandles.result4k.Result
 import dev.forkhandles.result4k.Result4k
 import dev.forkhandles.result4k.onFailure
 import dev.forkhandles.result4k.orThrow
+import dev.forkhandles.result4k.resultFromCatching
 import dev.forkhandles.values.UUIDValueFactory
 import dev.forkhandles.values.Value
 import dev.forkhandles.values.random
@@ -35,7 +37,7 @@ data class GameId private constructor(
 class Game private constructor(
     val id: GameId,
 ) {
-    constructor(players: Set<PlayerId>) : this(
+    private constructor(players: Set<PlayerId>) : this(
         id = GameId.random(),
     ) {
         if (players.size < MINIMUM_PLAYER_COUNT) throw NotEnoughPlayersToCreateGame()
@@ -118,5 +120,7 @@ class Game private constructor(
     companion object {
         const val MINIMUM_PLAYER_COUNT = 2
         const val MAXIMUM_PLAYER_COUNT = 6
+
+        fun new(players: Set<PlayerId>): Result<Game, GameErrorCode> = resultFromCatching<GameErrorCode, Game> { Game(players) }
     }
 }

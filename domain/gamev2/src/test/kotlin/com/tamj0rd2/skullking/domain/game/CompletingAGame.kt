@@ -2,6 +2,7 @@ package com.tamj0rd2.skullking.domain.game
 
 import com.tamj0rd2.skullking.domain.game.GameCommand.CompleteGame
 import com.tamj0rd2.skullking.domain.game.GameEvent.GameCompleted
+import dev.forkhandles.result4k.orThrow
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -14,7 +15,7 @@ class CompletingAGame {
     fun `when a game is completed, a GameCompleted event is emitted`() {
         val command = CompleteGame
 
-        val game = Game(somePlayers)
+        val game = Game.new(somePlayers).orThrow()
         game.mustExecute(command)
 
         val gameCompletedEvent =

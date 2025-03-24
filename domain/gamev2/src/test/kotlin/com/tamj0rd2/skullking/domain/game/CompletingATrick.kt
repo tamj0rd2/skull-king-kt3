@@ -2,6 +2,7 @@ package com.tamj0rd2.skullking.domain.game
 
 import com.tamj0rd2.skullking.domain.game.GameCommand.CompleteTrick
 import com.tamj0rd2.skullking.domain.game.GameEvent.TrickCompleted
+import dev.forkhandles.result4k.orThrow
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -17,7 +18,7 @@ class CompletingATrick {
                 trickNumber = TrickNumber.of(1),
             )
 
-        val game = Game(somePlayers)
+        val game = Game.new(somePlayers).orThrow()
         game.mustExecute(command)
 
         val trickCompletedEvent =
