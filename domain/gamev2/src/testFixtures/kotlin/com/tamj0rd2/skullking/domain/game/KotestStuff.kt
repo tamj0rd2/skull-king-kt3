@@ -3,6 +3,7 @@ package com.tamj0rd2.skullking.domain.game
 import dev.forkhandles.result4k.Result
 import dev.forkhandles.result4k.failureOrNull
 import dev.forkhandles.result4k.orThrow
+import io.kotest.common.ExperimentalKotest
 import io.kotest.common.runBlocking
 import io.kotest.property.Arb
 import io.kotest.property.PropertyContext
@@ -38,47 +39,69 @@ fun ProvidedArbsBuilder.registerTinyTypes() {
     bind(PlayerId::class to playerIdArb)
 }
 
-fun <T> propertyTest(block: suspend () -> T): T {
-    val originalOutputStream = System.out
-    try {
-        // makes kotest shut up.
-        System.setOut(PrintStream(OutputStream.nullOutputStream()))
-        return runBlocking(block)
-    } finally {
-        System.setOut(originalOutputStream)
-    }
-}
-
 typealias GamePropertyTest = PropertyContext.(Set<PlayerId>, List<GameCommand>) -> Unit
-
-fun gamePropertyTest(
-    playerIdsArb: Arb<Set<PlayerId>> = validPlayerIdsArb,
-    gameCommandsArb: Arb<List<GameCommand>> = com.tamj0rd2.skullking.domain.game.gameCommandsArb,
-    expectedClassifications: Set<Any?> = emptySet(),
-    test: GamePropertyTest,
-) = propertyTest {
-    withCoveragePercentages(expectedClassifications.associateWith { 1.0 }) {
-        checkAll(playerIdsArb, gameCommandsArb) { playerIds, gameCommands -> test(playerIds, gameCommands) }
-    }
-}
-
 typealias GameInvariant = (Game) -> Unit
 
-fun gameInvariant(invariant: GameInvariant) {
-    gamePropertyTest { playerIds, gameCommands ->
-        val game = Game.new(playerIds).orThrow()
-        game.testInvariantHoldsWhenExecuting(gameCommands, invariant)
-        // TODO: also add a second check around reconstituting the entity from events.
-    }
-}
+object PropertyTesting {
+    private val stackTracePartsToIgnore =
+        setOf(
+            PropertyTesting::class.qualifiedName!!,
+            "io.kotest",
+            "kotlin.coroutines",
+        )
 
-fun Game.testInvariantHoldsWhenExecuting(
-    commands: List<GameCommand>,
-    invariant: GameInvariant,
-) {
-    commands.forEach { command ->
-        execute(command)
-        run(invariant)
+    private fun Throwable.rootCause(): Throwable = cause?.rootCause() ?: this
+
+    private fun Throwable.cleanedStackTrace(): Array<StackTraceElement> =
+        stackTrace.filter { element -> stackTracePartsToIgnore.none { element.className.startsWith(it) } }.toTypedArray()
+
+    fun propertyTest(block: suspend () -> Unit) {
+        val originalOutputStream = System.out
+        try {
+            // makes kotest shut up.
+            System.setOut(PrintStream(OutputStream.nullOutputStream()))
+            runBlocking(block)
+        } catch (e: AssertionError) {
+            val messageIgnoringNonShrunk =
+                e.message?.split("\n")?.joinToString("\n") {
+                    it.substringBefore(" (shrunk from").substringAfter("Caused by: ")
+                }
+            val rethrown = AssertionError(messageIgnoringNonShrunk)
+            rethrown.stackTrace = e.rootCause().cleanedStackTrace()
+            throw rethrown
+        } finally {
+            System.setOut(originalOutputStream)
+        }
+    }
+
+    @OptIn(ExperimentalKotest::class)
+    fun gamePropertyTest(
+        playerIdsArb: Arb<Set<PlayerId>> = validPlayerIdsArb,
+        gameCommandsArb: Arb<List<GameCommand>> = com.tamj0rd2.skullking.domain.game.gameCommandsArb,
+        expectedClassifications: Set<Any?> = emptySet(),
+        test: GamePropertyTest,
+    ) = propertyTest {
+        withCoveragePercentages(expectedClassifications.associateWith { 1.0 }) {
+            checkAll(playerIdsArb, gameCommandsArb, test)
+        }
+    }
+
+    fun gameInvariant(invariant: GameInvariant) {
+        gamePropertyTest { playerIds, gameCommands ->
+            val game = Game.new(playerIds).orThrow()
+            game.testInvariantHoldsWhenExecuting(gameCommands, invariant)
+            // TODO: also add a second check around reconstituting the entity from events.
+        }
+    }
+
+    fun Game.testInvariantHoldsWhenExecuting(
+        commands: List<GameCommand>,
+        invariant: GameInvariant,
+    ) {
+        commands.forEach { command ->
+            execute(command)
+            run(invariant)
+        }
     }
 }
 

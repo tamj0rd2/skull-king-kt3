@@ -4,6 +4,7 @@ import com.tamj0rd2.skullking.domain.game.Game.Companion.MAXIMUM_PLAYER_COUNT
 import com.tamj0rd2.skullking.domain.game.Game.Companion.MINIMUM_PLAYER_COUNT
 import com.tamj0rd2.skullking.domain.game.GameErrorCode.NotEnoughPlayersToCreateGame
 import com.tamj0rd2.skullking.domain.game.GameErrorCode.TooManyPlayersToCreateGame
+import com.tamj0rd2.skullking.domain.game.PropertyTesting.propertyTest
 import dev.forkhandles.result4k.Failure
 import dev.forkhandles.values.random
 import io.kotest.property.Arb

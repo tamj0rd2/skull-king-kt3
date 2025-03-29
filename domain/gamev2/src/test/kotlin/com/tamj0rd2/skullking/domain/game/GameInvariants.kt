@@ -5,6 +5,9 @@ import com.tamj0rd2.skullking.domain.game.GameErrorCode.TooManyPlayersToCreateGa
 import com.tamj0rd2.skullking.domain.game.GameEvent.GameStarted
 import com.tamj0rd2.skullking.domain.game.GameEvent.RoundCompleted
 import com.tamj0rd2.skullking.domain.game.GameEvent.RoundStarted
+import com.tamj0rd2.skullking.domain.game.PropertyTesting.gameInvariant
+import com.tamj0rd2.skullking.domain.game.PropertyTesting.gamePropertyTest
+import com.tamj0rd2.skullking.domain.game.PropertyTesting.testInvariantHoldsWhenExecuting
 import dev.forkhandles.result4k.Success
 import dev.forkhandles.result4k.failureOrNull
 import dev.forkhandles.result4k.orThrow
