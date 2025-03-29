@@ -3,7 +3,7 @@
 
 [versions]
 forkhandles = "2.20.0.0"
-kotlin-gradle-plugin = "2.0.20"
+kotlin = "2.0.20"
 http4k = "5.30.0.0"
 kotest = "5.9.1"
 
@@ -22,13 +22,15 @@ junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher
 kondor = { module = "com.ubertob.kondor:kondor-core", version = "3.1.2" }
 konsist = { module = "com.lemonappdev:konsist", version = "0.16.1" }
 kotest-property = { module = "io.kotest:kotest-property", version.ref = "kotest" }
-kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin-gradle-plugin" }
+kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 result4k = { module = "dev.forkhandles:result4k", version.ref = "forkhandles" }
 retrytests-plugin = { module = "org.gradle:test-retry-gradle-plugin", version = "1.6.0"}
 slf4j = { module = "org.slf4j:slf4j-jdk14", version = "2.0.16"}
 strikt-core = { module = "io.strikt:strikt-core", version = "0.34.0" }
 values4k = { module = "dev.forkhandles:values4k", version.ref = "forkhandles" }
 
+[plugins]
+powerAssert = { id = "org.jetbrains.kotlin.plugin.power-assert", version.ref = "kotlin" }
 
 [bundles]
 http4k-api = [
