@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 @Nested
-class StartingATrick {
+class StartingATrickTest {
     @Test
     fun `when a trick is started, a TrickStartedEvent is emitted`() {
         val command =

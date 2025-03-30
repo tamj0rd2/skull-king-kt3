@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 @Nested
-class CompletingAGame {
+class CompletingAGameTest {
     @Test
     fun `when a game is completed, a GameCompleted event is emitted`() {
         val command = CompleteGame

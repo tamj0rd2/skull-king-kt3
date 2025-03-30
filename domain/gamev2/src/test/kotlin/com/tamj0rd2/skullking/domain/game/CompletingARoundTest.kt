@@ -2,13 +2,21 @@ package com.tamj0rd2.skullking.domain.game
 
 import com.tamj0rd2.skullking.domain.game.GameCommand.CompleteRound
 import com.tamj0rd2.skullking.domain.game.GameEvent.RoundCompleted
+import com.tamj0rd2.skullking.domain.game.PropertyTesting.gameInvariant
 import dev.forkhandles.result4k.orThrow
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 @Nested
-class CompletingARound {
+class CompletingARoundTest {
+    @Test
+    fun `a maximum of 10 rounds can be completed`() =
+        gameInvariant { game ->
+            val roundCompletedEvents = game.state.events.filterIsInstance<RoundCompleted>()
+            assert(roundCompletedEvents.size <= 10)
+        }
+
     @Test
     fun `when a round is completed, a RoundCompleted event is emitted`() {
         val command =

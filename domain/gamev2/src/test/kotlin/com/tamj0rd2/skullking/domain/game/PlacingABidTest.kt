@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 @Nested
-class PlacingABid {
+class PlacingABidTest {
     @Test
     fun `when a bid is placed, a BidPlacedEvent is emitted`() {
         val command =

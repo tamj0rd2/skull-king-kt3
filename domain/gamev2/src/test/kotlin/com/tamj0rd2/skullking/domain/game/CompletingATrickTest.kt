@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 @Nested
-class CompletingATrick {
+class CompletingATrickTest {
     @Test
     fun `when a trick is completed, a TrickCompleted event is emitted`() {
         val command = CompleteTrick(trickNumber = TrickNumber.of(1))

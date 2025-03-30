@@ -2,9 +2,6 @@ package com.tamj0rd2.skullking.domain.game
 
 import com.tamj0rd2.skullking.domain.game.GameErrorCode.NotEnoughPlayersToCreateGame
 import com.tamj0rd2.skullking.domain.game.GameErrorCode.TooManyPlayersToCreateGame
-import com.tamj0rd2.skullking.domain.game.GameEvent.GameStarted
-import com.tamj0rd2.skullking.domain.game.GameEvent.RoundCompleted
-import com.tamj0rd2.skullking.domain.game.GameEvent.RoundStarted
 import com.tamj0rd2.skullking.domain.game.PropertyTesting.gameInvariant
 import com.tamj0rd2.skullking.domain.game.PropertyTesting.testInvariantHoldsWhenExecuting
 import dev.forkhandles.result4k.Success
@@ -17,20 +14,7 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
-class GameInvariants {
-    @Test
-    fun `a game always starts with a GameStarted event`() =
-        gameInvariant { game ->
-            assert(game.state.events.first() is GameStarted)
-        }
-
-    @Test
-    fun `the GameStarted event only ever appears once`() =
-        gameInvariant { game ->
-            val gameStartedEvents = game.state.events.filterIsInstance<GameStarted>()
-            assert(gameStartedEvents.size == 1)
-        }
-
+class InvariantsTest {
     @Test
     fun `a game always has 2-6 players`() {
         gameInvariant(
@@ -73,16 +57,6 @@ class GameInvariants {
             }
         }
     }
-
-    @Test
-    fun `a maximum of 10 rounds can be played`() =
-        gameInvariant { game ->
-            val roundStartedEvents = game.state.events.filterIsInstance<RoundStarted>()
-            val roundCompletedEvents = game.state.events.filterIsInstance<RoundCompleted>()
-
-            assert(roundStartedEvents.size <= 10)
-            assert(roundCompletedEvents.size <= 10)
-        }
 
     @Test
     @Disabled
