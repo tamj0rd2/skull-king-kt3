@@ -14,6 +14,7 @@ import io.kotest.property.arbitrary.uuid
 import io.kotest.property.checkAll
 import java.io.OutputStream
 import java.io.PrintStream
+import kotlin.text.RegexOption.MULTILINE
 
 val roundNumberArb = Arb.int().map { RoundNumber.of(it) }
 val trickNumberArb = Arb.int().map { TrickNumber.of(it) }
@@ -37,11 +38,16 @@ typealias GamePropertyTest = PropertyContext.(Set<PlayerId>, List<GameCommand>) 
 typealias GameInvariant = (Game) -> Unit
 
 object PropertyTesting {
+    init {
+        System.setProperty("kotest.assertions.collection.print.size", "10")
+    }
+
     private val stackTracePartsToIgnore =
         setOf(
             PropertyTesting::class.qualifiedName!!,
             "io.kotest",
             "kotlin.coroutines",
+            "kotlin.test",
         )
 
     private fun Throwable.rootCause(): Throwable = cause?.rootCause() ?: this
@@ -49,20 +55,28 @@ object PropertyTesting {
     private fun Throwable.cleanedStackTrace(): Array<StackTraceElement> =
         stackTrace.filter { element -> stackTracePartsToIgnore.none { element.className.startsWith(it) } }.toTypedArray()
 
-    fun propertyTest(block: suspend () -> Unit) {
+    private fun propertyTest(block: suspend () -> Unit) {
         val originalOutputStream = System.out
         try {
             // makes kotest shut up.
             System.setOut(PrintStream(OutputStream.nullOutputStream()))
             runBlocking(block)
         } catch (e: AssertionError) {
-            val messageIgnoringNonShrunk =
-                e.message?.split("\n")?.joinToString("\n") {
-                    it.substringBefore(" (shrunk from").substringAfter("Caused by: ")
-                }
-            val rethrown = AssertionError(messageIgnoringNonShrunk)
-            rethrown.stackTrace = e.rootCause().cleanedStackTrace()
-            throw rethrown
+            val args =
+                "Arg \\d+: .*"
+                    .toRegex(MULTILINE)
+                    .findAll(e.message!!)
+                    .mapNotNull { it.groupValues.firstOrNull() }
+                    .map { it.substringBefore(" (shrunk from") }
+                    .toList()
+
+            val seed = "Repeat this test by using seed (-?\\d+)".toRegex().find(e.message!!)?.groupValues?.lastOrNull()
+
+            val rootCause = e.rootCause().also { it.stackTrace = it.cleanedStackTrace() }
+            throw AssertionError("Property failed (seed: $seed)\n\n${args.joinToString("\n")}\n${rootCause.message}", rootCause).also {
+                it.stackTrace =
+                    rootCause.stackTrace
+            }
         } finally {
             System.setOut(originalOutputStream)
         }
