@@ -5,30 +5,24 @@ import com.tamj0rd2.skullking.domain.game.GameEvent.RoundStarted
 import dev.forkhandles.result4k.orThrow
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import strikt.api.expectThat
-import strikt.assertions.all
-import strikt.assertions.hasSize
-import strikt.assertions.isEqualTo
-import strikt.assertions.isNotEmpty
 
 @Nested
 class StartingARound {
     @Test
     fun `when a round has started, a round started event is emitted`() {
         val game = Game.new(somePlayers).orThrow()
-        game.mustExecute(StartRound(RoundNumber.of(1)))
+        val command = StartRound(RoundNumber.of(1))
+        game.mustExecute(command)
 
         val roundStartedEvent =
             game.state.events
                 .filterIsInstance<RoundStarted>()
                 .single()
+        assert(roundStartedEvent.roundNumber == command.roundNumber)
 
-        expectThat(roundStartedEvent) {
-            get { roundNumber }.isEqualTo(RoundNumber.of(1))
-            get { dealtCards.perPlayer.values }
-                .describedAs("cards dealt to each player")
-                .isNotEmpty()
-                .all { hasSize(roundStartedEvent.roundNumber.value) }
+        val dealtCardsPerPlayer = roundStartedEvent.dealtCards.perPlayer
+        dealtCardsPerPlayer.onEachIndexed { index, (_, cards) ->
+            assert(cards.size == command.roundNumber.value) { "incorrect cards for player ${index + 1}/${somePlayers.size}" }
         }
     }
 }

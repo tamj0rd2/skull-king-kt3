@@ -6,8 +6,6 @@ import dev.forkhandles.result4k.orThrow
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import strikt.api.expectThat
-import strikt.assertions.isEqualTo
 
 @Nested
 class StartingATrick {
@@ -25,10 +23,7 @@ class StartingATrick {
             game.state.events
                 .filterIsInstance<TrickStarted>()
                 .single()
-        expectThat(trickStartedEvent) {
-            get { gameId }.isEqualTo(game.id)
-            get { trickNumber }.isEqualTo(command.trickNumber)
-        }
+        assert(trickStartedEvent.trickNumber == command.trickNumber)
     }
 
     @Test

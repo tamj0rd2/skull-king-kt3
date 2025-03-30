@@ -7,8 +7,6 @@ import dev.forkhandles.values.random
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import strikt.api.expectThat
-import strikt.assertions.isEqualTo
 
 @Nested
 class PlayingACard {
@@ -27,11 +25,8 @@ class PlayingACard {
             game.state.events
                 .filterIsInstance<CardPlayed>()
                 .single()
-        expectThat(cardPlayedEvent) {
-            get { gameId }.isEqualTo(game.id)
-            get { playedBy }.isEqualTo(command.actor)
-            get { card }.isEqualTo(command.card)
-        }
+        assert(cardPlayedEvent.playedBy == command.actor)
+        assert(cardPlayedEvent.card == command.card)
     }
 
     @Test

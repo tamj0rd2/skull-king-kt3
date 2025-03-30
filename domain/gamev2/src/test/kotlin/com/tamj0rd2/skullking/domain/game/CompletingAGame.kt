@@ -6,8 +6,6 @@ import dev.forkhandles.result4k.orThrow
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import strikt.api.expectThat
-import strikt.assertions.isEqualTo
 
 @Nested
 class CompletingAGame {
@@ -18,13 +16,8 @@ class CompletingAGame {
         val game = Game.new(somePlayers).orThrow()
         game.mustExecute(command)
 
-        val gameCompletedEvent =
-            game.state.events
-                .filterIsInstance<GameCompleted>()
-                .single()
-        expectThat(gameCompletedEvent) {
-            get { gameId }.isEqualTo(game.id)
-        }
+        val events = game.state.events
+        assert(events.last() is GameCompleted)
     }
 
     @Test

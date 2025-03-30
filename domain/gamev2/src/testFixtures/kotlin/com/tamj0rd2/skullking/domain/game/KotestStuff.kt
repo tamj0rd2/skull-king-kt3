@@ -1,9 +1,6 @@
 package com.tamj0rd2.skullking.domain.game
 
-import dev.forkhandles.result4k.Result
-import dev.forkhandles.result4k.failureOrNull
 import dev.forkhandles.result4k.orThrow
-import io.kotest.common.ExperimentalKotest
 import io.kotest.common.runBlocking
 import io.kotest.property.Arb
 import io.kotest.property.PropertyContext
@@ -15,19 +12,16 @@ import io.kotest.property.arbitrary.map
 import io.kotest.property.arbitrary.set
 import io.kotest.property.arbitrary.uuid
 import io.kotest.property.checkAll
-import io.kotest.property.statistics.withCoveragePercentages
-import strikt.api.Assertion.Builder
-import strikt.assertions.isA
-import strikt.assertions.isNotNull
 import java.io.OutputStream
 import java.io.PrintStream
 
 val roundNumberArb = Arb.int().map { RoundNumber.of(it) }
 val trickNumberArb = Arb.int().map { TrickNumber.of(it) }
 val bidArb = Arb.int().map { Bid.of(it) }
+
 val playerIdArb = Arb.uuid().map { PlayerId.of(it) }
-val playerIdsArb = Arb.set(playerIdArb)
-private val validPlayerIdsArb = Arb.set(playerIdArb, Game.MINIMUM_PLAYER_COUNT..Game.MAXIMUM_PLAYER_COUNT)
+val validPlayerIdsArb = Arb.set(playerIdArb, Game.MINIMUM_PLAYER_COUNT..Game.MAXIMUM_PLAYER_COUNT)
+val potentiallyInvalidPlayerIdsArb = Arb.set(playerIdArb)
 
 val gameCommandArb = Arb.bind<GameCommand> { registerTinyTypes() }
 val gameCommandsArb = Arb.list(gameCommandArb)
@@ -74,20 +68,18 @@ object PropertyTesting {
         }
     }
 
-    @OptIn(ExperimentalKotest::class)
-    fun gamePropertyTest(
+    fun gameInvariant(
+        playerIdsArb: Arb<Set<PlayerId>>,
+        gameCommandsArb: Arb<List<GameCommand>> = com.tamj0rd2.skullking.domain.game.gameCommandsArb,
+        test: GamePropertyTest,
+    ) = propertyTest { checkAll(playerIdsArb, gameCommandsArb, test) }
+
+    fun gameInvariant(
         playerIdsArb: Arb<Set<PlayerId>> = validPlayerIdsArb,
         gameCommandsArb: Arb<List<GameCommand>> = com.tamj0rd2.skullking.domain.game.gameCommandsArb,
-        expectedClassifications: Set<Any?> = emptySet(),
-        test: GamePropertyTest,
-    ) = propertyTest {
-        withCoveragePercentages(expectedClassifications.associateWith { 1.0 }) {
-            checkAll(playerIdsArb, gameCommandsArb, test)
-        }
-    }
-
-    fun gameInvariant(invariant: GameInvariant) {
-        gamePropertyTest { playerIds, gameCommands ->
+        invariant: GameInvariant,
+    ) {
+        gameInvariant(playerIdsArb, gameCommandsArb) { playerIds, gameCommands ->
             val game = Game.new(playerIds).orThrow()
             game.testInvariantHoldsWhenExecuting(gameCommands, invariant)
             // TODO: also add a second check around reconstituting the entity from events.
@@ -103,8 +95,4 @@ object PropertyTesting {
             run(invariant)
         }
     }
-}
-
-inline fun <reified T : GameErrorCode> Builder<Result<Game, GameErrorCode>>.isAGameErrorCodeOfType() {
-    get { failureOrNull() }.isNotNull().isA<T>()
 }

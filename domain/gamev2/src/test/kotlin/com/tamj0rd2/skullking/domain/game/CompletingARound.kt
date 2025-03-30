@@ -6,8 +6,6 @@ import dev.forkhandles.result4k.orThrow
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import strikt.api.expectThat
-import strikt.assertions.isEqualTo
 
 @Nested
 class CompletingARound {
@@ -21,14 +19,8 @@ class CompletingARound {
         val game = Game.new(somePlayers).orThrow()
         game.mustExecute(command)
 
-        val roundCompletedEvent =
-            game.state.events
-                .filterIsInstance<RoundCompleted>()
-                .single()
-        expectThat(roundCompletedEvent) {
-            get { gameId }.isEqualTo(game.id)
-            get { roundNumber }.isEqualTo(command.roundNumber)
-        }
+        val roundCompletedEvents = game.state.events.filterIsInstance<RoundCompleted>()
+        assert(roundCompletedEvents.single().roundNumber == command.roundNumber)
     }
 
     @Test

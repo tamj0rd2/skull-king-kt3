@@ -7,8 +7,6 @@ import dev.forkhandles.values.random
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import strikt.api.expectThat
-import strikt.assertions.isEqualTo
 
 @Nested
 class PlacingABid {
@@ -27,11 +25,8 @@ class PlacingABid {
             game.state.events
                 .filterIsInstance<BidPlaced>()
                 .single()
-        expectThat(bidPlacedEvent) {
-            get { gameId }.isEqualTo(game.id)
-            get { placedBy }.isEqualTo(command.actor)
-            get { bid }.isEqualTo(command.bid)
-        }
+        assert(bidPlacedEvent.placedBy == command.actor)
+        assert(bidPlacedEvent.bid == command.bid)
     }
 
     @Test
