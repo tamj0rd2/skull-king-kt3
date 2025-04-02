@@ -1,6 +1,11 @@
 package com.tamj0rd2.skullking.domain.game
 
+import com.tamj0rd2.extensions.asFailure
+import com.tamj0rd2.extensions.asSuccess
+import dev.forkhandles.result4k.Result4k
 import dev.forkhandles.result4k.orThrow
+import dev.forkhandles.result4k.peek
+import dev.forkhandles.result4k.peekFailure
 import io.kotest.common.runBlocking
 import io.kotest.property.Arb
 import io.kotest.property.PropertyContext
@@ -55,7 +60,7 @@ object PropertyTesting {
     private fun Throwable.cleanedStackTrace(): Array<StackTraceElement> =
         stackTrace.filter { element -> stackTracePartsToIgnore.none { element.className.startsWith(it) } }.toTypedArray()
 
-    private fun propertyTest(block: suspend () -> Unit) {
+    fun propertyTest(block: suspend () -> Unit) {
         val originalOutputStream = System.out
         try {
             // makes kotest shut up.
@@ -96,6 +101,21 @@ object PropertyTesting {
             game.testInvariantHoldsWhenExecuting(gameCommands, invariant)
             // TODO: also add a second check around reconstituting the entity from events.
         }
+    }
+
+    fun gameResultInvariant(
+        playerIdsArb: Arb<Set<PlayerId>> = validPlayerIdsArb,
+        invariant: (Set<PlayerId>, Result4k<Game, GameErrorCode>) -> Unit,
+    ) = gameInvariantDeprecated(playerIdsArb) { playerIds, gameCommands ->
+        Game
+            .new(playerIds)
+            .peekFailure { failure ->
+                invariant(playerIds, failure.asFailure())
+            }.peek { game ->
+                game.testInvariantHoldsWhenExecuting(gameCommands) {
+                    invariant(playerIds, game.asSuccess())
+                }
+            }
     }
 
     fun Game.testInvariantHoldsWhenExecuting(
