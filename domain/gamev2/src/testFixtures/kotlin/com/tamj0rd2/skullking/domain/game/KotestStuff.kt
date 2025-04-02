@@ -1,11 +1,6 @@
 package com.tamj0rd2.skullking.domain.game
 
-import com.tamj0rd2.extensions.asFailure
-import com.tamj0rd2.extensions.asSuccess
-import dev.forkhandles.result4k.Result4k
 import dev.forkhandles.result4k.orThrow
-import dev.forkhandles.result4k.peek
-import dev.forkhandles.result4k.peekFailure
 import io.kotest.common.runBlocking
 import io.kotest.property.Arb
 import io.kotest.property.PropertyContext
@@ -39,9 +34,25 @@ fun ProvidedArbsBuilder.registerTinyTypes() {
     bind(PlayerId::class to playerIdArb)
 }
 
-typealias GamePropertyTest = PropertyContext.(Set<PlayerId>, List<GameCommand>) -> Unit
-typealias GameInvariant = (Game) -> Unit
+fun interface GameInvariant {
+    operator fun invoke(game: Game)
+}
 
+fun interface GameInvariantIncludingInitialPlayers {
+    operator fun invoke(
+        players: Set<PlayerId>,
+        game: Game,
+    )
+}
+
+fun interface GameInvariantIncludingInitialGameId {
+    operator fun invoke(
+        initialGameId: GameId,
+        game: Game,
+    )
+}
+
+@Suppress("DeprecatedCallableAddReplaceWith")
 object PropertyTesting {
     init {
         System.setProperty("kotest.assertions.collection.print.size", "10")
@@ -87,44 +98,54 @@ object PropertyTesting {
         }
     }
 
-    fun gameInvariantDeprecated(
+    @Deprecated("Should only be used sparingly.")
+    fun gamePropertyTest(
         playerIdsArb: Arb<Set<PlayerId>>,
-        test: GamePropertyTest,
+        test: PropertyContext.(Set<PlayerId>, List<GameCommand>) -> Unit,
     ) = propertyTest { checkAll(playerIdsArb, gameCommandsArb, test) }
 
+    // TODO: also add a second check around reconstituting the entity from events.
     fun gameInvariant(
         playerIdsArb: Arb<Set<PlayerId>> = validPlayerIdsArb,
         invariant: GameInvariant,
     ) {
-        gameInvariantDeprecated(playerIdsArb) { playerIds, gameCommands ->
-            val game = Game.new(playerIds).orThrow()
-            game.testInvariantHoldsWhenExecuting(gameCommands, invariant)
-            // TODO: also add a second check around reconstituting the entity from events.
+        @Suppress("DEPRECATION")
+        gamePropertyTest(playerIdsArb) { playerIds, gameCommands ->
+            Game
+                .new(playerIds)
+                .orThrow()
+                .testInvariantHoldsWhenExecuting(gameCommands, invariant)
         }
     }
 
-    fun gameResultInvariant(
-        playerIdsArb: Arb<Set<PlayerId>> = validPlayerIdsArb,
-        invariant: (Set<PlayerId>, Result4k<Game, GameErrorCode>) -> Unit,
-    ) = gameInvariantDeprecated(playerIdsArb) { playerIds, gameCommands ->
-        Game
-            .new(playerIds)
-            .peekFailure { failure ->
-                invariant(playerIds, failure.asFailure())
-            }.peek { game ->
-                game.testInvariantHoldsWhenExecuting(gameCommands) {
-                    invariant(playerIds, game.asSuccess())
-                }
-            }
+    // TODO: also add a second check around reconstituting the entity from events.
+    fun gameInvariant(invariant: GameInvariantIncludingInitialPlayers) {
+        @Suppress("DEPRECATION")
+        gamePropertyTest(validPlayerIdsArb) { initialPlayers, gameCommands ->
+            Game
+                .new(initialPlayers)
+                .orThrow()
+                .testInvariantHoldsWhenExecuting(gameCommands) { invariant(initialPlayers, it) }
+        }
     }
 
-    fun Game.testInvariantHoldsWhenExecuting(
+    // TODO: also add a second check around reconstituting the entity from events.
+    fun gameInvariant(invariant: GameInvariantIncludingInitialGameId) {
+        @Suppress("DEPRECATION")
+        gamePropertyTest(validPlayerIdsArb) { initialPlayers, gameCommands ->
+            val game = Game.new(initialPlayers).orThrow()
+            val initialGameId = game.id
+            game.testInvariantHoldsWhenExecuting(gameCommands) { invariant(initialGameId, it) }
+        }
+    }
+
+    private fun Game.testInvariantHoldsWhenExecuting(
         commands: List<GameCommand>,
         invariant: GameInvariant,
     ) {
         commands.forEach { command ->
             execute(command)
-            run(invariant)
+            invariant(this)
         }
     }
 }

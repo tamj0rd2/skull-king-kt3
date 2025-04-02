@@ -1,5 +1,6 @@
 package com.tamj0rd2.skullking.domain.game
 
+import com.tamj0rd2.extensions.asFailure
 import com.tamj0rd2.extensions.asSuccess
 import com.tamj0rd2.skullking.domain.game.GameCommand.CompleteGame
 import com.tamj0rd2.skullking.domain.game.GameCommand.CompleteRound
@@ -8,6 +9,7 @@ import com.tamj0rd2.skullking.domain.game.GameCommand.PlaceABid
 import com.tamj0rd2.skullking.domain.game.GameCommand.PlayACard
 import com.tamj0rd2.skullking.domain.game.GameCommand.StartRound
 import com.tamj0rd2.skullking.domain.game.GameCommand.StartTrick
+import com.tamj0rd2.skullking.domain.game.GameErrorCode.GameIdMismatch
 import com.tamj0rd2.skullking.domain.game.GameErrorCode.NotEnoughPlayersToCreateGame
 import com.tamj0rd2.skullking.domain.game.GameErrorCode.TooManyPlayersToCreateGame
 import com.tamj0rd2.skullking.domain.game.GameEvent.BidPlaced
@@ -112,7 +114,7 @@ class Game private constructor(
         }
 
     private fun appendEvent(event: GameEvent): Result4k<Unit, GameErrorCode> {
-        check(event.gameId == id) { "GameId mismatch" }
+        if (event.gameId != id) return GameIdMismatch().asFailure()
         state = state.applyEvent(event).onFailure { return it }
         return Unit.asSuccess()
     }

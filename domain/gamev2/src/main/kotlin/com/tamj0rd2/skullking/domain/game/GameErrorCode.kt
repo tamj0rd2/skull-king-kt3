@@ -8,4 +8,6 @@ sealed class GameErrorCode : IllegalStateException("") {
     class AlreadyStartedMoreThan10Rounds : GameErrorCode()
 
     class AlreadyCompletedMoreThan10Rounds : GameErrorCode()
+
+    class GameIdMismatch : GameErrorCode()
 }
