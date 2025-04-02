@@ -30,7 +30,7 @@ class InvariantsTest {
     fun `every event in the game is related to that specific game`() {
         gameInvariant { initialGameId: GameId, game ->
             val gameIdsFromEvents =
-                game.state.events
+                game.events
                     .map { it.gameId }
                     .toSet()
             assert(gameIdsFromEvents.single() == initialGameId)
@@ -44,10 +44,11 @@ class InvariantsTest {
             val game = Game.new(initialPlayers).orThrow()
 
             gameCommands.forEach { command ->
-                val eventsBeforeCommand = game.state.events
+                val eventsBeforeCommand = game.events
 
                 game.execute(command).peek {
-                    val eventsAfterCommand = game.state.events
+                    val eventsAfterCommand = game.events
+                    assertEquals(eventsBeforeCommand.size + 1, eventsAfterCommand.size)
                     assertEquals(eventsBeforeCommand, eventsAfterCommand.dropLast(1))
                 }
             }
@@ -61,10 +62,10 @@ class InvariantsTest {
             val game = Game.new(initialPlayers).orThrow()
 
             gameCommands.forEach { command ->
-                val eventsBeforeCommand = game.state.events
+                val eventsBeforeCommand = game.events
 
                 game.execute(command).peekFailure {
-                    val eventsAfterCommand = game.state.events
+                    val eventsAfterCommand = game.events
                     assertEquals(eventsBeforeCommand, eventsAfterCommand)
                 }
             }

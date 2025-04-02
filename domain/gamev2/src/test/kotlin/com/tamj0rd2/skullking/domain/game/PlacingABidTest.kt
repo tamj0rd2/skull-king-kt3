@@ -22,7 +22,7 @@ class PlacingABidTest {
         game.mustExecute(command)
 
         val bidPlacedEvent =
-            game.state.events
+            game.events
                 .filterIsInstance<BidPlaced>()
                 .single()
         assert(bidPlacedEvent.placedBy == command.actor)

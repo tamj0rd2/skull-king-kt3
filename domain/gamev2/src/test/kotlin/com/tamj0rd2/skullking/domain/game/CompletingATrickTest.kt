@@ -16,7 +16,7 @@ class CompletingATrickTest {
         val game = Game.new(somePlayers).orThrow()
         game.mustExecute(command)
 
-        val trickCompletedEvents = game.state.events.filterIsInstance<TrickCompleted>()
+        val trickCompletedEvents = game.events.filterIsInstance<TrickCompleted>()
         assert(trickCompletedEvents.single().trickNumber == command.trickNumber)
     }
 

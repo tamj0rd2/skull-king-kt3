@@ -22,7 +22,7 @@ class PlayingACardTest {
         game.mustExecute(command)
 
         val cardPlayedEvent =
-            game.state.events
+            game.events
                 .filterIsInstance<CardPlayed>()
                 .single()
         assert(cardPlayedEvent.playedBy == command.actor)

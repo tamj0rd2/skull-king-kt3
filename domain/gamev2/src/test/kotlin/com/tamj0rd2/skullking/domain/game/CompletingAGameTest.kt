@@ -16,7 +16,7 @@ class CompletingAGameTest {
         val game = Game.new(somePlayers).orThrow()
         game.mustExecute(command)
 
-        val events = game.state.events
+        val events = game.events
         assert(events.last() is GameCompleted)
     }
 

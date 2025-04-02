@@ -51,6 +51,9 @@ class Game private constructor(
     var state = GameState.new
         private set
 
+    private val _events = mutableListOf<GameEvent>()
+    val events get() = _events.toList()
+
     fun execute(command: GameCommand): Result4k<Unit, GameErrorCode> =
         when (command) {
             is StartRound -> {
@@ -115,6 +118,7 @@ class Game private constructor(
 
     private fun appendEvent(event: GameEvent): Result4k<Unit, GameErrorCode> {
         if (event.gameId != id) return GameIdMismatch().asFailure()
+        _events.add(event)
         state = state.applyEvent(event).onFailure { return it }
         return Unit.asSuccess()
     }

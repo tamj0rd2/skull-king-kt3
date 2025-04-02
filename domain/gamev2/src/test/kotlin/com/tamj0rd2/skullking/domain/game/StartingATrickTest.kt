@@ -20,7 +20,7 @@ class StartingATrickTest {
         game.mustExecute(command)
 
         val trickStartedEvent =
-            game.state.events
+            game.events
                 .filterIsInstance<TrickStarted>()
                 .single()
         assert(trickStartedEvent.trickNumber == command.trickNumber)
