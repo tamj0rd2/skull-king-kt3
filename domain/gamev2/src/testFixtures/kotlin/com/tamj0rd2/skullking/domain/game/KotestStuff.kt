@@ -82,7 +82,7 @@ object PropertyTesting {
         }
     }
 
-    fun gameInvariant(
+    fun gameInvariantDeprecated(
         playerIdsArb: Arb<Set<PlayerId>>,
         gameCommandsArb: Arb<List<GameCommand>> = com.tamj0rd2.skullking.domain.game.gameCommandsArb,
         test: GamePropertyTest,
@@ -93,7 +93,7 @@ object PropertyTesting {
         gameCommandsArb: Arb<List<GameCommand>> = com.tamj0rd2.skullking.domain.game.gameCommandsArb,
         invariant: GameInvariant,
     ) {
-        gameInvariant(playerIdsArb, gameCommandsArb) { playerIds, gameCommands ->
+        gameInvariantDeprecated(playerIdsArb, gameCommandsArb) { playerIds, gameCommands ->
             val game = Game.new(playerIds).orThrow()
             game.testInvariantHoldsWhenExecuting(gameCommands, invariant)
             // TODO: also add a second check around reconstituting the entity from events.

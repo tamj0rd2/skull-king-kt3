@@ -2,7 +2,7 @@ package com.tamj0rd2.skullking.domain.game
 
 import com.tamj0rd2.skullking.domain.game.GameErrorCode.NotEnoughPlayersToCreateGame
 import com.tamj0rd2.skullking.domain.game.GameErrorCode.TooManyPlayersToCreateGame
-import com.tamj0rd2.skullking.domain.game.PropertyTesting.gameInvariant
+import com.tamj0rd2.skullking.domain.game.PropertyTesting.gameInvariantDeprecated
 import com.tamj0rd2.skullking.domain.game.PropertyTesting.testInvariantHoldsWhenExecuting
 import dev.forkhandles.result4k.Success
 import dev.forkhandles.result4k.failureOrNull
@@ -19,7 +19,7 @@ import kotlin.test.assertEquals
 class InvariantsTest {
     @Test
     fun `a game always has 2-6 players`() {
-        gameInvariant(
+        gameInvariantDeprecated(
             playerIdsArb =
                 Arb.choice(
                     validPlayerIdsArb,
@@ -50,7 +50,7 @@ class InvariantsTest {
 
     @Test
     fun `the players in the game never change`() {
-        gameInvariant(validPlayerIdsArb) { initialPlayers, gameCommands ->
+        gameInvariantDeprecated(validPlayerIdsArb) { initialPlayers, gameCommands ->
             val gameResult = Game.new(initialPlayers)
             assume(gameResult is Success)
 
@@ -62,7 +62,7 @@ class InvariantsTest {
 
     @Test
     fun `every event in the game is related to that specific game`() {
-        gameInvariant(validPlayerIdsArb) { initialPlayers, gameCommands ->
+        gameInvariantDeprecated(validPlayerIdsArb) { initialPlayers, gameCommands ->
             val initialGame = Game.new(initialPlayers).orThrow()
             val initialGameId = initialGame.id
 
@@ -78,7 +78,7 @@ class InvariantsTest {
 
     @Test
     fun `each successful command results in 1 event being emitted`() {
-        gameInvariant(validPlayerIdsArb) { initialPlayers, gameCommands ->
+        gameInvariantDeprecated(validPlayerIdsArb) { initialPlayers, gameCommands ->
             val game = Game.new(initialPlayers).orThrow()
 
             gameCommands.forEach { command ->
@@ -94,7 +94,7 @@ class InvariantsTest {
 
     @Test
     fun `a failed command does not append any events`() {
-        gameInvariant(validPlayerIdsArb) { initialPlayers, gameCommands ->
+        gameInvariantDeprecated(validPlayerIdsArb) { initialPlayers, gameCommands ->
             val game = Game.new(initialPlayers).orThrow()
 
             gameCommands.forEach { command ->
@@ -110,7 +110,7 @@ class InvariantsTest {
 
     @Test
     fun `a failed command does not modify the game's state`() {
-        gameInvariant(validPlayerIdsArb) { initialPlayers, gameCommands ->
+        gameInvariantDeprecated(validPlayerIdsArb) { initialPlayers, gameCommands ->
             val game = Game.new(initialPlayers).orThrow()
 
             gameCommands.forEach { command ->
