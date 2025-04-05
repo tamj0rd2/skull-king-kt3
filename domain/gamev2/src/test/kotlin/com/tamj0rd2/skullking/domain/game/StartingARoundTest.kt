@@ -2,7 +2,6 @@ package com.tamj0rd2.skullking.domain.game
 
 import com.tamj0rd2.skullking.domain.game.GameCommand.StartRound
 import com.tamj0rd2.skullking.domain.game.GameEvent.RoundStarted
-import com.tamj0rd2.skullking.domain.game.PropertyTesting.gameInvariant
 import dev.forkhandles.result4k.orThrow
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested

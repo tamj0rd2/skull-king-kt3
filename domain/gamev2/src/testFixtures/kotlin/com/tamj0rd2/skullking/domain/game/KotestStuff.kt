@@ -1,61 +1,20 @@
 package com.tamj0rd2.skullking.domain.game
 
 import dev.forkhandles.result4k.orThrow
+import dev.forkhandles.values.random
 import io.kotest.common.runBlocking
-import io.kotest.property.Arb
-import io.kotest.property.PropertyContext
-import io.kotest.property.arbitrary.ProvidedArbsBuilder
-import io.kotest.property.arbitrary.bind
-import io.kotest.property.arbitrary.int
-import io.kotest.property.arbitrary.list
-import io.kotest.property.arbitrary.map
-import io.kotest.property.arbitrary.set
-import io.kotest.property.arbitrary.uuid
-import io.kotest.property.checkAll
 import java.io.OutputStream
 import java.io.PrintStream
+import kotlin.properties.ReadOnlyProperty
+import kotlin.reflect.KProperty
+import kotlin.reflect.KVisibility
 import kotlin.text.RegexOption.MULTILINE
 
-val roundNumberArb = Arb.int().map { RoundNumber.of(it) }
-val trickNumberArb = Arb.int().map { TrickNumber.of(it) }
-val bidArb = Arb.int().map { Bid.of(it) }
-
-val playerIdArb = Arb.uuid().map { PlayerId.of(it) }
-val validPlayerIdsArb = Arb.set(playerIdArb, Game.MINIMUM_PLAYER_COUNT..Game.MAXIMUM_PLAYER_COUNT)
-val potentiallyInvalidPlayerIdsArb = Arb.set(playerIdArb)
-
-val gameCommandArb = Arb.bind<GameCommand> { registerTinyTypes() }
-val gameCommandsArb = Arb.list(gameCommandArb)
-
-fun ProvidedArbsBuilder.registerTinyTypes() {
-    bind(RoundNumber::class to roundNumberArb)
-    bind(TrickNumber::class to trickNumberArb)
-    bind(Bid::class to bidArb)
-    bind(PlayerId::class to playerIdArb)
-}
-
-fun interface GameInvariant {
-    operator fun invoke(game: Game)
-}
-
-fun interface GameInvariantIncludingInitialPlayers {
-    operator fun invoke(
-        players: Set<PlayerId>,
-        game: Game,
-    )
-}
-
-fun interface GameInvariantIncludingInitialGameId {
-    operator fun invoke(
-        initialGameId: GameId,
-        game: Game,
-    )
-}
-
-@Suppress("DeprecatedCallableAddReplaceWith")
 object PropertyTesting {
     init {
         System.setProperty("kotest.assertions.collection.print.size", "10")
+        io.kotest.property.PropertyTesting.shouldPrintShrinkSteps = false
+        System.setOut(PrintStream(OutputStream.nullOutputStream()))
     }
 
     private val stackTracePartsToIgnore =
@@ -72,10 +31,8 @@ object PropertyTesting {
         stackTrace.filter { element -> stackTracePartsToIgnore.none { element.className.startsWith(it) } }.toTypedArray()
 
     fun propertyTest(block: suspend () -> Unit) {
-        val originalOutputStream = System.out
         try {
             // makes kotest shut up.
-            System.setOut(PrintStream(OutputStream.nullOutputStream()))
             runBlocking(block)
         } catch (e: AssertionError) {
             val args =
@@ -93,59 +50,25 @@ object PropertyTesting {
                 it.stackTrace =
                     rootCause.stackTrace
             }
-        } finally {
-            System.setOut(originalOutputStream)
         }
     }
 
-    @Deprecated("Should only be used sparingly.")
-    fun gamePropertyTest(
-        playerIdsArb: Arb<Set<PlayerId>>,
-        test: PropertyContext.(Set<PlayerId>, List<GameCommand>) -> Unit,
-    ) = propertyTest { checkAll(playerIdsArb, gameCommandsArb, test) }
-
-    // TODO: also add a second check around reconstituting the entity from events.
-    fun gameInvariant(
-        playerIdsArb: Arb<Set<PlayerId>> = validPlayerIdsArb,
-        invariant: GameInvariant,
-    ) {
-        @Suppress("DEPRECATION")
-        gamePropertyTest(playerIdsArb) { playerIds, gameCommands ->
-            Game
-                .new(playerIds)
-                .orThrow()
-                .testInvariantHoldsWhenExecuting(gameCommands, invariant)
+    open class ClassificationsBase {
+        internal val classifiers by lazy {
+            @Suppress("NO_REFLECTION_IN_CLASS_PATH")
+            this::class
+                .members
+                .filter { it is KProperty && it.visibility == KVisibility.PUBLIC }
+                .map { it.name }
+                .toSet()
         }
-    }
 
-    // TODO: also add a second check around reconstituting the entity from events.
-    fun gameInvariant(invariant: GameInvariantIncludingInitialPlayers) {
-        @Suppress("DEPRECATION")
-        gamePropertyTest(validPlayerIdsArb) { initialPlayers, gameCommands ->
-            Game
-                .new(initialPlayers)
-                .orThrow()
-                .testInvariantHoldsWhenExecuting(gameCommands) { invariant(initialPlayers, it) }
-        }
-    }
-
-    // TODO: also add a second check around reconstituting the entity from events.
-    fun gameInvariant(invariant: GameInvariantIncludingInitialGameId) {
-        @Suppress("DEPRECATION")
-        gamePropertyTest(validPlayerIdsArb) { initialPlayers, gameCommands ->
-            val game = Game.new(initialPlayers).orThrow()
-            val initialGameId = game.id
-            game.testInvariantHoldsWhenExecuting(gameCommands) { invariant(initialGameId, it) }
-        }
-    }
-
-    private fun Game.testInvariantHoldsWhenExecuting(
-        commands: List<GameCommand>,
-        invariant: GameInvariant,
-    ) {
-        commands.forEach { command ->
-            execute(command)
-            invariant(this)
-        }
+        protected fun classification() = ReadOnlyProperty<GameClassifications, String> { _, it -> it.name }
     }
 }
+
+@Deprecated("delete this")
+val somePlayers = setOf(PlayerId.random(), PlayerId.random())
+
+@Deprecated("delete this")
+fun Game.mustExecute(command: GameCommand) = execute(command).orThrow()

@@ -1,7 +1,6 @@
 package com.tamj0rd2.skullking.domain.game
 
 import com.tamj0rd2.skullking.domain.game.GameEvent.GameStarted
-import com.tamj0rd2.skullking.domain.game.PropertyTesting.gameInvariant
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 

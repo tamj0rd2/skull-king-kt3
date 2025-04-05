@@ -1,7 +1,5 @@
 package com.tamj0rd2.skullking.domain.game
 
-import com.tamj0rd2.skullking.domain.game.PropertyTesting.gameInvariant
-import com.tamj0rd2.skullking.domain.game.PropertyTesting.gamePropertyTest
 import dev.forkhandles.result4k.orThrow
 import dev.forkhandles.result4k.peek
 import dev.forkhandles.result4k.peekFailure
@@ -88,6 +86,8 @@ class InvariantsTest {
             }
         }
     }
+
+    // TODO: add tests around reconstituting from events
 
     @Test
     @Disabled
