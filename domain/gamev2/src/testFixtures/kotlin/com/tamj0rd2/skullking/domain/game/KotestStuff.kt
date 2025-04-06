@@ -7,7 +7,6 @@ import java.io.OutputStream
 import java.io.PrintStream
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
-import kotlin.reflect.KVisibility
 import kotlin.text.RegexOption.MULTILINE
 
 object PropertyTesting {
@@ -54,11 +53,11 @@ object PropertyTesting {
     }
 
     open class ClassificationsBase {
-        internal val classifiers by lazy {
+        internal val classifiers: Set<String> by lazy {
             @Suppress("NO_REFLECTION_IN_CLASS_PATH")
             this::class
                 .members
-                .filter { it is KProperty && it.visibility == KVisibility.PUBLIC }
+                .filter { it is KProperty && it.name != "classifiers" }
                 .map { it.name }
                 .toSet()
         }
@@ -70,5 +69,4 @@ object PropertyTesting {
 @Deprecated("delete this")
 val somePlayers = setOf(PlayerId.random(), PlayerId.random())
 
-@Deprecated("delete this")
 fun Game.mustExecute(command: GameCommand) = execute(command).orThrow()

@@ -1,22 +1,17 @@
 package com.tamj0rd2.skullking.domain.game
 
 import com.tamj0rd2.skullking.domain.game.GameCommand.StartRound
+import com.tamj0rd2.skullking.domain.game.GameErrorCode.CannotStartARoundThatIsAlreadyInProgress
 import com.tamj0rd2.skullking.domain.game.GameEvent.RoundStarted
+import dev.forkhandles.result4k.failureOrNull
 import dev.forkhandles.result4k.orThrow
-import org.junit.jupiter.api.Disabled
+import io.kotest.property.assume
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import kotlin.test.assertIs
 
 @Nested
 class StartingARoundTest {
-    @Test
-    @Disabled
-    fun `a maximum of 10 rounds can be started`() =
-        gameInvariant { game ->
-            val roundStartedEvents = game.events.filterIsInstance<RoundStarted>()
-            assert(roundStartedEvents.size <= 10)
-        }
-
     @Test
     fun `when a round has started, a round started event is emitted`() {
         val game = Game.new(somePlayers).orThrow()
@@ -34,4 +29,14 @@ class StartingARoundTest {
             assert(cards.size == command.roundNumber.value) { "incorrect cards for player ${index + 1}/${somePlayers.size}" }
         }
     }
+
+    // TODO: this isn't an invariant
+    @Test
+    fun `cannot start a round that is already in progress`() =
+        gameInvariant { game ->
+            assume(game.state.roundIsInProgress)
+
+            val command = StartRound(game.state.roundNumber)
+            assertIs<CannotStartARoundThatIsAlreadyInProgress>(game.execute(command).failureOrNull())
+        }
 }

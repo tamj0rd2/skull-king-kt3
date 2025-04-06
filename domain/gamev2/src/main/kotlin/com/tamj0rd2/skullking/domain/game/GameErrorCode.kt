@@ -5,9 +5,13 @@ sealed class GameErrorCode : IllegalStateException("") {
 
     class TooManyPlayersToCreateGame : GameErrorCode()
 
-    class AlreadyStartedMoreThan10Rounds : GameErrorCode()
-
-    class AlreadyCompletedMoreThan10Rounds : GameErrorCode()
-
     class GameIdMismatch : GameErrorCode()
+
+    class CannotPlayMoreThan10Rounds : GameErrorCode()
+
+    class CannotStartAPreviousRound : GameErrorCode()
+
+    class CannotStartARoundThatIsAlreadyInProgress : GameErrorCode()
+
+    class CannotCompleteARoundThatIsNotInProgress : GameErrorCode()
 }

@@ -118,8 +118,8 @@ class Game private constructor(
 
     private fun appendEvent(event: GameEvent): Result4k<Unit, GameErrorCode> {
         if (event.gameId != id) return GameIdMismatch().asFailure()
-        _events.add(event)
         state = state.applyEvent(event).onFailure { return it }
+        _events.add(event)
         return Unit.asSuccess()
     }
 

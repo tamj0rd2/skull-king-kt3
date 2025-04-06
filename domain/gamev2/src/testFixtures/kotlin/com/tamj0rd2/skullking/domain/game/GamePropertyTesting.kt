@@ -37,9 +37,23 @@ private fun ProvidedArbsBuilder.registerTinyTypes() {
     bind(PlayerId::class to playerIdArb)
 }
 
+@Suppress("PropertyName", "ObjectPrivatePropertyName")
 open class GameClassifications : PropertyTesting.ClassificationsBase() {
-    val hasRunPastAllAssumptionsAtLeastOnceWithoutGameCommands by classification()
-    val hasRunPastAllAssumptionsAtLeastOnceWithSomeGameCommands by classification()
+    val `has passed assumptions without game commands` by classification()
+    val `has passed assumptions with some game commands` by classification()
+
+    object ForRoundNumber : GameClassifications() {
+        private val `round number is 0` by classification()
+        private val `round number is not 0` by classification()
+
+        fun PropertyContext.classifyRoundNumber(roundNumber: RoundNumber) {
+            classify(
+                condition = roundNumber == RoundNumber.none,
+                trueLabel = `round number is 0`,
+                falseLabel = `round number is not 0`,
+            )
+        }
+    }
 }
 
 @OptIn(ExperimentalKotest::class)
@@ -64,8 +78,8 @@ fun gamePropertyTest(
         test(playerIds, gameCommands)
         classify(
             condition = gameCommands.isEmpty(),
-            trueLabel = classifications.hasRunPastAllAssumptionsAtLeastOnceWithoutGameCommands,
-            falseLabel = classifications.hasRunPastAllAssumptionsAtLeastOnceWithSomeGameCommands,
+            trueLabel = classifications.`has passed assumptions without game commands`,
+            falseLabel = classifications.`has passed assumptions with some game commands`,
         )
     }.also {
         val expectedClassifiers = classifications.classifiers
@@ -148,6 +162,29 @@ fun gameInvariant(
         gameCommands.forEach { command ->
             game.execute(command)
             invariant(initialGameId, game)
+        }
+    }
+}
+
+fun interface GameStateInvariantIncludingPreviousState {
+    operator fun PropertyContext.invoke(
+        stateBeforeCommand: GameState,
+        stateAfterCommand: GameState,
+    )
+}
+
+fun gameStateInvariant(
+    classifications: GameClassifications = GameClassifications(),
+    invariant: GameStateInvariantIncludingPreviousState,
+) {
+    @Suppress("DEPRECATION")
+    gamePropertyTest(validPlayerIdsArb, classifications) { initialPlayers, gameCommands ->
+        val game = Game.new(initialPlayers).orThrow()
+
+        gameCommands.forEach { command ->
+            val previousState = game.state
+            game.execute(command)
+            invariant.run { invoke(stateBeforeCommand = previousState, stateAfterCommand = game.state) }
         }
     }
 }
