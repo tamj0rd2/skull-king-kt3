@@ -23,8 +23,6 @@ import com.tamj0rd2.skullking.domain.game.GameEvent.TrickStarted
 import dev.forkhandles.result4k.Result
 import dev.forkhandles.result4k.Result4k
 import dev.forkhandles.result4k.onFailure
-import dev.forkhandles.result4k.orThrow
-import dev.forkhandles.result4k.resultFromCatching
 import dev.forkhandles.values.UUIDValueFactory
 import dev.forkhandles.values.Value
 import dev.forkhandles.values.random
@@ -39,15 +37,6 @@ data class GameId private constructor(
 class Game private constructor(
     val id: GameId,
 ) {
-    private constructor(players: Set<PlayerId>) : this(
-        id = GameId.random(),
-    ) {
-        if (players.size < MINIMUM_PLAYER_COUNT) throw NotEnoughPlayersToCreateGame()
-        if (players.size > MAXIMUM_PLAYER_COUNT) throw TooManyPlayersToCreateGame()
-
-        appendEvent(GameStarted(gameId = id, players = players)).orThrow()
-    }
-
     var state = GameState.new
         private set
 
@@ -127,6 +116,18 @@ class Game private constructor(
         const val MINIMUM_PLAYER_COUNT = 2
         const val MAXIMUM_PLAYER_COUNT = 6
 
-        fun new(players: Set<PlayerId>): Result<Game, GameErrorCode> = resultFromCatching<GameErrorCode, Game> { Game(players) }
+        fun new(players: Set<PlayerId>): Result<Game, GameErrorCode> {
+            if (players.size < MINIMUM_PLAYER_COUNT) return NotEnoughPlayersToCreateGame().asFailure()
+            if (players.size > MAXIMUM_PLAYER_COUNT) return TooManyPlayersToCreateGame().asFailure()
+            val game = Game(GameId.random())
+            game.appendEvent(GameStarted(gameId = game.id, players = players)).onFailure { return it }
+            return game.asSuccess()
+        }
+
+        fun reconstituteFrom(events: List<GameEvent>): Result<Game, GameErrorCode> {
+            val game = Game(events.first().gameId)
+            events.forEach { event -> game.appendEvent(event).onFailure { return it } }
+            return game.asSuccess()
+        }
     }
 }
