@@ -121,28 +121,6 @@ fun gameInvariant(
     }
 }
 
-fun interface GameInvariantIncludingInitialPlayers {
-    operator fun invoke(
-        players: Set<PlayerId>,
-        game: Game,
-    )
-}
-
-fun gameInvariant(
-    classifications: GameClassifications = GameClassifications(),
-    invariant: GameInvariantIncludingInitialPlayers,
-) {
-    @Suppress("DEPRECATION")
-    gamePropertyTest(validPlayerIdsArb, classifications) { initialPlayers, gameCommands ->
-        val game = Game.new(initialPlayers).orThrow()
-
-        gameCommands.forEach { command ->
-            game.execute(command)
-            invariant(initialPlayers, game)
-        }
-    }
-}
-
 fun interface GameInvariantIncludingInitialGameId {
     operator fun invoke(
         initialGameId: GameId,
