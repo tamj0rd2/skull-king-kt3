@@ -6,6 +6,7 @@ import dev.forkhandles.result4k.peekFailure
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 
 class InvariantsTest {
     @Test
@@ -19,8 +20,10 @@ class InvariantsTest {
 
     @Test
     fun `the players in the game never change`() {
-        gameInvariant { initialPlayers: Set<PlayerId>, game ->
-            assertEquals(initialPlayers, game.state.players)
+        gameStateInvariant { stateBeforeCommand, stateAfterCommand ->
+            val playersBeforeCommand = stateBeforeCommand.players
+            val playersAfterCommand = stateAfterCommand.players
+            assertEquals(playersBeforeCommand, playersAfterCommand)
         }
     }
 
@@ -48,6 +51,24 @@ class InvariantsTest {
                     val eventsAfterCommand = game.events
                     assertEquals(eventsBeforeCommand.size + 1, eventsAfterCommand.size)
                     assertEquals(eventsBeforeCommand, eventsAfterCommand.dropLast(1))
+                }
+            }
+        }
+    }
+
+    @Disabled
+    @Test
+    fun `each successful command results in a state change`() {
+        @Suppress("DEPRECATION")
+        gamePropertyTest(validPlayerIdsArb) { initialPlayers, gameCommands ->
+            val game = Game.new(initialPlayers).orThrow()
+
+            gameCommands.forEach { command ->
+                val stateBeforeCommand = game.state
+
+                game.execute(command).peek {
+                    val stateAfterCommand = game.state
+                    assertNotEquals(stateBeforeCommand, stateAfterCommand)
                 }
             }
         }
