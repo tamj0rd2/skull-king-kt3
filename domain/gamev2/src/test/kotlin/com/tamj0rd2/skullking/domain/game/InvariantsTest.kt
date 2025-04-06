@@ -28,6 +28,13 @@ class InvariantsTest {
     }
 
     @Test
+    fun `the game's id never changes`() {
+        gameInvariant { initialGameId: GameId, game ->
+            assertEquals(initialGameId, game.id)
+        }
+    }
+
+    @Test
     fun `every event in the game is related to that specific game`() {
         gameInvariant { initialGameId: GameId, game ->
             val gameIdsFromEvents =
@@ -35,6 +42,17 @@ class InvariantsTest {
                     .map { it.gameId }
                     .toSet()
             assert(gameIdsFromEvents.single() == initialGameId)
+        }
+    }
+
+    @Test
+    fun `a game that is rebuilt from its history of events has the same identity, events and state as the original`() {
+        gameInvariant { game ->
+            val reconstitutedGame = Game.reconstituteFrom(game.events).orThrow()
+            assertEquals(game, reconstitutedGame)
+            assertEquals(game.id, reconstitutedGame.id)
+            assertEquals(game.events, reconstitutedGame.events)
+            assertEquals(game.state, reconstitutedGame.state)
         }
     }
 
@@ -107,18 +125,6 @@ class InvariantsTest {
             }
         }
     }
-
-    @Test
-    fun `a game that is rebuilt from its history of events has the same id, events and state as the original`() {
-        gameInvariant { game ->
-            val reconstitutedGame = Game.reconstituteFrom(game.events).orThrow()
-            assertEquals(game.id, reconstitutedGame.id)
-            assertEquals(game.events, reconstitutedGame.events)
-            assertEquals(game.state, reconstitutedGame.state)
-        }
-    }
-
-    // TODO: add tests around reconstituting from events
 
     @Test
     @Disabled

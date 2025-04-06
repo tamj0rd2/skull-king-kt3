@@ -26,6 +26,7 @@ import dev.forkhandles.result4k.onFailure
 import dev.forkhandles.values.UUIDValueFactory
 import dev.forkhandles.values.Value
 import dev.forkhandles.values.random
+import java.util.Objects
 import java.util.UUID
 
 data class GameId private constructor(
@@ -37,6 +38,10 @@ data class GameId private constructor(
 class Game private constructor(
     val id: GameId,
 ) {
+    override fun equals(other: Any?): Boolean = other is Game && other.id == id
+
+    override fun hashCode(): Int = Objects.hash(id)
+
     var state = GameState.new
         private set
 
