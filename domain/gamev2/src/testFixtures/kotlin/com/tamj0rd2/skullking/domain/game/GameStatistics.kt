@@ -25,7 +25,7 @@ data object RoundNumberStatistics : GameStatistics<RoundNumber>() {
         when {
             data < RoundNumber.none -> `round number less than 0`
             data == RoundNumber.none -> `round number is 0`
-            data <= RoundNumber.finalRoundNumber -> `round number is 1-10`
+            data <= RoundNumber.last -> `round number is 1-10`
             else -> `round number greater than 10`
         }
 }

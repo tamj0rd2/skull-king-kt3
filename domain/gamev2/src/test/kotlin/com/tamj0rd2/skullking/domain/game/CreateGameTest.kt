@@ -7,6 +7,7 @@ import dev.forkhandles.result4k.Success
 import dev.forkhandles.result4k.failureOrNull
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.choice
+import io.kotest.property.arbitrary.set
 import io.kotest.property.checkAll
 import org.junit.jupiter.api.Test
 
@@ -17,7 +18,7 @@ class CreateGameTest {
             val playerIdsArb =
                 Arb.choice(
                     Arb.validPlayerIds,
-                    Arb.potentiallyInvalidPlayerIds,
+                    Arb.set(Arb.playerId),
                 )
 
             playerIdsArb.checkAll { players ->

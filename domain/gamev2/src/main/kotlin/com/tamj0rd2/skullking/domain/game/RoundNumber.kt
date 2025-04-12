@@ -2,6 +2,7 @@ package com.tamj0rd2.skullking.domain.game
 
 import dev.forkhandles.values.IntValueFactory
 import dev.forkhandles.values.Value
+import dev.forkhandles.values.between
 
 data class RoundNumber private constructor(
     override val value: Int,
@@ -11,8 +12,9 @@ data class RoundNumber private constructor(
 
     override fun compareTo(other: RoundNumber): Int = value.compareTo(other.value)
 
-    companion object : IntValueFactory<RoundNumber>(::RoundNumber) {
+    companion object : IntValueFactory<RoundNumber>(::RoundNumber, (1..10).between) {
         val none = RoundNumber(0)
-        val finalRoundNumber: RoundNumber = RoundNumber.of(10)
+        val first = RoundNumber.of(1)
+        val last: RoundNumber = RoundNumber.of(10)
     }
 }

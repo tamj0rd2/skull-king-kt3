@@ -5,6 +5,7 @@ import com.tamj0rd2.extensions.asSuccess
 import com.tamj0rd2.skullking.domain.game.GameErrorCode.CannotCompleteARoundThatIsNotInProgress
 import com.tamj0rd2.skullking.domain.game.GameErrorCode.CannotPlayMoreThan10Rounds
 import com.tamj0rd2.skullking.domain.game.GameErrorCode.CannotStartAPreviousRound
+import com.tamj0rd2.skullking.domain.game.GameErrorCode.CannotStartARoundMoreThan1Ahead
 import com.tamj0rd2.skullking.domain.game.GameErrorCode.CannotStartARoundThatIsAlreadyInProgress
 import com.tamj0rd2.skullking.domain.game.GameEvent.BidPlaced
 import com.tamj0rd2.skullking.domain.game.GameEvent.CardPlayed
@@ -39,8 +40,9 @@ data class GameState private constructor(
     // TODO: this logic could ready more nicely.
     private fun applyEvent(event: RoundStarted): Result4k<GameState, GameErrorCode> =
         when {
-            event.roundNumber > RoundNumber.finalRoundNumber -> CannotPlayMoreThan10Rounds().asFailure()
+            event.roundNumber > RoundNumber.last -> CannotPlayMoreThan10Rounds().asFailure()
             event.roundNumber < roundNumber -> CannotStartAPreviousRound().asFailure()
+            event.roundNumber > roundNumber.next -> CannotStartARoundMoreThan1Ahead().asFailure()
             roundIsInProgress -> CannotStartARoundThatIsAlreadyInProgress().asFailure()
             else -> copy(roundNumber = event.roundNumber, roundIsInProgress = true).asSuccess()
         }

@@ -11,6 +11,8 @@ sealed class GameErrorCode : IllegalStateException("") {
 
     class CannotStartAPreviousRound : GameErrorCode()
 
+    class CannotStartARoundMoreThan1Ahead : GameErrorCode()
+
     class CannotStartARoundThatIsAlreadyInProgress : GameErrorCode()
 
     class CannotCompleteARoundThatIsNotInProgress : GameErrorCode()

@@ -68,3 +68,6 @@ object PropertyTesting {
 
 @OptIn(ExperimentalKotest::class)
 fun setMaxDiscardPercentage(amount: Int) = PropTestConfig(maxDiscardPercentage = amount)
+
+@ExperimentalKotest
+fun setSeed(seed: Long) = PropTestConfig(seed = seed)

@@ -40,7 +40,7 @@ class RoundInvariantsTest {
     fun `the round number is never greater than 10`() =
         propertyTest {
             checkAll(Arb.game) { game ->
-                assert(game.state.roundNumber <= RoundNumber.finalRoundNumber)
+                assert(game.state.roundNumber <= RoundNumber.last)
             }
         }
 
@@ -71,7 +71,7 @@ class RoundInvariantsTest {
                 val roundNumberNow = game.state.roundNumber
 
                 val actualIncrease = roundNumberNow.value - roundNumberBefore.value
-                assert(actualIncrease == 0 || actualIncrease == 1)
+                assert(actualIncrease in setOf(0, 1))
 
                 statsRecorder.run {
                     // TODO: round number 1-10 stats are way too low.
