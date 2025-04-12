@@ -1,7 +1,6 @@
 package com.tamj0rd2.skullking.domain.game
 
 import com.tamj0rd2.skullking.domain.game.GameCommand.StartRound
-import com.tamj0rd2.skullking.domain.game.RoundNumberStatistics.classify
 import dev.forkhandles.result4k.Success
 import io.kotest.property.assume
 import kotlin.test.Test
@@ -43,7 +42,7 @@ class RoundInvariantsTest {
             val roundNumberNow = stateAfterCommand.roundNumber
             assert(roundNumberNow >= roundNumberBefore)
 
-            classify(roundNumberBefore)
+            RoundNumberStatistics.classify(roundNumberBefore)
         }
 
     @Test
@@ -54,6 +53,6 @@ class RoundInvariantsTest {
             val actualIncrease = roundNumberNow.value - roundNumberBefore.value
             assert(actualIncrease == 0 || actualIncrease == 1)
 
-            classify(roundNumberBefore)
+            RoundNumberStatistics.classify(roundNumberBefore)
         }
 }

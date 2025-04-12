@@ -1,7 +1,6 @@
 package com.tamj0rd2.propertytesting
 
 import com.tamj0rd2.propertytesting.MyStatisticsReporter.printClassifications
-import com.tamj0rd2.skullking.domain.game.None
 import io.kotest.common.runBlocking
 import io.kotest.property.PropertyContext
 import java.io.OutputStream
@@ -30,7 +29,7 @@ object PropertyTesting {
         stackTrace.filter { element -> stackTracePartsToIgnore.none { element.className.startsWith(it) } }.toTypedArray()
 
     fun propertyTest(
-        vararg statistics: StatisticsBase = arrayOf(None),
+        vararg statistics: StatisticsBase<*> = arrayOf(NoStats),
         block: suspend () -> PropertyContext,
     ) {
         try {

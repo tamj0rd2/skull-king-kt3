@@ -10,7 +10,7 @@ fun interface GameInvariant {
 @Deprecated("do not use.")
 fun gameInvariant(
     playerIdsArb: Arb<Set<PlayerId>> = Arb.validPlayerIds,
-    classifications: GameStatistics = None,
+    classifications: GameStatistics<*> = None,
     invariant: GameInvariant,
 ) {
     gamePropertyTest(

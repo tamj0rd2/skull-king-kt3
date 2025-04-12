@@ -12,11 +12,10 @@ import io.kotest.property.and
 import io.kotest.property.checkAll
 import kotlin.time.Duration.Companion.milliseconds
 
-@OptIn(ExperimentalKotest::class)
 @Deprecated("Should only be used sparingly.")
 fun gamePropertyTest(
     playerIdsArb: Arb<Set<PlayerId>>,
-    classifications: GameStatistics = None,
+    classifications: GameStatistics<*> = None,
     test: PropertyContext.(Set<PlayerId>, List<GameCommand>) -> Unit,
 ) = propertyTest(classifications) {
     checkAll(ptConfig(), playerIdsArb, Arb.gameCommands) { playerIds, gameCommands -> test(playerIds, gameCommands) }

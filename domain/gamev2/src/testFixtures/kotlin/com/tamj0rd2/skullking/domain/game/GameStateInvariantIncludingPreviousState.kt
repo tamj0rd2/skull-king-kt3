@@ -12,7 +12,7 @@ fun interface GameStateInvariantIncludingPreviousState {
 }
 
 fun gameStateInvariant(
-    classifications: GameStatistics = None,
+    classifications: GameStatistics<*> = None,
     invariant: GameStateInvariantIncludingPreviousState,
 ) {
     @Suppress("DEPRECATION")

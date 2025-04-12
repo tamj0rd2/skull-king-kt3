@@ -14,7 +14,7 @@ data class Classifier(
     }
 }
 
-open class StatisticsBase {
+abstract class StatisticsBase<T> {
     internal open val requiredClassifiers: Set<Classifier> by lazy {
         this::class
             .declaredMemberProperties
@@ -40,7 +40,11 @@ open class StatisticsBase {
         }
 
     context(PropertyContext)
-    fun classify(classifier: Classifier) = classify(classifier.name)
+    fun classify(data: T) {
+        classify(classifyData(data).name)
+    }
+
+    protected abstract fun classifyData(data: T): Classifier
 
     context(PropertyContext)
     fun check() {
@@ -58,4 +62,8 @@ open class StatisticsBase {
     }
 }
 
-object NoStats : StatisticsBase()
+object NoStats : StatisticsBase<Nothing>() {
+    override fun classifyData(data: Nothing): Classifier {
+        TODO("Not yet implemented")
+    }
+}
