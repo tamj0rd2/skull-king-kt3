@@ -3,6 +3,7 @@ package com.tamj0rd2.skullking.domain.game
 import dev.forkhandles.result4k.orThrow
 import dev.forkhandles.result4k.peek
 import dev.forkhandles.result4k.peekFailure
+import io.kotest.property.Arb
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -59,7 +60,7 @@ class InvariantsTest {
     @Test
     fun `each successful command results in 1 event being emitted`() {
         @Suppress("DEPRECATION")
-        gamePropertyTest(validPlayerIdsArb) { initialPlayers, gameCommands ->
+        gamePropertyTest(Arb.validPlayerIds) { initialPlayers, gameCommands ->
             val game = Game.new(initialPlayers).orThrow()
 
             gameCommands.forEach { command ->
@@ -78,7 +79,7 @@ class InvariantsTest {
     @Test
     fun `each successful command results in a state change`() {
         @Suppress("DEPRECATION")
-        gamePropertyTest(validPlayerIdsArb) { initialPlayers, gameCommands ->
+        gamePropertyTest(Arb.validPlayerIds) { initialPlayers, gameCommands ->
             val game = Game.new(initialPlayers).orThrow()
 
             gameCommands.forEach { command ->
@@ -95,7 +96,7 @@ class InvariantsTest {
     @Test
     fun `a failed command does not append any events`() {
         @Suppress("DEPRECATION")
-        gamePropertyTest(validPlayerIdsArb) { initialPlayers, gameCommands ->
+        gamePropertyTest(Arb.validPlayerIds) { initialPlayers, gameCommands ->
             val game = Game.new(initialPlayers).orThrow()
 
             gameCommands.forEach { command ->
@@ -112,7 +113,7 @@ class InvariantsTest {
     @Test
     fun `a failed command does not modify the game's state`() {
         @Suppress("DEPRECATION")
-        gamePropertyTest(validPlayerIdsArb) { initialPlayers, gameCommands ->
+        gamePropertyTest(Arb.validPlayerIds) { initialPlayers, gameCommands ->
             val game = Game.new(initialPlayers).orThrow()
 
             gameCommands.forEach { command ->

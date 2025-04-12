@@ -9,19 +9,25 @@ import io.kotest.property.arbitrary.map
 import io.kotest.property.arbitrary.set
 import io.kotest.property.arbitrary.uuid
 
-// TODO: make these extensions on Arb.Companion for easier discoverability.
-val roundNumberArb = Arb.int().map { RoundNumber.of(it) }
-val trickNumberArb = Arb.int().map { TrickNumber.of(it) }
-val bidArb = Arb.int().map { Bid.of(it) }
-val playerIdArb = Arb.uuid().map { PlayerId.of(it) }
-val validPlayerIdsArb = Arb.set(playerIdArb, Game.MINIMUM_PLAYER_COUNT..Game.MAXIMUM_PLAYER_COUNT)
-val potentiallyInvalidPlayerIdsArb = Arb.set(playerIdArb)
-val gameCommandArb = Arb.bind<GameCommand> { registerTinyTypes() }
-val gameCommandsArb = Arb.list(gameCommandArb)
+val Arb.Companion.roundNumber get() = Arb.int().map { RoundNumber.of(it) }
+
+val Arb.Companion.trickNumber get() = Arb.int().map { TrickNumber.of(it) }
+
+val Arb.Companion.bid get() = Arb.int().map { Bid.of(it) }
+
+val Arb.Companion.playerId get() = Arb.uuid().map { PlayerId.of(it) }
+
+val Arb.Companion.validPlayerIds get() = Arb.set(Arb.playerId, Game.MINIMUM_PLAYER_COUNT..Game.MAXIMUM_PLAYER_COUNT)
+
+val Arb.Companion.potentiallyInvalidPlayerIds get() = Arb.set(Arb.playerId)
+
+val Arb.Companion.gameCommand get() = Arb.bind<GameCommand> { registerTinyTypes() }
+
+val Arb.Companion.gameCommands get() = Arb.list(Arb.gameCommand)
 
 private fun ProvidedArbsBuilder.registerTinyTypes() {
-    bind(RoundNumber::class to roundNumberArb)
-    bind(TrickNumber::class to trickNumberArb)
-    bind(Bid::class to bidArb)
-    bind(PlayerId::class to playerIdArb)
+    bind(RoundNumber::class to Arb.roundNumber)
+    bind(TrickNumber::class to Arb.trickNumber)
+    bind(Bid::class to Arb.bid)
+    bind(PlayerId::class to Arb.playerId)
 }

@@ -8,7 +8,7 @@ fun interface GameInvariant {
 }
 
 fun gameInvariant(
-    playerIdsArb: Arb<Set<PlayerId>> = validPlayerIdsArb,
+    playerIdsArb: Arb<Set<PlayerId>> = Arb.validPlayerIds,
     classifications: GameStatistics = None,
     invariant: GameInvariant,
 ) {

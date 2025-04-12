@@ -1,6 +1,7 @@
 package com.tamj0rd2.skullking.domain.game
 
 import dev.forkhandles.result4k.orThrow
+import io.kotest.property.Arb
 import io.kotest.property.PropertyContext
 
 fun interface GameStateInvariantIncludingPreviousState {
@@ -17,7 +18,7 @@ fun gameStateInvariant(
     @Suppress("DEPRECATION")
     (
         gamePropertyTest(
-            validPlayerIdsArb,
+            Arb.validPlayerIds,
             classifications,
         ) { initialPlayers, gameCommands ->
             val game = Game.new(initialPlayers).orThrow()

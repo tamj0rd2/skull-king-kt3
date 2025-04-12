@@ -30,7 +30,7 @@ fun gamePropertyTest(
                 },
         )
 
-    checkAll(propertyTestConfig, playerIdsArb, gameCommandsArb) { playerIds, gameCommands -> test(playerIds, gameCommands) }
+    checkAll(propertyTestConfig, playerIdsArb, Arb.gameCommands) { playerIds, gameCommands -> test(playerIds, gameCommands) }
         .apply { classifications.check() }
 }
 

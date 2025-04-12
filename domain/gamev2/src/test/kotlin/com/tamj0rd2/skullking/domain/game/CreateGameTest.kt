@@ -16,8 +16,8 @@ class CreateGameTest {
         propertyTest {
             val playerIdsArb =
                 Arb.choice(
-                    validPlayerIdsArb,
-                    potentiallyInvalidPlayerIdsArb,
+                    Arb.validPlayerIds,
+                    Arb.potentiallyInvalidPlayerIds,
                 )
 
             playerIdsArb.checkAll { players ->
