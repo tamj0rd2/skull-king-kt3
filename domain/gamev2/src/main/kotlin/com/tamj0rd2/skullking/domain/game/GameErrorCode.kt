@@ -16,4 +16,6 @@ sealed class GameErrorCode : IllegalStateException("") {
     class CannotStartARoundThatIsAlreadyInProgress : GameErrorCode()
 
     class CannotCompleteARoundThatIsNotInProgress : GameErrorCode()
+
+    class CannotBidWhenRoundIsNotInProgress : GameErrorCode()
 }

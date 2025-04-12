@@ -2,6 +2,7 @@ package com.tamj0rd2.skullking.domain.game
 
 import com.tamj0rd2.extensions.asFailure
 import com.tamj0rd2.extensions.asSuccess
+import com.tamj0rd2.skullking.domain.game.GameErrorCode.CannotBidWhenRoundIsNotInProgress
 import com.tamj0rd2.skullking.domain.game.GameErrorCode.CannotCompleteARoundThatIsNotInProgress
 import com.tamj0rd2.skullking.domain.game.GameErrorCode.CannotPlayMoreThan10Rounds
 import com.tamj0rd2.skullking.domain.game.GameErrorCode.CannotStartAPreviousRound
@@ -15,6 +16,7 @@ import com.tamj0rd2.skullking.domain.game.GameEvent.RoundCompleted
 import com.tamj0rd2.skullking.domain.game.GameEvent.RoundStarted
 import com.tamj0rd2.skullking.domain.game.GameEvent.TrickCompleted
 import com.tamj0rd2.skullking.domain.game.GameEvent.TrickStarted
+import com.tamj0rd2.skullking.domain.game.values.Bid
 import com.tamj0rd2.skullking.domain.game.values.RoundNumber
 import dev.forkhandles.result4k.Result4k
 
@@ -22,6 +24,7 @@ data class GameState private constructor(
     val players: Set<PlayerId>,
     val roundNumber: RoundNumber,
     val roundIsInProgress: Boolean,
+    val bids: Map<PlayerId, RoundBid>,
 ) {
     fun applyEvent(event: GameEvent): Result4k<GameState, GameErrorCode> =
         when (event) {
@@ -30,7 +33,7 @@ data class GameState private constructor(
 
             is RoundStarted -> applyEvent(event)
             is RoundCompleted -> applyEvent(event)
-            is BidPlaced,
+            is BidPlaced -> applyEvent(event)
             is TrickStarted,
             is CardPlayed,
             is TrickCompleted,
@@ -56,6 +59,7 @@ data class GameState private constructor(
                 copy(
                     roundNumber = event.roundNumber,
                     roundIsInProgress = true,
+                    bids = players.associateWith { OutstandingBid },
                 ).asSuccess()
         }
 
@@ -66,12 +70,31 @@ data class GameState private constructor(
             else -> copy().asSuccess()
         }
 
+    private fun applyEvent(event: BidPlaced): Result4k<GameState, GameErrorCode> =
+        when {
+            !roundIsInProgress -> CannotBidWhenRoundIsNotInProgress().asFailure()
+
+            else ->
+                copy(
+                    bids = bids + Pair(event.placedBy, PlacedBid(event.bid)),
+                ).asSuccess()
+        }
+
     companion object {
         val new =
             GameState(
                 players = emptySet(),
                 roundNumber = RoundNumber.none,
                 roundIsInProgress = false,
+                bids = emptyMap(),
             )
     }
 }
+
+sealed interface RoundBid
+
+data class PlacedBid(
+    val value: Bid,
+) : RoundBid
+
+data object OutstandingBid : RoundBid

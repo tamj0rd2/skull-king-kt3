@@ -51,6 +51,7 @@ data object CommandExecutionStatistics : GameStatistics<Result4k<Unit, GameError
 
 @Suppress("MemberVisibilityCanBePrivate", "ObjectPropertyName")
 data object EventCountStatistics : GameStatistics<List<GameEvent>>() {
+    // TODO: I could use the class name where the statistic is defined to group the classifications in the output.
     internal val `event count 0` by optional()
     internal val `event count 1-10` by required()
     internal val `event count 10-20` by required()
