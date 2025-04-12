@@ -1,7 +1,9 @@
 package com.tamj0rd2.propertytesting
 
 import com.tamj0rd2.propertytesting.MyStatisticsReporter.printClassifications
+import io.kotest.common.ExperimentalKotest
 import io.kotest.common.runBlocking
+import io.kotest.property.PropTestConfig
 import io.kotest.property.PropertyContext
 import java.io.OutputStream
 import java.io.PrintStream
@@ -63,3 +65,6 @@ object PropertyTesting {
         }
     }
 }
+
+@OptIn(ExperimentalKotest::class)
+fun setMaxDiscardPercentage(amount: Int) = PropTestConfig(maxDiscardPercentage = amount)
