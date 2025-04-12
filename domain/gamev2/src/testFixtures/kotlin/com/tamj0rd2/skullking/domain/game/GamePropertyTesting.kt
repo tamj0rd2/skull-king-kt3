@@ -13,6 +13,7 @@ import io.kotest.property.and
 import io.kotest.property.checkAll
 import kotlin.time.Duration.Companion.milliseconds
 
+// TODO: next step, inline this anywhere it's still used and fix compiler errors.
 @Deprecated("Should only be used sparingly.")
 fun gamePropertyTest(
     playerIdsArb: Arb<Set<PlayerId>>,
