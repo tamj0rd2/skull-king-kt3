@@ -13,7 +13,7 @@ import kotlin.test.assertNotEquals
 
 class InvariantsTest {
     @Test
-    fun `a game always has 2-6 players`() {
+    fun `a game always has 2-6 players`() =
         propertyTest {
             checkAll(Arb.game) { game ->
                 val currentPlayers = game.state.players
@@ -21,10 +21,9 @@ class InvariantsTest {
                 assert(currentPlayers.size <= 6)
             }
         }
-    }
 
     @Test
-    fun `the players in the game never change`() {
+    fun `the players in the game never change`() =
         propertyTest { statsRecorder ->
             checkAll(Arb.game, Arb.gameCommand) { game, command ->
                 val initialPlayers = game.state.players
@@ -38,7 +37,6 @@ class InvariantsTest {
                 }
             }
         }
-    }
 
     @Test
     fun `the game's id never changes`() =
