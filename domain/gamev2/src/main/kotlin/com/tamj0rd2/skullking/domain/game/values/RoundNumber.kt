@@ -15,6 +15,6 @@ data class RoundNumber private constructor(
     companion object : IntValueFactory<RoundNumber>(::RoundNumber, (1..10).between) {
         val none = RoundNumber(0)
         val first = RoundNumber.of(1)
-        val last: RoundNumber = RoundNumber.of(10)
+        val last = RoundNumber.of(10)
     }
 }

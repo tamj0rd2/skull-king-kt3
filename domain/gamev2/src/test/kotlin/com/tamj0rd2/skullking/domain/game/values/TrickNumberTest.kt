@@ -11,32 +11,32 @@ import io.kotest.property.checkAll
 import io.kotest.property.exhaustive.exhaustive
 import kotlin.test.Test
 
-class RoundNumberTest {
+class TrickNumberTest {
     @Test
-    fun `a valid round number is from 1-10`() {
+    fun `a valid trick number is from 1-10`() {
         propertyTest {
             checkAll((1..10).toList().exhaustive()) { int ->
-                val theResult = RoundNumber.ofResult4k(int)
+                val theResult = TrickNumber.ofResult4k(int)
                 assert(theResult is Success)
             }
         }
     }
 
     @Test
-    fun `cannot instantiate a round number less than 1`() {
+    fun `cannot instantiate a trick number less than 1`() {
         propertyTest {
             checkAll(Arb.nonPositiveInt()) { int ->
-                val theResult = RoundNumber.ofResult4k(int)
+                val theResult = TrickNumber.ofResult4k(int)
                 assert(theResult is Failure)
             }
         }
     }
 
     @Test
-    fun `cannot instantiate a round number greater than 10`() {
+    fun `cannot instantiate a trick number greater than 10`() {
         propertyTest {
             checkAll(Arb.int(min = 11)) { int ->
-                val theResult = RoundNumber.ofResult4k(int)
+                val theResult = TrickNumber.ofResult4k(int)
                 assert(theResult is Failure)
             }
         }

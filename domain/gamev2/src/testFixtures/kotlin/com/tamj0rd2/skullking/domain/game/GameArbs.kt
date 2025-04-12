@@ -15,7 +15,6 @@ import io.kotest.property.Exhaustive
 import io.kotest.property.arbitrary.ProvidedArbsBuilder
 import io.kotest.property.arbitrary.bind
 import io.kotest.property.arbitrary.filterIsInstance
-import io.kotest.property.arbitrary.int
 import io.kotest.property.arbitrary.list
 import io.kotest.property.arbitrary.map
 import io.kotest.property.arbitrary.set
@@ -25,13 +24,14 @@ import io.kotest.property.exhaustive.filter
 import io.kotest.property.exhaustive.map
 
 // NOTE: constrained otherwise generation is too slow
-private val Arb.Companion.roundNumber
+private val Exhaustive.Companion.roundNumber
     get() = exhaustive(RoundNumber.first.value..RoundNumber.last.value, RoundNumber.Companion)
 
-val Arb.Companion.trickNumber get() = Arb.int().map { TrickNumber.of(it) }
+val Exhaustive.Companion.trickNumber
+    get() = exhaustive(TrickNumber.first.value..TrickNumber.last.value, TrickNumber.Companion)
 
 // NOTE: constrained otherwise generation is too slow
-val Arb.Companion.bid
+val Exhaustive.Companion.bid
     get() = exhaustive(Bid.absoluteMin.value..Bid.absoluteMax.value, Bid.Companion)
 
 val Arb.Companion.playerId get() = Arb.uuid().map { PlayerId.of(it) }
@@ -59,9 +59,9 @@ val Arb.Companion.game
     get() = Arb.gameResult.successesOnly()
 
 private fun ProvidedArbsBuilder.registerTinyTypes() {
-    bind(RoundNumber::class to Arb.roundNumber.toArb())
-    bind(TrickNumber::class to Arb.trickNumber)
-    bind(Bid::class to Arb.bid.toArb())
+    bind(RoundNumber::class to Exhaustive.roundNumber.toArb())
+    bind(TrickNumber::class to Exhaustive.trickNumber.toArb())
+    bind(Bid::class to Exhaustive.bid.toArb())
     bind(PlayerId::class to Arb.playerId)
 }
 
