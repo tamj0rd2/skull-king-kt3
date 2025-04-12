@@ -18,7 +18,7 @@ fun gamePropertyTest(
     playerIdsArb: Arb<Set<PlayerId>>,
     classifications: GameStatistics = None,
     test: PropertyContext.(Set<PlayerId>, List<GameCommand>) -> Unit,
-) = propertyTest {
+) = propertyTest(classifications) {
     val propertyTestConfig =
         PropTestConfig(
             maxDiscardPercentage = 99,
@@ -31,7 +31,6 @@ fun gamePropertyTest(
         )
 
     checkAll(propertyTestConfig, playerIdsArb, Arb.gameCommands) { playerIds, gameCommands -> test(playerIds, gameCommands) }
-        .apply { classifications.check() }
 }
 
 @Deprecated("delete this")

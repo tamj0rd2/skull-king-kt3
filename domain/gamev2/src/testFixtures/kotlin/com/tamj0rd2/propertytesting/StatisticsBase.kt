@@ -16,7 +16,7 @@ data class Classifier(
 }
 
 open class StatisticsBase {
-    internal val requiredClassifiers: Set<Classifier> by lazy {
+    private val requiredClassifiers: Set<Classifier> by lazy {
         this::class
             .declaredMemberProperties
             .map { it.call(this) as Classifier }
@@ -59,3 +59,5 @@ open class StatisticsBase {
         }
     }
 }
+
+object NoStats : StatisticsBase()

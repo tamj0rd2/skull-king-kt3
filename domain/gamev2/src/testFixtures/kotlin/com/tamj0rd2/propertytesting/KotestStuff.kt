@@ -1,6 +1,7 @@
 package com.tamj0rd2.propertytesting
 
 import io.kotest.common.runBlocking
+import io.kotest.property.PropertyContext
 import java.io.OutputStream
 import java.io.PrintStream
 import kotlin.text.RegexOption.MULTILINE
@@ -9,6 +10,8 @@ object PropertyTesting {
     init {
         System.setProperty("kotest.assertions.collection.print.size", "10")
         io.kotest.property.PropertyTesting.shouldPrintShrinkSteps = false
+
+        // makes kotest shut up.
         System.setOut(PrintStream(OutputStream.nullOutputStream()))
     }
 
@@ -25,10 +28,12 @@ object PropertyTesting {
     private fun Throwable.cleanedStackTrace(): Array<StackTraceElement> =
         stackTrace.filter { element -> stackTracePartsToIgnore.none { element.className.startsWith(it) } }.toTypedArray()
 
-    fun propertyTest(block: suspend () -> Unit) {
+    fun propertyTest(
+        statistics: StatisticsBase = NoStats,
+        block: suspend () -> PropertyContext,
+    ) {
         try {
-            // makes kotest shut up.
-            runBlocking(block)
+            runBlocking(block).apply { statistics.check() }
         } catch (e: AssertionError) {
             val args =
                 "Arg \\d+: .*"
