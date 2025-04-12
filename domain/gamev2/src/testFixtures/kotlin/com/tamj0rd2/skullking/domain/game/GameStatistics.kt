@@ -8,12 +8,6 @@ import dev.forkhandles.result4k.Success
 
 sealed class GameStatistics<T> : StatisticsBase<T>()
 
-data object None : GameStatistics<Nothing>() {
-    override fun classifyData(data: Nothing): Classifier {
-        TODO("Not yet implemented")
-    }
-}
-
 @Suppress("MemberVisibilityCanBePrivate", "ObjectPropertyName")
 data object RoundNumberStatistics : GameStatistics<RoundNumber>() {
     internal val `round number less than 0` by optional()
