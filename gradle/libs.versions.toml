@@ -23,6 +23,7 @@ kondor = { module = "com.ubertob.kondor:kondor-core", version = "3.1.2" }
 konsist = { module = "com.lemonappdev:konsist", version = "0.16.1" }
 kotest-property = { module = "io.kotest:kotest-property", version.ref = "kotest" }
 kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+kotlin-reflection = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
 result4k = { module = "dev.forkhandles:result4k", version.ref = "forkhandles" }
 retrytests-plugin = { module = "org.gradle:test-retry-gradle-plugin", version = "1.6.0"}
 slf4j = { module = "org.slf4j:slf4j-jdk14", version = "2.0.16"}

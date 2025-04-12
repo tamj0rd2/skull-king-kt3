@@ -16,4 +16,11 @@ dependencies {
     api(libs.result4k)
     api(project(":lib:forkhandles-extensions"))
     testImplementation(kotlin("test"))
+    testFixturesImplementation(libs.kotlin.reflection)
+}
+
+kotlin {
+    compilerOptions {
+        freeCompilerArgs.add("-Xcontext-receivers")
+    }
 }

@@ -5,8 +5,6 @@ import dev.forkhandles.values.random
 import io.kotest.common.runBlocking
 import java.io.OutputStream
 import java.io.PrintStream
-import kotlin.properties.ReadOnlyProperty
-import kotlin.reflect.KProperty
 import kotlin.text.RegexOption.MULTILINE
 
 object PropertyTesting {
@@ -50,19 +48,6 @@ object PropertyTesting {
                     rootCause.stackTrace
             }
         }
-    }
-
-    open class ClassificationsBase {
-        internal val classifiers: Set<String> by lazy {
-            @Suppress("NO_REFLECTION_IN_CLASS_PATH")
-            this::class
-                .members
-                .filter { it is KProperty && it.name != "classifiers" }
-                .map { it.name }
-                .toSet()
-        }
-
-        protected fun classification() = ReadOnlyProperty<GameClassifications, String> { _, it -> it.name }
     }
 }
 

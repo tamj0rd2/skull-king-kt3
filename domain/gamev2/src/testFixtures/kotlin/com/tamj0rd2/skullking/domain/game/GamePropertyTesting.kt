@@ -37,30 +37,11 @@ private fun ProvidedArbsBuilder.registerTinyTypes() {
     bind(PlayerId::class to playerIdArb)
 }
 
-@Suppress("PropertyName", "ObjectPrivatePropertyName")
-open class GameClassifications : PropertyTesting.ClassificationsBase() {
-    val `has passed assumptions without game commands` by classification()
-    val `has passed assumptions with some game commands` by classification()
-
-    object ForRoundNumber : GameClassifications() {
-        private val `round number is 0` by classification()
-        private val `round number is not 0` by classification()
-
-        fun PropertyContext.classifyRoundNumber(roundNumber: RoundNumber) {
-            classify(
-                condition = roundNumber == RoundNumber.none,
-                trueLabel = `round number is 0`,
-                falseLabel = `round number is not 0`,
-            )
-        }
-    }
-}
-
 @OptIn(ExperimentalKotest::class)
 @Deprecated("Should only be used sparingly.")
 fun gamePropertyTest(
     playerIdsArb: Arb<Set<PlayerId>>,
-    classifications: GameClassifications = GameClassifications(),
+    classifications: GameStatistics = None,
     test: PropertyContext.(Set<PlayerId>, List<GameCommand>) -> Unit,
 ) = propertyTest {
     val propertyTestConfig =
@@ -74,31 +55,8 @@ fun gamePropertyTest(
                 },
         )
 
-    checkAll(propertyTestConfig, playerIdsArb, gameCommandsArb) { playerIds, gameCommands ->
-        test(playerIds, gameCommands)
-        classify(
-            condition = gameCommands.isEmpty(),
-            trueLabel = classifications.`has passed assumptions without game commands`,
-            falseLabel = classifications.`has passed assumptions with some game commands`,
-        )
-    }.also {
-        val expectedClassifiers = classifications.classifiers
-        val actualClassifiers =
-            it
-                .classifications()
-                .keys
-                .sorted()
-                .toSet()
-
-        check(actualClassifiers.containsAll(expectedClassifiers)) {
-            """
-            The test did not exercise all expected classifications.
-            Expected: $expectedClassifiers
-            Actual:   $actualClassifiers
-            Missed:   ${expectedClassifiers - actualClassifiers}
-            """.trimIndent()
-        }
-    }
+    checkAll(propertyTestConfig, playerIdsArb, gameCommandsArb) { playerIds, gameCommands -> test(playerIds, gameCommands) }
+        .apply { classifications.check() }
 }
 
 fun interface GameInvariant {
@@ -107,7 +65,7 @@ fun interface GameInvariant {
 
 fun gameInvariant(
     playerIdsArb: Arb<Set<PlayerId>> = validPlayerIdsArb,
-    classifications: GameClassifications = GameClassifications(),
+    classifications: GameStatistics = None,
     invariant: GameInvariant,
 ) {
     @Suppress("DEPRECATION")
@@ -129,7 +87,7 @@ fun interface GameInvariantIncludingInitialGameId {
 }
 
 fun gameInvariant(
-    classifications: GameClassifications = GameClassifications(),
+    classifications: GameStatistics = None,
     invariant: GameInvariantIncludingInitialGameId,
 ) {
     @Suppress("DEPRECATION")
@@ -152,7 +110,7 @@ fun interface GameStateInvariantIncludingPreviousState {
 }
 
 fun gameStateInvariant(
-    classifications: GameClassifications = GameClassifications(),
+    classifications: GameStatistics = None,
     invariant: GameStateInvariantIncludingPreviousState,
 ) {
     @Suppress("DEPRECATION")

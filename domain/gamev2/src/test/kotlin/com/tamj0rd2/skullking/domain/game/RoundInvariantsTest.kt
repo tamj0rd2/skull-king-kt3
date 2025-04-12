@@ -1,7 +1,7 @@
 package com.tamj0rd2.skullking.domain.game
 
-import com.tamj0rd2.skullking.domain.game.GameClassifications.ForRoundNumber.classifyRoundNumber
 import com.tamj0rd2.skullking.domain.game.GameCommand.StartRound
+import com.tamj0rd2.skullking.domain.game.RoundNumberStatistics.classify
 import dev.forkhandles.result4k.Success
 import io.kotest.property.assume
 import kotlin.test.Test
@@ -37,29 +37,23 @@ class RoundInvariantsTest {
         }
 
     @Test
-    fun `the round number never decreases`() {
-        val classifications = GameClassifications.ForRoundNumber
-
-        gameStateInvariant(classifications) { stateBeforeCommand, stateAfterCommand ->
+    fun `the round number never decreases`() =
+        gameStateInvariant(RoundNumberStatistics) { stateBeforeCommand, stateAfterCommand ->
             val roundNumberBefore = stateBeforeCommand.roundNumber
             val roundNumberNow = stateAfterCommand.roundNumber
             assert(roundNumberNow >= roundNumberBefore)
 
-            classifyRoundNumber(roundNumberBefore)
+            classify(roundNumberBefore)
         }
-    }
 
     @Test
-    fun `the round number only ever increases by 1 at a time`() {
-        val classifications = GameClassifications.ForRoundNumber
-
-        gameStateInvariant(classifications) { stateBeforeCommand, stateAfterCommand ->
+    fun `the round number only ever increases by 1 at a time`() =
+        gameStateInvariant(RoundNumberStatistics) { stateBeforeCommand, stateAfterCommand ->
             val roundNumberBefore = stateBeforeCommand.roundNumber
             val roundNumberNow = stateAfterCommand.roundNumber
             val actualIncrease = roundNumberNow.value - roundNumberBefore.value
             assert(actualIncrease == 0 || actualIncrease == 1)
 
-            classifyRoundNumber(roundNumberBefore)
+            classify(roundNumberBefore)
         }
-    }
 }
