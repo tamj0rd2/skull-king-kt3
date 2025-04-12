@@ -1,4 +1,4 @@
-package com.tamj0rd2.skullking.domain.game
+package com.tamj0rd2.propertytesting
 
 import io.kotest.property.PropertyContext
 import kotlin.math.max

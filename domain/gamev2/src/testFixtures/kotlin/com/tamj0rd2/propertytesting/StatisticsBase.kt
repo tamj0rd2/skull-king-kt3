@@ -1,6 +1,6 @@
-package com.tamj0rd2.skullking.domain.game
+package com.tamj0rd2.propertytesting
 
-import com.tamj0rd2.skullking.domain.game.MyStatisticsReporter.printClassifications
+import com.tamj0rd2.propertytesting.MyStatisticsReporter.printClassifications
 import io.kotest.property.PropertyContext
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.full.declaredMemberProperties

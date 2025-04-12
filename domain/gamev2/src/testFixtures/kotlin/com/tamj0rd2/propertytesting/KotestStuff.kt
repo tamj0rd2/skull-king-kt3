@@ -1,7 +1,5 @@
-package com.tamj0rd2.skullking.domain.game
+package com.tamj0rd2.propertytesting
 
-import dev.forkhandles.result4k.orThrow
-import dev.forkhandles.values.random
 import io.kotest.common.runBlocking
 import java.io.OutputStream
 import java.io.PrintStream
@@ -50,8 +48,3 @@ object PropertyTesting {
         }
     }
 }
-
-@Deprecated("delete this")
-val somePlayers = setOf(PlayerId.random(), PlayerId.random())
-
-fun Game.mustExecute(command: GameCommand) = execute(command).orThrow()

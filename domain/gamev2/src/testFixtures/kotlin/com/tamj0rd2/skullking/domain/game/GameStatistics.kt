@@ -1,5 +1,6 @@
 package com.tamj0rd2.skullking.domain.game
 
+import com.tamj0rd2.propertytesting.StatisticsBase
 import io.kotest.property.PropertyContext
 
 sealed class GameStatistics : StatisticsBase()

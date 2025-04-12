@@ -1,8 +1,8 @@
 package com.tamj0rd2.skullking.domain.game
 
+import com.tamj0rd2.propertytesting.PropertyTesting.propertyTest
 import com.tamj0rd2.skullking.domain.game.GameErrorCode.NotEnoughPlayersToCreateGame
 import com.tamj0rd2.skullking.domain.game.GameErrorCode.TooManyPlayersToCreateGame
-import com.tamj0rd2.skullking.domain.game.PropertyTesting.propertyTest
 import dev.forkhandles.result4k.Success
 import dev.forkhandles.result4k.failureOrNull
 import io.kotest.property.Arb
