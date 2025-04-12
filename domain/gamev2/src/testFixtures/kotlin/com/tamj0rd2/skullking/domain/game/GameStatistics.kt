@@ -53,3 +53,21 @@ data object CommandExecutionStatistics : GameStatistics<Result4k<Unit, GameError
             is Failure -> `command failed`
         }
 }
+
+@Suppress("MemberVisibilityCanBePrivate", "ObjectPropertyName")
+data object EventCountStatistics : GameStatistics<List<GameEvent>>() {
+    internal val `event count 0` by optional()
+    internal val `event count 1-10` by required()
+    internal val `event count 10-20` by required()
+    internal val `event count more than 20` by optional() // TODO: this should be increased and made required.
+
+    override fun classifyData(data: List<GameEvent>): Classifier {
+        val size = data.size
+        return when (size) {
+            0 -> `event count 0`
+            in 1..<10 -> `event count 1-10`
+            in 10..<20 -> `event count 10-20`
+            else -> `event count more than 20`
+        }
+    }
+}

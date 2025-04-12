@@ -37,7 +37,7 @@ object PropertyTesting {
     private fun Throwable.cleanedStackTrace(): Array<StackTraceElement> =
         stackTrace.filter { element -> stackTracePartsToIgnore.none { element.className.startsWith(it) } }.toTypedArray()
 
-    fun propertyTest(block: suspend (StatsRecorder) -> PropertyContext) {
+    fun propertyTest(block: suspend (statsRecorder: StatsRecorder) -> PropertyContext) {
         try {
             val statsRecorder = StatsRecorder()
             runBlocking { block(statsRecorder) }.apply {

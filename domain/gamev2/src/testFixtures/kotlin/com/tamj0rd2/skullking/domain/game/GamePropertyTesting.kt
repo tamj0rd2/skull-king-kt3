@@ -26,6 +26,8 @@ fun gamePropertyTest(
     }
 }
 
+fun setMaxDiscardPercentage(amount: Int) = PropTestConfig(maxDiscardPercentage = amount)
+
 @OptIn(ExperimentalKotest::class)
 fun ptConfig() =
     PropTestConfig(
