@@ -26,12 +26,13 @@ internal object MyStatisticsReporter {
 
     fun PropertyContext.printClassifications() {
         val iterations = successes()
-        val message =
-            """
-            |Statistics: ($iterations iterations)
-            |
-            |${stats(classifications(), iterations)}
-            """.trimMargin()
-        System.err.println(message)
+        val classifications = classifications()
+        val header = "Statistics: ($iterations iterations)"
+
+        if (classifications.isEmpty()) {
+            System.err.println(header)
+        } else {
+            System.err.println("$header\n\n${stats(classifications, iterations)}")
+        }
     }
 }

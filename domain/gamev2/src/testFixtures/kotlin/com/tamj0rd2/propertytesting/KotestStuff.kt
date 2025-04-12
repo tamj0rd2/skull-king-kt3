@@ -1,5 +1,7 @@
 package com.tamj0rd2.propertytesting
 
+import com.tamj0rd2.propertytesting.MyStatisticsReporter.printClassifications
+import com.tamj0rd2.skullking.domain.game.None
 import io.kotest.common.runBlocking
 import io.kotest.property.PropertyContext
 import java.io.OutputStream
@@ -10,7 +12,6 @@ object PropertyTesting {
     init {
         System.setProperty("kotest.assertions.collection.print.size", "10")
         io.kotest.property.PropertyTesting.shouldPrintShrinkSteps = false
-
         // makes kotest shut up.
         System.setOut(PrintStream(OutputStream.nullOutputStream()))
     }
@@ -29,11 +30,14 @@ object PropertyTesting {
         stackTrace.filter { element -> stackTracePartsToIgnore.none { element.className.startsWith(it) } }.toTypedArray()
 
     fun propertyTest(
-        statistics: StatisticsBase = NoStats,
+        vararg statistics: StatisticsBase = arrayOf(None),
         block: suspend () -> PropertyContext,
     ) {
         try {
-            runBlocking(block).apply { statistics.check() }
+            runBlocking(block).apply {
+                printClassifications()
+                statistics.forEach { it.check() }
+            }
         } catch (e: AssertionError) {
             val args =
                 "Arg \\d+: .*"

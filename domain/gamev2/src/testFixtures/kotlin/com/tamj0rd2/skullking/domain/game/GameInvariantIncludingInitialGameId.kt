@@ -10,6 +10,7 @@ fun interface GameInvariantIncludingInitialGameId {
     )
 }
 
+@Deprecated("do not use :D")
 fun gameInvariant(
     classifications: GameStatistics = None,
     invariant: GameInvariantIncludingInitialGameId,

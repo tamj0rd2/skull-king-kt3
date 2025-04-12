@@ -1,8 +1,13 @@
 package com.tamj0rd2.skullking.domain.game
 
+import com.tamj0rd2.extensions.fold
+import dev.forkhandles.result4k.Result4k
+import dev.forkhandles.result4k.Success
+import dev.forkhandles.result4k.orThrow
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.ProvidedArbsBuilder
 import io.kotest.property.arbitrary.bind
+import io.kotest.property.arbitrary.filterIsInstance
 import io.kotest.property.arbitrary.int
 import io.kotest.property.arbitrary.list
 import io.kotest.property.arbitrary.map
@@ -25,9 +30,27 @@ val Arb.Companion.gameCommand get() = Arb.bind<GameCommand> { registerTinyTypes(
 
 val Arb.Companion.gameCommands get() = Arb.list(Arb.gameCommand)
 
+val Arb.Companion.newGameResult get() = Arb.validPlayerIds.map { Game.new(it) }
+
+val Arb.Companion.newGame get() = Arb.newGameResult.successesOnly()
+
+val Arb.Companion.gameResult
+    get() =
+        Arb.bind(
+            Arb.newGameResult,
+            Arb.gameCommands,
+        ) { gameResult, gameCommands ->
+            gameResult.fold(gameCommands, Game::execute)
+        }
+
+val Arb.Companion.game
+    get() = Arb.gameResult.successesOnly()
+
 private fun ProvidedArbsBuilder.registerTinyTypes() {
     bind(RoundNumber::class to Arb.roundNumber)
     bind(TrickNumber::class to Arb.trickNumber)
     bind(Bid::class to Arb.bid)
     bind(PlayerId::class to Arb.playerId)
 }
+
+private fun <T, E> Arb<Result4k<T, E>>.successesOnly() = filterIsInstance<Success<T>>().map { it.orThrow() }

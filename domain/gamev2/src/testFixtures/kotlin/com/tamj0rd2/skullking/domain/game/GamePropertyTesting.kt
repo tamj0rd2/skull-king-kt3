@@ -19,19 +19,20 @@ fun gamePropertyTest(
     classifications: GameStatistics = None,
     test: PropertyContext.(Set<PlayerId>, List<GameCommand>) -> Unit,
 ) = propertyTest(classifications) {
-    val propertyTestConfig =
-        PropTestConfig(
-            maxDiscardPercentage = 99,
-            constraints =
-                Unit.let {
-                    val attemptConstraint = Constraints { it.attempts() < 10000 }
-                    val durationConstraint = Constraints.duration(1000.milliseconds)
-                    attemptConstraint.and(durationConstraint)
-                },
-        )
-
-    checkAll(propertyTestConfig, playerIdsArb, Arb.gameCommands) { playerIds, gameCommands -> test(playerIds, gameCommands) }
+    checkAll(ptConfig(), playerIdsArb, Arb.gameCommands) { playerIds, gameCommands -> test(playerIds, gameCommands) }
 }
+
+@OptIn(ExperimentalKotest::class)
+fun ptConfig() =
+    PropTestConfig(
+        maxDiscardPercentage = 99,
+        constraints =
+            Unit.let {
+                val attemptConstraint = Constraints { it.attempts() < 10000 }
+                val durationConstraint = Constraints.duration(1000.milliseconds)
+                attemptConstraint.and(durationConstraint)
+            },
+    )
 
 @Deprecated("delete this")
 val somePlayers = setOf(PlayerId.random(), PlayerId.random())

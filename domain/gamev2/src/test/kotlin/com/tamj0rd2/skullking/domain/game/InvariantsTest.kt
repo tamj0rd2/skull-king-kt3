@@ -1,9 +1,11 @@
 package com.tamj0rd2.skullking.domain.game
 
+import com.tamj0rd2.propertytesting.PropertyTesting.propertyTest
 import dev.forkhandles.result4k.orThrow
 import dev.forkhandles.result4k.peek
 import dev.forkhandles.result4k.peekFailure
 import io.kotest.property.Arb
+import io.kotest.property.checkAll
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -12,28 +14,44 @@ import kotlin.test.assertNotEquals
 class InvariantsTest {
     @Test
     fun `a game always has 2-6 players`() {
-        gameInvariant { game ->
-            val currentPlayers = game.state.players
-            assert(currentPlayers.size >= 2)
-            assert(currentPlayers.size <= 6)
+        propertyTest {
+            checkAll(Arb.game) { game ->
+                val currentPlayers = game.state.players
+                assert(currentPlayers.size >= 2)
+                assert(currentPlayers.size <= 6)
+            }
         }
     }
 
     @Test
     fun `the players in the game never change`() {
-        gameStateInvariant { stateBeforeCommand, stateAfterCommand ->
-            val playersBeforeCommand = stateBeforeCommand.players
-            val playersAfterCommand = stateAfterCommand.players
-            assertEquals(playersBeforeCommand, playersAfterCommand)
+        propertyTest(CommandTypeStatistics, CommandExecutionStatistics) {
+            checkAll(Arb.game, Arb.gameCommand) { game, command ->
+                val initialPlayers = game.state.players
+                val commandResult = game.execute(command)
+                val playersNow = game.state.players
+                assertEquals(initialPlayers, playersNow)
+
+                CommandTypeStatistics.classify(command)
+                CommandExecutionStatistics.classify(commandResult)
+            }
         }
     }
 
+    // TODO: having to add the statistic here and also in the checkAll part could easily lead to mistakes.
     @Test
-    fun `the game's id never changes`() {
-        gameInvariant { initialGameId: GameId, game ->
-            assertEquals(initialGameId, game.id)
+    fun `the game's id never changes`() =
+        propertyTest(CommandTypeStatistics, CommandExecutionStatistics) {
+            checkAll(Arb.game, Arb.gameCommand) { game, command ->
+                val initialGameId = game.id
+                val commandResult = game.execute(command)
+                val gameIdNow = game.id
+                assertEquals(initialGameId, gameIdNow)
+
+                CommandTypeStatistics.classify(command)
+                CommandExecutionStatistics.classify(commandResult)
+            }
         }
-    }
 
     @Test
     fun `every event in the game is related to that specific game`() {

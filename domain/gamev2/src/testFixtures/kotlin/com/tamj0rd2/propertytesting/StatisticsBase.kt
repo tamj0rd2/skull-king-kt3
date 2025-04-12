@@ -1,13 +1,12 @@
 package com.tamj0rd2.propertytesting
 
-import com.tamj0rd2.propertytesting.MyStatisticsReporter.printClassifications
 import io.kotest.property.PropertyContext
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.full.declaredMemberProperties
 
 data class Classifier(
     val name: String,
-    val required: Boolean,
+    val required: Boolean = true,
 ) {
     override fun toString(): String {
         if (required) return name
@@ -16,7 +15,7 @@ data class Classifier(
 }
 
 open class StatisticsBase {
-    private val requiredClassifiers: Set<Classifier> by lazy {
+    internal open val requiredClassifiers: Set<Classifier> by lazy {
         this::class
             .declaredMemberProperties
             .map { it.call(this) as Classifier }
@@ -45,8 +44,6 @@ open class StatisticsBase {
 
     context(PropertyContext)
     fun check() {
-        printClassifications()
-
         val actualClassifiers =
             classifications()
                 .keys
@@ -55,7 +52,8 @@ open class StatisticsBase {
 
         val missedClassifications = requiredClassifiers.map { it.name } - actualClassifiers
         check(missedClassifications.isEmpty()) {
-            "The following classifiers were never seen:${missedClassifications.joinToString(prefix = "\n* ")}"
+            val missedClassificationsText = missedClassifications.joinToString(prefix = "\n", separator = "\n") { "* $it" }
+            "The following classifiers were never seen:$missedClassificationsText"
         }
     }
 }
