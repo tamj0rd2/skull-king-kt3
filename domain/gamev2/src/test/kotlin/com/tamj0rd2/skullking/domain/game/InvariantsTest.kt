@@ -92,7 +92,7 @@ class InvariantsTest {
     @Test
     fun `each successful command results in 1 event being emitted`() {
         propertyTest { statsRecorder ->
-            checkAll(setMaxDiscardPercentage(35), Arb.game, Arb.gameCommand) { game, command ->
+            checkAll(setMaxDiscardPercentage(30), Arb.game, Arb.gameCommand) { game, command ->
                 val eventsBeforeCommand = game.events
                 assume(game.execute(command) is Success)
                 val eventsAfterCommand = game.events
@@ -101,8 +101,7 @@ class InvariantsTest {
                 assertEquals(eventsBeforeCommand, eventsAfterCommand.dropLast(1))
 
                 statsRecorder.runCatching {
-                    // TODO: some command types aren't showing up frequently enough
-                    // CommandTypeStatistics.classify(command)
+                    CommandTypeStatistics.classify(command)
                     EventCountStatistics.classify(eventsBeforeCommand)
                 }
             }
@@ -130,7 +129,7 @@ class InvariantsTest {
     fun `a failed command does not append any events`() {
         propertyTest { statsRecorder ->
             // TODO: reduce max discard percent by implementing more validation logic.
-            checkAll(setMaxDiscardPercentage(90), Arb.game, Arb.gameCommand) { game, command ->
+            checkAll(setMaxDiscardPercentage(75), Arb.game, Arb.gameCommand) { game, command ->
                 val eventsBeforeCommand = game.events
                 assume(game.execute(command) is Failure)
                 val eventsAfterCommand = game.events
@@ -139,7 +138,7 @@ class InvariantsTest {
                 statsRecorder.runCatching {
                     // TODO: re-enable classifications once more validation logic has been implemented
                     // CommandTypeStatistics.classify(command)
-                    // EventCountStatistics.classify(eventsBeforeCommand)
+                    EventCountStatistics.classify(eventsBeforeCommand)
                 }
             }
         }
@@ -149,7 +148,7 @@ class InvariantsTest {
     fun `a failed command does not modify the game's state`() {
         propertyTest { statsRecorder ->
             // TODO: reduce max discard percent by implementing more validation logic.
-            checkAll(setMaxDiscardPercentage(90), Arb.game, Arb.gameCommand) { game, command ->
+            checkAll(setMaxDiscardPercentage(75), Arb.game, Arb.gameCommand) { game, command ->
                 val stateBeforeCommand = game.state
                 assume(game.execute(command) is Failure)
                 val stateAfterCommand = game.state

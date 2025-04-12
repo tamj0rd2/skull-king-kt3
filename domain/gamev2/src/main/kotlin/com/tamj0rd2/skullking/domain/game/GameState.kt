@@ -38,14 +38,25 @@ data class GameState private constructor(
             -> this.asSuccess()
         }
 
-    // TODO: this logic could ready more nicely.
     private fun applyEvent(event: RoundStarted): Result4k<GameState, GameErrorCode> =
         when {
-            event.roundNumber > RoundNumber.last -> CannotPlayMoreThan10Rounds().asFailure()
-            event.roundNumber < roundNumber -> CannotStartAPreviousRound().asFailure()
-            event.roundNumber > roundNumber.next -> CannotStartARoundMoreThan1Ahead().asFailure()
-            roundIsInProgress -> CannotStartARoundThatIsAlreadyInProgress().asFailure()
-            else -> copy(roundNumber = event.roundNumber, roundIsInProgress = true).asSuccess()
+            event.roundNumber > RoundNumber.last ->
+                CannotPlayMoreThan10Rounds().asFailure()
+
+            event.roundNumber < roundNumber ->
+                CannotStartAPreviousRound().asFailure()
+
+            event.roundNumber > roundNumber.next ->
+                CannotStartARoundMoreThan1Ahead().asFailure()
+
+            roundIsInProgress ->
+                CannotStartARoundThatIsAlreadyInProgress().asFailure()
+
+            else ->
+                copy(
+                    roundNumber = event.roundNumber,
+                    roundIsInProgress = true,
+                ).asSuccess()
         }
 
     private fun applyEvent(event: RoundCompleted): Result4k<GameState, GameErrorCode> =
