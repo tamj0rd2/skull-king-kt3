@@ -7,6 +7,15 @@ import java.io.OutputStream
 import java.io.PrintStream
 import kotlin.text.RegexOption.MULTILINE
 
+class StatsRecorder {
+    private val statisticClasses = mutableListOf<StatisticsBase<*>>()
+    val requiredStatistics get() = statisticClasses.toList()
+
+    fun registerStatistics(s: StatisticsBase<*>) {
+        statisticClasses.add(s)
+    }
+}
+
 object PropertyTesting {
     init {
         System.setProperty("kotest.assertions.collection.print.size", "10")
@@ -28,14 +37,12 @@ object PropertyTesting {
     private fun Throwable.cleanedStackTrace(): Array<StackTraceElement> =
         stackTrace.filter { element -> stackTracePartsToIgnore.none { element.className.startsWith(it) } }.toTypedArray()
 
-    fun propertyTest(
-        vararg statistics: StatisticsBase<*> = arrayOf(NoStats),
-        block: suspend () -> PropertyContext,
-    ) {
+    fun propertyTest(block: suspend (StatsRecorder) -> PropertyContext) {
         try {
-            runBlocking(block).apply {
+            val statsRecorder = StatsRecorder()
+            runBlocking { block(statsRecorder) }.apply {
                 printClassifications()
-                statistics.forEach { it.check() }
+                statsRecorder.requiredStatistics.forEach { it.check() }
             }
         } catch (e: AssertionError) {
             val args =

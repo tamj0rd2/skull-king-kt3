@@ -25,31 +25,34 @@ class InvariantsTest {
 
     @Test
     fun `the players in the game never change`() {
-        propertyTest(CommandTypeStatistics, CommandExecutionStatistics) {
+        propertyTest { statsRecorder ->
             checkAll(Arb.game, Arb.gameCommand) { game, command ->
                 val initialPlayers = game.state.players
                 val commandResult = game.execute(command)
                 val playersNow = game.state.players
                 assertEquals(initialPlayers, playersNow)
 
-                CommandTypeStatistics.classify(command)
-                CommandExecutionStatistics.classify(commandResult)
+                statsRecorder.run {
+                    CommandTypeStatistics.classify(command)
+                    CommandExecutionStatistics.classify(commandResult)
+                }
             }
         }
     }
 
-    // TODO: having to add the statistic here and also in the checkAll part could easily lead to mistakes.
     @Test
     fun `the game's id never changes`() =
-        propertyTest(CommandTypeStatistics, CommandExecutionStatistics) {
+        propertyTest { statsRecorder ->
             checkAll(Arb.game, Arb.gameCommand) { game, command ->
                 val initialGameId = game.id
                 val commandResult = game.execute(command)
                 val gameIdNow = game.id
                 assertEquals(initialGameId, gameIdNow)
 
-                CommandTypeStatistics.classify(command)
-                CommandExecutionStatistics.classify(commandResult)
+                statsRecorder.run {
+                    CommandTypeStatistics.classify(command)
+                    CommandExecutionStatistics.classify(commandResult)
+                }
             }
         }
 

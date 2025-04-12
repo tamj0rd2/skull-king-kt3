@@ -1,6 +1,7 @@
 package com.tamj0rd2.skullking.domain.game
 
 import com.tamj0rd2.propertytesting.PropertyTesting.propertyTest
+import com.tamj0rd2.propertytesting.StatsRecorder
 import dev.forkhandles.result4k.orThrow
 import dev.forkhandles.values.random
 import io.kotest.common.ExperimentalKotest
@@ -16,9 +17,13 @@ import kotlin.time.Duration.Companion.milliseconds
 fun gamePropertyTest(
     playerIdsArb: Arb<Set<PlayerId>>,
     classifications: GameStatistics<*> = None,
-    test: PropertyContext.(Set<PlayerId>, List<GameCommand>) -> Unit,
-) = propertyTest(classifications) {
-    checkAll(ptConfig(), playerIdsArb, Arb.gameCommands) { playerIds, gameCommands -> test(playerIds, gameCommands) }
+    test: context(PropertyContext, StatsRecorder)
+    (Set<PlayerId>, List<GameCommand>) -> Unit,
+) = propertyTest { statsRecorder ->
+
+    checkAll(ptConfig(), playerIdsArb, Arb.gameCommands) { playerIds, gameCommands ->
+        test(this, statsRecorder, playerIds, gameCommands)
+    }
 }
 
 @OptIn(ExperimentalKotest::class)

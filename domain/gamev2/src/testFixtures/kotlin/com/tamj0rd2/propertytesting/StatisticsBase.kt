@@ -39,9 +39,10 @@ abstract class StatisticsBase<T> {
             )
         }
 
-    context(PropertyContext)
+    context(PropertyContext, StatsRecorder)
     fun classify(data: T) {
         classify(classifyData(data).name)
+        registerStatistics(this)
     }
 
     protected abstract fun classifyData(data: T): Classifier
@@ -59,11 +60,5 @@ abstract class StatisticsBase<T> {
             val missedClassificationsText = missedClassifications.joinToString(prefix = "\n", separator = "\n") { "* $it" }
             "The following classifiers were never seen:$missedClassificationsText"
         }
-    }
-}
-
-object NoStats : StatisticsBase<Nothing>() {
-    override fun classifyData(data: Nothing): Classifier {
-        TODO("Not yet implemented")
     }
 }

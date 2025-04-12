@@ -1,10 +1,12 @@
 package com.tamj0rd2.skullking.domain.game
 
+import com.tamj0rd2.propertytesting.StatsRecorder
 import dev.forkhandles.result4k.orThrow
 import io.kotest.property.Arb
 import io.kotest.property.PropertyContext
 
 fun interface GameStateInvariantIncludingPreviousState {
+    context(StatsRecorder) // TODO: remove this once I've converted all tests to use checkAll directly
     operator fun PropertyContext.invoke(
         stateBeforeCommand: GameState,
         stateAfterCommand: GameState,

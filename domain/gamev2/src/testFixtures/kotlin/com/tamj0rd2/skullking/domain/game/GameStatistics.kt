@@ -47,8 +47,8 @@ data object CommandExecutionStatistics : GameStatistics<Result4k<Unit, GameError
     internal val `command failed` by required()
     internal val `command succeeded` by required()
 
-    override fun classifyData(result: Result4k<Unit, GameErrorCode>) =
-        when (result) {
+    override fun classifyData(data: Result4k<Unit, GameErrorCode>) =
+        when (data) {
             is Success -> `command succeeded`
             is Failure -> `command failed`
         }
