@@ -4,6 +4,8 @@ import com.tamj0rd2.skullking.domain.game.GameCommand.PlayACard
 import com.tamj0rd2.skullking.domain.game.GameEvent.CardPlayed
 import dev.forkhandles.result4k.orThrow
 import dev.forkhandles.values.random
+import io.kotest.property.Arb
+import io.kotest.property.arbitrary.next
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -18,8 +20,8 @@ class PlayingACardTest {
                 actor = PlayerId.random(),
             )
 
-        val game = Game.new(somePlayers).orThrow()
-        game.mustExecute(command)
+        val game = Arb.newGame.next()
+        game.execute(command).orThrow()
 
         val cardPlayedEvent =
             game.events

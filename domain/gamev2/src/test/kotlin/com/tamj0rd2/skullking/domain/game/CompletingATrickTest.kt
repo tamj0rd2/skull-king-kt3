@@ -3,6 +3,8 @@ package com.tamj0rd2.skullking.domain.game
 import com.tamj0rd2.skullking.domain.game.GameCommand.CompleteTrick
 import com.tamj0rd2.skullking.domain.game.GameEvent.TrickCompleted
 import dev.forkhandles.result4k.orThrow
+import io.kotest.property.Arb
+import io.kotest.property.arbitrary.next
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -13,8 +15,8 @@ class CompletingATrickTest {
     fun `when a trick is completed, a TrickCompleted event is emitted`() {
         val command = CompleteTrick(trickNumber = TrickNumber.of(1))
 
-        val game = Game.new(somePlayers).orThrow()
-        game.mustExecute(command)
+        val game = Arb.newGame.next()
+        game.execute(command).orThrow()
 
         val trickCompletedEvents = game.events.filterIsInstance<TrickCompleted>()
         assert(trickCompletedEvents.single().trickNumber == command.trickNumber)

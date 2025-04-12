@@ -7,6 +7,7 @@ import com.tamj0rd2.skullking.domain.game.GameEvent.RoundStarted
 import dev.forkhandles.result4k.failureOrNull
 import dev.forkhandles.result4k.orThrow
 import io.kotest.property.Arb
+import io.kotest.property.arbitrary.next
 import io.kotest.property.assume
 import io.kotest.property.checkAll
 import org.junit.jupiter.api.Nested
@@ -17,9 +18,9 @@ import kotlin.test.assertIs
 class StartingARoundTest {
     @Test
     fun `when a round has started, a round started event is emitted`() {
-        val game = Game.new(somePlayers).orThrow()
+        val game = Arb.newGame.next()
         val command = StartRound(RoundNumber.of(1))
-        game.mustExecute(command)
+        game.execute(command).orThrow()
 
         val roundStartedEvent =
             game.events
@@ -29,7 +30,7 @@ class StartingARoundTest {
 
         val dealtCardsPerPlayer = roundStartedEvent.dealtCards.perPlayer
         dealtCardsPerPlayer.onEachIndexed { index, (_, cards) ->
-            assert(cards.size == command.roundNumber.value) { "incorrect cards for player ${index + 1}/${somePlayers.size}" }
+            assert(cards.size == command.roundNumber.value) { "incorrect cards for player ${index + 1}/${Arb.validPlayerIds.next().size}" }
         }
     }
 

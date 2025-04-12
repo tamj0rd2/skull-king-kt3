@@ -3,6 +3,8 @@ package com.tamj0rd2.skullking.domain.game
 import com.tamj0rd2.skullking.domain.game.GameCommand.CompleteGame
 import com.tamj0rd2.skullking.domain.game.GameEvent.GameCompleted
 import dev.forkhandles.result4k.orThrow
+import io.kotest.property.Arb
+import io.kotest.property.arbitrary.next
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -13,8 +15,8 @@ class CompletingAGameTest {
     fun `when a game is completed, a GameCompleted event is emitted`() {
         val command = CompleteGame
 
-        val game = Game.new(somePlayers).orThrow()
-        game.mustExecute(command)
+        val game = Arb.newGame.next()
+        game.execute(command).orThrow()
 
         val events = game.events
         assert(events.last() is GameCompleted)
