@@ -4,8 +4,11 @@ import com.tamj0rd2.extensions.fold
 import dev.forkhandles.result4k.Result4k
 import dev.forkhandles.result4k.Success
 import dev.forkhandles.result4k.orThrow
+import dev.forkhandles.values.IntValueFactory
+import dev.forkhandles.values.Value
 import dev.forkhandles.values.ofResult4k
 import io.kotest.property.Arb
+import io.kotest.property.Exhaustive
 import io.kotest.property.arbitrary.ProvidedArbsBuilder
 import io.kotest.property.arbitrary.bind
 import io.kotest.property.arbitrary.filterIsInstance
@@ -14,18 +17,19 @@ import io.kotest.property.arbitrary.list
 import io.kotest.property.arbitrary.map
 import io.kotest.property.arbitrary.set
 import io.kotest.property.arbitrary.uuid
+import io.kotest.property.exhaustive.exhaustive
+import io.kotest.property.exhaustive.filter
+import io.kotest.property.exhaustive.map
 
-// NOTE: constrained to speed up generation
+// NOTE: constrained otherwise generation is too slow
 private val Arb.Companion.roundNumber
-    get() =
-        Arb
-            .int(RoundNumber.first.value..RoundNumber.last.value)
-            .map { RoundNumber.ofResult4k(it) }
-            .successesOnly()
+    get() = exhaustive(RoundNumber.first.value..RoundNumber.last.value, RoundNumber.Companion)
 
 val Arb.Companion.trickNumber get() = Arb.int().map { TrickNumber.of(it) }
 
-val Arb.Companion.bid get() = Arb.int().map { Bid.of(it) }
+// NOTE: constrained otherwise generation is too slow
+val Arb.Companion.bid
+    get() = exhaustive(Bid.absoluteMin.value..Bid.absoluteMax.value, Bid.Companion)
 
 val Arb.Companion.playerId get() = Arb.uuid().map { PlayerId.of(it) }
 
@@ -52,10 +56,21 @@ val Arb.Companion.game
     get() = Arb.gameResult.successesOnly()
 
 private fun ProvidedArbsBuilder.registerTinyTypes() {
-    bind(RoundNumber::class to Arb.roundNumber)
+    bind(RoundNumber::class to Arb.roundNumber.toArb())
     bind(TrickNumber::class to Arb.trickNumber)
-    bind(Bid::class to Arb.bid)
+    bind(Bid::class to Arb.bid.toArb())
     bind(PlayerId::class to Arb.playerId)
 }
 
 private fun <T, E> Arb<Result4k<T, E>>.successesOnly() = filterIsInstance<Success<T>>().map { it.orThrow() }
+
+private fun <T, E : Throwable> Exhaustive<Result4k<T, E>>.successesOnly() = filter { it is Success }.map { it.orThrow() }
+
+private fun <T : Value<Int>> exhaustive(
+    range: IntRange,
+    factory: IntValueFactory<T>,
+) = range
+    .toList()
+    .exhaustive()
+    .map(factory::ofResult4k)
+    .successesOnly()
