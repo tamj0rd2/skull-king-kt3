@@ -1,5 +1,9 @@
 package com.tamj0rd2.skullking.domain.game
 
+import com.tamj0rd2.skullking.domain.game.values.Bid
+import com.tamj0rd2.skullking.domain.game.values.RoundNumber
+import com.tamj0rd2.skullking.domain.game.values.TrickNumber
+
 sealed interface GameCommand {
     data class StartRound(
         val roundNumber: RoundNumber,

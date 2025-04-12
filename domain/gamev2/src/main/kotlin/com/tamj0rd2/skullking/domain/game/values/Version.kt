@@ -1,4 +1,4 @@
-package com.tamj0rd2.skullking.domain.game
+package com.tamj0rd2.skullking.domain.game.values
 
 import dev.forkhandles.values.LongValueFactory
 import dev.forkhandles.values.Value

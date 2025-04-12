@@ -2,6 +2,7 @@ package com.tamj0rd2.skullking.domain.game
 
 import com.tamj0rd2.skullking.domain.game.GameCommand.CompleteTrick
 import com.tamj0rd2.skullking.domain.game.GameEvent.TrickCompleted
+import com.tamj0rd2.skullking.domain.game.values.TrickNumber
 import dev.forkhandles.result4k.orThrow
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.next

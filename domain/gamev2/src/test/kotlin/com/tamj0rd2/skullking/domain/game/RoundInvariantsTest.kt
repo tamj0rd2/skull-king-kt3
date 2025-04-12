@@ -2,6 +2,7 @@ package com.tamj0rd2.skullking.domain.game
 
 import com.tamj0rd2.propertytesting.PropertyTesting.propertyTest
 import com.tamj0rd2.skullking.domain.game.GameCommand.StartRound
+import com.tamj0rd2.skullking.domain.game.values.RoundNumber
 import dev.forkhandles.result4k.Success
 import io.kotest.property.Arb
 import io.kotest.property.assume

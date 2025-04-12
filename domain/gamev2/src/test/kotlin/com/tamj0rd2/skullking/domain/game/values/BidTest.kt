@@ -1,4 +1,4 @@
-package com.tamj0rd2.skullking.domain.game
+package com.tamj0rd2.skullking.domain.game.values
 
 import com.tamj0rd2.propertytesting.PropertyTesting.propertyTest
 import dev.forkhandles.result4k.Failure

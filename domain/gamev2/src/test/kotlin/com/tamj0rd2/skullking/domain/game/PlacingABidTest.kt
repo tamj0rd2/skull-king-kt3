@@ -2,6 +2,7 @@ package com.tamj0rd2.skullking.domain.game
 
 import com.tamj0rd2.skullking.domain.game.GameCommand.PlaceABid
 import com.tamj0rd2.skullking.domain.game.GameEvent.BidPlaced
+import com.tamj0rd2.skullking.domain.game.values.Bid
 import dev.forkhandles.result4k.orThrow
 import dev.forkhandles.values.random
 import io.kotest.property.Arb

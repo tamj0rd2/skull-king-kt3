@@ -15,6 +15,7 @@ import com.tamj0rd2.skullking.domain.game.GameEvent.RoundCompleted
 import com.tamj0rd2.skullking.domain.game.GameEvent.RoundStarted
 import com.tamj0rd2.skullking.domain.game.GameEvent.TrickCompleted
 import com.tamj0rd2.skullking.domain.game.GameEvent.TrickStarted
+import com.tamj0rd2.skullking.domain.game.values.RoundNumber
 import dev.forkhandles.result4k.Result4k
 
 data class GameState private constructor(

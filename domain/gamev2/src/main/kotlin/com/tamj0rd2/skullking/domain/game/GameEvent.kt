@@ -1,5 +1,9 @@
 package com.tamj0rd2.skullking.domain.game
 
+import com.tamj0rd2.skullking.domain.game.values.Bid
+import com.tamj0rd2.skullking.domain.game.values.RoundNumber
+import com.tamj0rd2.skullking.domain.game.values.TrickNumber
+
 sealed interface GameEvent {
     val gameId: GameId
 

@@ -1,6 +1,9 @@
 package com.tamj0rd2.skullking.domain.game
 
 import com.tamj0rd2.extensions.fold
+import com.tamj0rd2.skullking.domain.game.values.Bid
+import com.tamj0rd2.skullking.domain.game.values.RoundNumber
+import com.tamj0rd2.skullking.domain.game.values.TrickNumber
 import dev.forkhandles.result4k.Result4k
 import dev.forkhandles.result4k.Success
 import dev.forkhandles.result4k.orThrow
