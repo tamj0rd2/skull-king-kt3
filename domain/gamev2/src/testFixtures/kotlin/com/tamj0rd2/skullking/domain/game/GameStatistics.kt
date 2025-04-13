@@ -49,6 +49,18 @@ data object CommandExecutionStatistics : GameStatistics<Result4k<Unit, GameError
         }
 }
 
+data object EventTypeStatistics : GameStatistics<GameEvent>() {
+    override val requiredClassifiers: Set<Classifier> =
+        GameEvent::class
+            .sealedSubclasses
+            .map { Classifier(PREFIX + it.simpleName) }
+            .toSet()
+
+    override fun classifyData(data: GameEvent) = Classifier(PREFIX + data::class.java.simpleName)
+
+    private const val PREFIX = "event type "
+}
+
 @Suppress("MemberVisibilityCanBePrivate", "ObjectPropertyName")
 data object EventCountStatistics : GameStatistics<List<GameEvent>>() {
     // TODO: I could use the class name where the statistic is defined to group the classifications in the output.

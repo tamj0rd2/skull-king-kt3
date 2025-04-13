@@ -1,14 +1,19 @@
 package com.tamj0rd2.skullking.domain.game
 
 import com.tamj0rd2.propertytesting.PropertyTesting.propertyTest
+import com.tamj0rd2.propertytesting.setSeed
+import com.tamj0rd2.propertytesting.withIterations
 import com.tamj0rd2.skullking.domain.game.GameCommand.PlaceABid
 import com.tamj0rd2.skullking.domain.game.GameCommand.StartRound
+import com.tamj0rd2.skullking.domain.game.GameEvent.BidPlaced
 import com.tamj0rd2.skullking.domain.game.values.Bid
 import com.tamj0rd2.skullking.domain.game.values.RoundNumber
 import dev.forkhandles.result4k.Failure
 import dev.forkhandles.result4k.orThrow
 import io.kotest.property.Arb
 import io.kotest.property.Exhaustive
+import io.kotest.property.RandomSource
+import io.kotest.property.arbitrary.arbitrary
 import io.kotest.property.arbitrary.filter
 import io.kotest.property.arbitrary.next
 import io.kotest.property.assume
@@ -33,7 +38,7 @@ class PlacingABidTest {
         assertEquals(
             game.state.bids,
             mapOf(
-                player1 to PlacedBid(Bid.of(1)),
+                player1 to APlacedBid(Bid.of(1)),
                 player2 to OutstandingBid,
             ),
         )
@@ -72,9 +77,60 @@ class PlacingABidTest {
     }
 
     @Test
+    fun `each player can only place up to 10 bids per game`() {
+        propertyTest { statsReporter ->
+            checkAll(Arb.game) { game ->
+                game.state.players.forEach { player ->
+                    // TODO: this is prone to failure. The generated BidCommand playerId isn't constrained to players in the game
+                    val bidsPlacedByThisPlayer =
+                        game.events
+                            .filterIsInstance<BidPlaced>()
+                            .count { it.placedBy == player }
+
+                    assert(bidsPlacedByThisPlayer <= 10)
+                }
+
+                statsReporter.run {
+                    game.events.forEach { EventTypeStatistics.classify(it) }
+                    // TODO: there aren't enough events for this to be a useful test
+                    EventCountStatistics.classify(game.events)
+                }
+            }
+        }
+    }
+
+    // TODO: this test is slow as shit.
+    @Test
     @Disabled
-    fun `cannot place a bid more than once within the same round`() {
-        TODO("not yet implemented")
+    fun `a player cannot place a bid more than once within the same round`() {
+        propertyTest { statsReporter ->
+            fun Game.aPlayerWhoHasAlreadyBid(rs: RandomSource) =
+                state.players.filter { state.bids[it] is APlacedBid }.randomOrNull(rs.random)
+
+            val gameWhereAPlayerHasAlreadyBid =
+                arbitrary { rs ->
+                    val game = Arb.game.filter { it.aPlayerWhoHasAlreadyBid(rs) != null }
+                    game.bind()
+                }
+
+            checkAll(
+                setSeed(-7475467121236708727).withIterations(1),
+                gameWhereAPlayerHasAlreadyBid,
+                Exhaustive.bid,
+            ) { game, nextBidToPlace ->
+                val aPlayerWhoHasAlreadyBidThisRound = game.aPlayerWhoHasAlreadyBid(randomSource())
+                assume(aPlayerWhoHasAlreadyBidThisRound != null)
+
+                val command = PlaceABid(nextBidToPlace, aPlayerWhoHasAlreadyBidThisRound!!)
+                val commandResult = game.execute(command)
+                assertIs<Failure<*>>(commandResult)
+
+                statsReporter.run {
+                    // TODO: add some checks for the specific error code i'm interested in
+                    collect(commandResult::class.java.simpleName)
+                }
+            }
+        }
     }
 
     @Test

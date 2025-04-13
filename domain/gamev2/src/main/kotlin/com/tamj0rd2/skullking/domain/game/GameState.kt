@@ -2,6 +2,7 @@ package com.tamj0rd2.skullking.domain.game
 
 import com.tamj0rd2.extensions.asFailure
 import com.tamj0rd2.extensions.asSuccess
+import com.tamj0rd2.skullking.domain.game.GameErrorCode.AlreadyBid
 import com.tamj0rd2.skullking.domain.game.GameErrorCode.CannotBidWhenRoundIsNotInProgress
 import com.tamj0rd2.skullking.domain.game.GameErrorCode.CannotCompleteARoundThatIsNotInProgress
 import com.tamj0rd2.skullking.domain.game.GameErrorCode.CannotPlayMoreThan10Rounds
@@ -72,11 +73,15 @@ data class GameState private constructor(
 
     private fun applyEvent(event: BidPlaced): Result4k<GameState, GameErrorCode> =
         when {
-            !roundIsInProgress -> CannotBidWhenRoundIsNotInProgress().asFailure()
+            !roundIsInProgress ->
+                CannotBidWhenRoundIsNotInProgress().asFailure()
+
+            bids[event.placedBy] is APlacedBid ->
+                AlreadyBid().asFailure()
 
             else ->
                 copy(
-                    bids = bids + Pair(event.placedBy, PlacedBid(event.bid)),
+                    bids = bids + Pair(event.placedBy, APlacedBid(event.bid)),
                 ).asSuccess()
         }
 
@@ -93,7 +98,7 @@ data class GameState private constructor(
 
 sealed interface RoundBid
 
-data class PlacedBid(
+data class APlacedBid(
     val value: Bid,
 ) : RoundBid
 

@@ -18,4 +18,6 @@ sealed class GameErrorCode : IllegalStateException("") {
     class CannotCompleteARoundThatIsNotInProgress : GameErrorCode()
 
     class CannotBidWhenRoundIsNotInProgress : GameErrorCode()
+
+    class AlreadyBid : GameErrorCode()
 }

@@ -71,3 +71,5 @@ fun setMaxDiscardPercentage(amount: Int) = PropTestConfig(maxDiscardPercentage =
 
 @ExperimentalKotest
 fun setSeed(seed: Long) = PropTestConfig(seed = seed)
+
+fun PropTestConfig.withIterations(amount: Int) = copy(iterations = amount)
