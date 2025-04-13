@@ -17,6 +17,7 @@ import com.tamj0rd2.skullking.domain.game.GameEvent.RoundCompleted
 import com.tamj0rd2.skullking.domain.game.GameEvent.RoundStarted
 import com.tamj0rd2.skullking.domain.game.GameEvent.TrickCompleted
 import com.tamj0rd2.skullking.domain.game.GameEvent.TrickStarted
+import com.tamj0rd2.skullking.domain.game.GamePhase.AwaitingNextRound
 import com.tamj0rd2.skullking.domain.game.values.Bid
 import com.tamj0rd2.skullking.domain.game.values.RoundNumber
 import dev.forkhandles.result4k.Result4k
@@ -24,9 +25,11 @@ import dev.forkhandles.result4k.Result4k
 data class GameState private constructor(
     val players: Set<PlayerId>,
     val roundNumber: RoundNumber,
-    val roundIsInProgress: Boolean,
     val bids: Map<PlayerId, RoundBid>,
+    val phase: GamePhase,
 ) {
+    val roundIsInProgress: Boolean = phase != AwaitingNextRound
+
     fun applyEvent(event: GameEvent): Result4k<GameState, GameErrorCode> =
         when (event) {
             is GameStarted ->
@@ -59,7 +62,7 @@ data class GameState private constructor(
             else ->
                 copy(
                     roundNumber = event.roundNumber,
-                    roundIsInProgress = true,
+                    phase = GamePhase.Bidding,
                     bids = players.associateWith { OutstandingBid },
                 ).asSuccess()
         }
@@ -90,8 +93,8 @@ data class GameState private constructor(
             GameState(
                 players = emptySet(),
                 roundNumber = RoundNumber.none,
-                roundIsInProgress = false,
                 bids = emptyMap(),
+                phase = AwaitingNextRound,
             )
     }
 }

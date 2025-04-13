@@ -18,6 +18,15 @@ import kotlin.test.assertIs
 @Nested
 class StartingARoundTest {
     @Test
+    fun `when a round starts, the game phase changes to Bidding`() {
+        val game = Arb.newGame.next()
+        val command = StartRound(RoundNumber.of(1))
+        game.execute(command).orThrow()
+
+        assert(game.state.phase == GamePhase.Bidding)
+    }
+
+    @Test
     fun `when a round has started, a round started event is emitted`() {
         val game = Arb.newGame.next()
         val command = StartRound(RoundNumber.of(1))
