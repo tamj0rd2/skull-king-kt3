@@ -49,7 +49,7 @@ class PlacingABidTest {
 
                 val playerToBid = game.state.players.random(randomSource().random)
                 val command = PlaceABid(bid = bid, actor = playerToBid)
-                assertFailureIs<CannotBidOutsideBiddingPhase>(game.execute(command))
+                assertFailureIs<CannotBidOutsideBiddingPhase>(game.execute(command), "coming from phase ${game.state.phase}")
 
                 statsRecorder.run {
                     classify(game.state.phase::class.simpleName!!)

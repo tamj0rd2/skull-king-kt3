@@ -24,4 +24,8 @@ sealed class GameErrorCode : IllegalStateException() {
     data object CannotBidOutsideBiddingPhase : GameErrorCode()
 
     data object AlreadyBid : GameErrorCode()
+
+    data class CannotStartATrickFromCurrentPhase(
+        val currentPhase: GamePhase,
+    ) : GameErrorCode()
 }

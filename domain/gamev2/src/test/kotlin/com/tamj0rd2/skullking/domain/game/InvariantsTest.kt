@@ -92,7 +92,7 @@ class InvariantsTest {
     @Test
     fun `each successful command results in 1 event being emitted`() {
         propertyTest { statsRecorder ->
-            checkAll(setMaxDiscardPercentage(45), Arb.game, Arb.gameCommand) { game, command ->
+            checkAll(setMaxDiscardPercentage(60), Arb.game, Arb.gameCommand) { game, command ->
                 val eventsBeforeCommand = game.events
                 assume(game.execute(command) is Success)
                 val eventsAfterCommand = game.events

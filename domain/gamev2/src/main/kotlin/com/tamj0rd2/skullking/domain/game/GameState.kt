@@ -20,6 +20,8 @@ import com.tamj0rd2.skullking.domain.game.GameEvent.TrickStarted
 import com.tamj0rd2.skullking.domain.game.GamePhase.AwaitingNextRound
 import com.tamj0rd2.skullking.domain.game.GamePhase.Bidding
 import com.tamj0rd2.skullking.domain.game.GamePhase.None
+import com.tamj0rd2.skullking.domain.game.GamePhase.TrickScoring
+import com.tamj0rd2.skullking.domain.game.GamePhase.TrickTaking
 import com.tamj0rd2.skullking.domain.game.values.Bid
 import com.tamj0rd2.skullking.domain.game.values.RoundNumber
 import dev.forkhandles.result4k.Result4k
@@ -31,11 +33,14 @@ data class GameState private constructor(
     val bids: Map<PlayerId, RoundBid>,
     val phase: GamePhase,
 ) {
+    // TODO: kill this off.
     val roundIsInProgress: Boolean =
         when (phase) {
             AwaitingNextRound -> false
             Bidding -> true
             None -> false
+            TrickScoring -> true
+            TrickTaking -> true
         }
 
     fun applyEvent(event: GameEvent): Result4k<GameState, GameErrorCode> =
