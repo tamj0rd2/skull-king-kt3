@@ -1,10 +1,14 @@
 package com.tamj0rd2.propertytesting
 
 import com.tamj0rd2.propertytesting.MyStatisticsReporter.printClassifications
+import dev.forkhandles.result4k.Result4k
+import dev.forkhandles.result4k.orThrow
 import io.kotest.common.ExperimentalKotest
 import io.kotest.common.runBlocking
 import io.kotest.property.PropTestConfig
 import io.kotest.property.PropertyContext
+import org.junit.jupiter.api.assertThrows
+import org.opentest4j.AssertionFailedError
 import java.io.OutputStream
 import java.io.PrintStream
 import kotlin.text.RegexOption.MULTILINE
@@ -34,7 +38,10 @@ object PropertyTesting {
             "kotlin.test",
         )
 
-    private fun Throwable.rootCause(): Throwable = cause?.rootCause() ?: this
+    private fun Throwable.rootCause(): Throwable {
+        if (this is AssertionFailedError) return this
+        return cause?.rootCause() ?: this
+    }
 
     private fun Throwable.cleanedStackTrace(): Array<StackTraceElement> =
         stackTrace.filter { element -> stackTracePartsToIgnore.none { element.className.startsWith(it) } }.toTypedArray()
@@ -58,7 +65,7 @@ object PropertyTesting {
             val seed = "Repeat this test by using seed (-?\\d+)".toRegex().find(e.message!!)?.groupValues?.lastOrNull()
 
             val rootCause = e.rootCause().also { it.stackTrace = it.cleanedStackTrace() }
-            throw AssertionError("Property failed (seed: $seed)\n\n${args.joinToString("\n")}\n${rootCause.message}", rootCause).also {
+            throw AssertionError("Property failed (seed: $seed)\n\n${args.joinToString("\n")}\n\n${rootCause.message}", rootCause).also {
                 it.stackTrace =
                     rootCause.stackTrace
             }
@@ -72,4 +79,11 @@ fun setMaxDiscardPercentage(amount: Int) = PropTestConfig(maxDiscardPercentage =
 @ExperimentalKotest
 fun setSeed(seed: Long) = PropTestConfig(seed = seed)
 
+@ExperimentalKotest
 fun PropTestConfig.withIterations(amount: Int) = copy(iterations = amount)
+
+// TODO: move this to Result4k extensions module
+// TODO: use this in more places.
+inline fun <reified E : Throwable> assertFailure(block: () -> Result4k<*, Throwable>) {
+    assertThrows<E>("expected a failure of type ${E::class.simpleName}") { block().orThrow() }
+}

@@ -26,5 +26,6 @@ kotlin {
 }
 
 tasks.test {
+    systemProperty("junit.jupiter.execution.parallel.mode.default", "same_thread")
     systemProperty("junit.jupiter.execution.timeout.test.method.default", "20s")
 }

@@ -1,9 +1,9 @@
 package com.tamj0rd2.skullking.domain.game
 
+import com.tamj0rd2.extensions.applyFlatMap
 import com.tamj0rd2.extensions.asFailure
 import com.tamj0rd2.extensions.asSuccess
 import com.tamj0rd2.skullking.domain.game.GameErrorCode.AlreadyBid
-import com.tamj0rd2.skullking.domain.game.GameErrorCode.CannotBidWhenRoundIsNotInProgress
 import com.tamj0rd2.skullking.domain.game.GameErrorCode.CannotCompleteARoundThatIsNotInProgress
 import com.tamj0rd2.skullking.domain.game.GameErrorCode.CannotPlayMoreThan10Rounds
 import com.tamj0rd2.skullking.domain.game.GameErrorCode.CannotStartAPreviousRound
@@ -18,9 +18,12 @@ import com.tamj0rd2.skullking.domain.game.GameEvent.RoundStarted
 import com.tamj0rd2.skullking.domain.game.GameEvent.TrickCompleted
 import com.tamj0rd2.skullking.domain.game.GameEvent.TrickStarted
 import com.tamj0rd2.skullking.domain.game.GamePhase.AwaitingNextRound
+import com.tamj0rd2.skullking.domain.game.GamePhase.Bidding
+import com.tamj0rd2.skullking.domain.game.GamePhase.None
 import com.tamj0rd2.skullking.domain.game.values.Bid
 import com.tamj0rd2.skullking.domain.game.values.RoundNumber
 import dev.forkhandles.result4k.Result4k
+import dev.forkhandles.result4k.map
 
 data class GameState private constructor(
     val players: Set<PlayerId>,
@@ -28,21 +31,33 @@ data class GameState private constructor(
     val bids: Map<PlayerId, RoundBid>,
     val phase: GamePhase,
 ) {
-    val roundIsInProgress: Boolean = phase != AwaitingNextRound
+    val roundIsInProgress: Boolean =
+        when (phase) {
+            AwaitingNextRound -> false
+            Bidding -> true
+            None -> false
+        }
 
     fun applyEvent(event: GameEvent): Result4k<GameState, GameErrorCode> =
-        when (event) {
-            is GameStarted ->
-                copy(players = event.players).asSuccess()
+        transitionPhase(event).applyFlatMap {
+            when (event) {
+                is GameStarted -> applyEvent(event)
+                is RoundStarted -> applyEvent(event)
+                is RoundCompleted -> applyEvent(event)
+                is BidPlaced -> applyEvent(event)
+                is TrickStarted,
+                is CardPlayed,
+                is TrickCompleted,
+                is GameCompleted,
+                -> this.asSuccess()
+            }
+        }
 
-            is RoundStarted -> applyEvent(event)
-            is RoundCompleted -> applyEvent(event)
-            is BidPlaced -> applyEvent(event)
-            is TrickStarted,
-            is CardPlayed,
-            is TrickCompleted,
-            is GameCompleted,
-            -> this.asSuccess()
+    private fun transitionPhase(event: GameEvent): Result4k<GameState, GameErrorCode> = phase.transition(event).map { copy(phase = it) }
+
+    private fun applyEvent(event: GameStarted): Result4k<GameState, GameErrorCode> =
+        when {
+            else -> copy(players = event.players).asSuccess()
         }
 
     private fun applyEvent(event: RoundStarted): Result4k<GameState, GameErrorCode> =
@@ -62,12 +77,14 @@ data class GameState private constructor(
             else ->
                 copy(
                     roundNumber = event.roundNumber,
-                    phase = GamePhase.Bidding,
+                    phase = Bidding,
                     bids = players.associateWith { OutstandingBid },
                 ).asSuccess()
         }
 
-    private fun applyEvent(event: RoundCompleted): Result4k<GameState, GameErrorCode> =
+    private fun applyEvent(
+        @Suppress("UNUSED_PARAMETER") event: RoundCompleted,
+    ): Result4k<GameState, GameErrorCode> =
         when {
             !roundIsInProgress -> CannotCompleteARoundThatIsNotInProgress().asFailure()
 
@@ -76,9 +93,6 @@ data class GameState private constructor(
 
     private fun applyEvent(event: BidPlaced): Result4k<GameState, GameErrorCode> =
         when {
-            !roundIsInProgress ->
-                CannotBidWhenRoundIsNotInProgress().asFailure()
-
             bids[event.placedBy] is APlacedBid ->
                 AlreadyBid().asFailure()
 
@@ -94,7 +108,7 @@ data class GameState private constructor(
                 players = emptySet(),
                 roundNumber = RoundNumber.none,
                 bids = emptyMap(),
-                phase = AwaitingNextRound,
+                phase = None,
             )
     }
 }

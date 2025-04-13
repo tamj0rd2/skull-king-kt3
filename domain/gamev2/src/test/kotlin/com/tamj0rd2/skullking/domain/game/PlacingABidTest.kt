@@ -1,11 +1,14 @@
 package com.tamj0rd2.skullking.domain.game
 
 import com.tamj0rd2.propertytesting.PropertyTesting.propertyTest
+import com.tamj0rd2.propertytesting.assertFailure
 import com.tamj0rd2.propertytesting.setSeed
 import com.tamj0rd2.propertytesting.withIterations
 import com.tamj0rd2.skullking.domain.game.GameCommand.PlaceABid
 import com.tamj0rd2.skullking.domain.game.GameCommand.StartRound
+import com.tamj0rd2.skullking.domain.game.GameErrorCode.CannotBidOutsideBiddingPhase
 import com.tamj0rd2.skullking.domain.game.GameEvent.BidPlaced
+import com.tamj0rd2.skullking.domain.game.GamePhase.Bidding
 import com.tamj0rd2.skullking.domain.game.values.Bid
 import com.tamj0rd2.skullking.domain.game.values.RoundNumber
 import dev.forkhandles.result4k.Failure
@@ -45,32 +48,17 @@ class PlacingABidTest {
     }
 
     @Test
-    fun `cannot place a bid before round 1`() {
-        propertyTest { statsReporter ->
+    fun `cannot place a bid outside of the bidding phase`() {
+        propertyTest { statsRecorder ->
             checkAll(Arb.game, Exhaustive.bid) { game, bid ->
-                assume(game.state.roundNumber == RoundNumber.none)
+                assume(game.state.phase != Bidding)
 
                 val playerToBid = game.state.players.random(randomSource().random)
                 val command = PlaceABid(bid = bid, actor = playerToBid)
-                assertIs<Failure<*>>(game.execute(command))
+                assertFailure<CannotBidOutsideBiddingPhase> { game.execute(command) }
 
-                statsReporter.run {
-                }
-            }
-        }
-    }
-
-    @Test
-    fun `cannot place a bid when the round is not in progress`() {
-        propertyTest { statsReporter ->
-            checkAll(Arb.game, Exhaustive.bid) { game, bid ->
-                assume(!game.state.roundIsInProgress)
-
-                val playerToBid = game.state.players.random(randomSource().random)
-                val command = PlaceABid(bid = bid, actor = playerToBid)
-                assertIs<Failure<*>>(game.execute(command))
-
-                statsReporter.run {
+                statsRecorder.run {
+                    classify(game.state.phase::class.simpleName!!)
                 }
             }
         }
@@ -127,7 +115,7 @@ class PlacingABidTest {
 
                 statsReporter.run {
                     // TODO: add some checks for the specific error code i'm interested in
-                    collect(commandResult::class.java.simpleName)
+                    classify(commandResult::class.java.simpleName)
                 }
             }
         }
