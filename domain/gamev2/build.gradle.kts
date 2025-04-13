@@ -24,3 +24,7 @@ kotlin {
         freeCompilerArgs.add("-Xcontext-receivers")
     }
 }
+
+tasks.test {
+    systemProperty("junit.jupiter.execution.timeout.test.method.default", "20s")
+}
