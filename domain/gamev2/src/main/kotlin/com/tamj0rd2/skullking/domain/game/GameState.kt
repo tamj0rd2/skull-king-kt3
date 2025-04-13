@@ -63,16 +63,16 @@ data class GameState private constructor(
     private fun applyEvent(event: RoundStarted): Result4k<GameState, GameErrorCode> =
         when {
             event.roundNumber > RoundNumber.last ->
-                CannotPlayMoreThan10Rounds().asFailure()
+                CannotPlayMoreThan10Rounds.asFailure()
 
             event.roundNumber < roundNumber ->
-                CannotStartAPreviousRound().asFailure()
+                CannotStartAPreviousRound.asFailure()
 
             event.roundNumber > roundNumber.next ->
-                CannotStartARoundMoreThan1Ahead().asFailure()
+                CannotStartARoundMoreThan1Ahead.asFailure()
 
             roundIsInProgress ->
-                CannotStartARoundThatIsAlreadyInProgress().asFailure()
+                CannotStartARoundThatIsAlreadyInProgress.asFailure()
 
             else ->
                 copy(
@@ -86,7 +86,7 @@ data class GameState private constructor(
         @Suppress("UNUSED_PARAMETER") event: RoundCompleted,
     ): Result4k<GameState, GameErrorCode> =
         when {
-            !roundIsInProgress -> CannotCompleteARoundThatIsNotInProgress().asFailure()
+            !roundIsInProgress -> CannotCompleteARoundThatIsNotInProgress.asFailure()
 
             else -> copy().asSuccess()
         }
@@ -94,7 +94,7 @@ data class GameState private constructor(
     private fun applyEvent(event: BidPlaced): Result4k<GameState, GameErrorCode> =
         when {
             bids[event.placedBy] is APlacedBid ->
-                AlreadyBid().asFailure()
+                AlreadyBid.asFailure()
 
             else ->
                 copy(

@@ -3,26 +3,25 @@ package com.tamj0rd2.skullking.domain.game
 sealed class GameErrorCode : IllegalStateException() {
     override val message = this::class.simpleName
 
-    // TODO: uncomment this to change my error codes into data objects.
-//    protected fun readResolve(): Any = this
+    protected fun readResolve(): Any = this
 
-    class NotEnoughPlayersToCreateGame : GameErrorCode()
+    data object NotEnoughPlayersToCreateGame : GameErrorCode()
 
-    class TooManyPlayersToCreateGame : GameErrorCode()
+    data object TooManyPlayersToCreateGame : GameErrorCode()
 
-    class GameIdMismatch : GameErrorCode()
+    data object GameIdMismatch : GameErrorCode()
 
-    class CannotPlayMoreThan10Rounds : GameErrorCode()
+    data object CannotPlayMoreThan10Rounds : GameErrorCode()
 
-    class CannotStartAPreviousRound : GameErrorCode()
+    data object CannotStartAPreviousRound : GameErrorCode()
 
-    class CannotStartARoundMoreThan1Ahead : GameErrorCode()
+    data object CannotStartARoundMoreThan1Ahead : GameErrorCode()
 
-    class CannotStartARoundThatIsAlreadyInProgress : GameErrorCode()
+    data object CannotStartARoundThatIsAlreadyInProgress : GameErrorCode()
 
-    class CannotCompleteARoundThatIsNotInProgress : GameErrorCode()
+    data object CannotCompleteARoundThatIsNotInProgress : GameErrorCode()
 
-    class CannotBidOutsideBiddingPhase : GameErrorCode()
+    data object CannotBidOutsideBiddingPhase : GameErrorCode()
 
-    class AlreadyBid : GameErrorCode()
+    data object AlreadyBid : GameErrorCode()
 }

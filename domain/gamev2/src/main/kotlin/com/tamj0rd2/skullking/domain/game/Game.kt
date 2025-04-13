@@ -111,7 +111,7 @@ class Game private constructor(
         }
 
     private fun appendEvent(event: GameEvent): Result4k<Unit, GameErrorCode> {
-        if (event.gameId != id) return GameIdMismatch().asFailure()
+        if (event.gameId != id) return GameIdMismatch.asFailure()
         state = state.applyEvent(event).onFailure { return it }
         _events.add(event)
         return Unit.asSuccess()
@@ -122,8 +122,8 @@ class Game private constructor(
         const val MAXIMUM_PLAYER_COUNT = 6
 
         fun new(players: Set<PlayerId>): Result<Game, GameErrorCode> {
-            if (players.size < MINIMUM_PLAYER_COUNT) return NotEnoughPlayersToCreateGame().asFailure()
-            if (players.size > MAXIMUM_PLAYER_COUNT) return TooManyPlayersToCreateGame().asFailure()
+            if (players.size < MINIMUM_PLAYER_COUNT) return NotEnoughPlayersToCreateGame.asFailure()
+            if (players.size > MAXIMUM_PLAYER_COUNT) return TooManyPlayersToCreateGame.asFailure()
             val game = Game(GameId.random())
             game.appendEvent(GameStarted(gameId = game.id, players = players)).onFailure { return it }
             return game.asSuccess()

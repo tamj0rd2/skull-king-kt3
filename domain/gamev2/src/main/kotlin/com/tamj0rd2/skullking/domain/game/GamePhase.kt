@@ -19,7 +19,7 @@ sealed class GamePhase {
     data object AwaitingNextRound : GamePhase() {
         override fun transition(event: GameEvent): Result4k<GamePhase, GameErrorCode> =
             when (event) {
-                is GameEvent.BidPlaced -> CannotBidOutsideBiddingPhase().asFailure()
+                is GameEvent.BidPlaced -> CannotBidOutsideBiddingPhase.asFailure()
                 else -> this.asSuccess()
             }
     }
