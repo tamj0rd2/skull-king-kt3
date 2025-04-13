@@ -1,7 +1,7 @@
 package com.tamj0rd2.skullking.domain.game
 
+import com.tamj0rd2.extensions.assertFailureIs
 import com.tamj0rd2.propertytesting.PropertyTesting.propertyTest
-import com.tamj0rd2.propertytesting.assertFailure
 import com.tamj0rd2.propertytesting.setSeed
 import com.tamj0rd2.propertytesting.withIterations
 import com.tamj0rd2.skullking.domain.game.GameCommand.PlaceABid
@@ -55,7 +55,7 @@ class PlacingABidTest {
 
                 val playerToBid = game.state.players.random(randomSource().random)
                 val command = PlaceABid(bid = bid, actor = playerToBid)
-                assertFailure<CannotBidOutsideBiddingPhase> { game.execute(command) }
+                assertFailureIs<CannotBidOutsideBiddingPhase>(game.execute(command))
 
                 statsRecorder.run {
                     classify(game.state.phase::class.simpleName!!)

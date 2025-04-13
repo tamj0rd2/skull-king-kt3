@@ -1,0 +1,3 @@
+<component name="DependencyValidationManager">
+  <scope name="GameV2" pattern="file[skull-king.domain.gamev2*]:*//*" />
+</component>

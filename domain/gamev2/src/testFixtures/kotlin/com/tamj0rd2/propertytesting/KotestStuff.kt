@@ -1,13 +1,10 @@
 package com.tamj0rd2.propertytesting
 
 import com.tamj0rd2.propertytesting.MyStatisticsReporter.printClassifications
-import dev.forkhandles.result4k.Result4k
-import dev.forkhandles.result4k.orThrow
 import io.kotest.common.ExperimentalKotest
 import io.kotest.common.runBlocking
 import io.kotest.property.PropTestConfig
 import io.kotest.property.PropertyContext
-import org.junit.jupiter.api.assertThrows
 import org.opentest4j.AssertionFailedError
 import java.io.OutputStream
 import java.io.PrintStream
@@ -73,7 +70,7 @@ object PropertyTesting {
     }
 }
 
-@OptIn(ExperimentalKotest::class)
+@ExperimentalKotest
 fun setMaxDiscardPercentage(amount: Int) = PropTestConfig(maxDiscardPercentage = amount)
 
 @ExperimentalKotest
@@ -81,9 +78,3 @@ fun setSeed(seed: Long) = PropTestConfig(seed = seed)
 
 @ExperimentalKotest
 fun PropTestConfig.withIterations(amount: Int) = copy(iterations = amount)
-
-// TODO: move this to Result4k extensions module
-// TODO: use this in more places.
-inline fun <reified E : Throwable> assertFailure(block: () -> Result4k<*, Throwable>) {
-    assertThrows<E>("expected a failure of type ${E::class.simpleName}") { block().orThrow() }
-}

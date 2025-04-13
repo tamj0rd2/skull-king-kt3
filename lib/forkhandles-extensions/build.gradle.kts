@@ -4,4 +4,6 @@ plugins {
 
 dependencies {
     implementation(libs.result4k)
+
+    testFixturesImplementation(libs.result4k)
 }
