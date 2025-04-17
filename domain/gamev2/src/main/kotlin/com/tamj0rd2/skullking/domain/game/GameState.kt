@@ -1,14 +1,15 @@
 package com.tamj0rd2.skullking.domain.game
 
-import com.tamj0rd2.extensions.applyFlatMap
 import com.tamj0rd2.extensions.asFailure
 import com.tamj0rd2.extensions.asSuccess
 import com.tamj0rd2.skullking.domain.game.GameErrorCode.AlreadyBid
+import com.tamj0rd2.skullking.domain.game.GameErrorCode.CannotBidOutsideBiddingPhase
 import com.tamj0rd2.skullking.domain.game.GameErrorCode.CannotCompleteARoundThatIsNotInProgress
 import com.tamj0rd2.skullking.domain.game.GameErrorCode.CannotPlayMoreThan10Rounds
 import com.tamj0rd2.skullking.domain.game.GameErrorCode.CannotStartAPreviousRound
 import com.tamj0rd2.skullking.domain.game.GameErrorCode.CannotStartARoundMoreThan1Ahead
 import com.tamj0rd2.skullking.domain.game.GameErrorCode.CannotStartARoundThatIsAlreadyInProgress
+import com.tamj0rd2.skullking.domain.game.GameErrorCode.CannotStartATrickFromCurrentPhase
 import com.tamj0rd2.skullking.domain.game.GameEvent.BidPlaced
 import com.tamj0rd2.skullking.domain.game.GameEvent.CardPlayed
 import com.tamj0rd2.skullking.domain.game.GameEvent.GameCompleted
@@ -25,7 +26,6 @@ import com.tamj0rd2.skullking.domain.game.GamePhase.TrickTaking
 import com.tamj0rd2.skullking.domain.game.values.Bid
 import com.tamj0rd2.skullking.domain.game.values.RoundNumber
 import dev.forkhandles.result4k.Result4k
-import dev.forkhandles.result4k.map
 
 data class GameState private constructor(
     val players: Set<PlayerId>,
@@ -44,25 +44,25 @@ data class GameState private constructor(
         }
 
     fun applyEvent(event: GameEvent): Result4k<GameState, GameErrorCode> =
-        transitionPhase(event).applyFlatMap {
-            when (event) {
-                is GameStarted -> applyEvent(event)
-                is RoundStarted -> applyEvent(event)
-                is RoundCompleted -> applyEvent(event)
-                is BidPlaced -> applyEvent(event)
-                is TrickStarted,
-                is CardPlayed,
-                is TrickCompleted,
-                is GameCompleted,
-                -> this.asSuccess()
-            }
+        when (event) {
+            is GameStarted -> applyEvent(event)
+            is RoundStarted -> applyEvent(event)
+            is RoundCompleted -> applyEvent(event)
+            is BidPlaced -> applyEvent(event)
+            is TrickStarted -> applyEvent(event)
+            is CardPlayed,
+            is TrickCompleted,
+            is GameCompleted,
+            -> this.asSuccess()
         }
-
-    private fun transitionPhase(event: GameEvent): Result4k<GameState, GameErrorCode> = phase.transition(event).map { copy(phase = it) }
 
     private fun applyEvent(event: GameStarted): Result4k<GameState, GameErrorCode> =
         when {
-            else -> copy(players = event.players).asSuccess()
+            else ->
+                copy(
+                    phase = AwaitingNextRound,
+                    players = event.players,
+                ).asSuccess()
         }
 
     private fun applyEvent(event: RoundStarted): Result4k<GameState, GameErrorCode> =
@@ -98,12 +98,26 @@ data class GameState private constructor(
 
     private fun applyEvent(event: BidPlaced): Result4k<GameState, GameErrorCode> =
         when {
+            phase != Bidding -> CannotBidOutsideBiddingPhase.asFailure()
+
             bids[event.placedBy] is APlacedBid ->
                 AlreadyBid.asFailure()
 
             else ->
                 copy(
                     bids = bids + Pair(event.placedBy, APlacedBid(event.bid)),
+                ).asSuccess()
+        }
+
+    private fun applyEvent(
+        @Suppress("UNUSED_PARAMETER") event: TrickStarted,
+    ): Result4k<GameState, GameErrorCode> =
+        when {
+            phase !in setOf(Bidding, TrickScoring) -> CannotStartATrickFromCurrentPhase(phase).asFailure()
+
+            else ->
+                copy(
+                    phase = TrickTaking,
                 ).asSuccess()
         }
 
