@@ -75,7 +75,7 @@ data class GameState private constructor(
 
     private fun applyEvent(event: RoundStarted): Result4k<GameState, GameErrorCode> =
         when {
-            event.roundNumber > RoundNumber.ten ->
+            event.roundNumber > RoundNumber.Ten ->
                 CannotPlayMoreThan10Rounds.asFailure()
 
             round is Round.InProgress ->
@@ -86,7 +86,7 @@ data class GameState private constructor(
             event.roundNumber < round.roundNumber ->
                 CannotStartAPreviousRound.asFailure()
 
-            event.roundNumber > round.roundNumber.next ->
+            event.roundNumber > round.roundNumber.next() ->
                 CannotStartARoundMoreThan1Ahead.asFailure()
 
             else ->
@@ -149,7 +149,7 @@ data class GameState private constructor(
         val new =
             GameState(
                 players = emptySet(),
-                round = Round.WaitingToStart(RoundNumber.one),
+                round = Round.WaitingToStart(RoundNumber.One),
                 phase = None,
             )
     }

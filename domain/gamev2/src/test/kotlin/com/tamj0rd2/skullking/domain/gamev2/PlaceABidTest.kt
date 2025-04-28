@@ -26,7 +26,7 @@ class PlaceABidTest {
     @Test
     fun `the state reflects each player's bid`() {
         val game = Arb.newGame.filter { it.state.players.size == 2 }.next()
-        game.execute(StartRound(RoundNumber.one)).orThrow()
+        game.execute(StartRound(RoundNumber.One)).orThrow()
 
         val player1 = game.state.players.first()
         val player2 = game.state.players.last()

@@ -21,7 +21,7 @@ class GameExampleTest {
         val player2 = PlayerId.random()
         val game = Game.new(setOf(player1, player2)).orThrow()
 
-        game.execute(StartRound(roundNumber = RoundNumber.one)).orThrow()
+        game.execute(StartRound(roundNumber = RoundNumber.One)).orThrow()
         assertEquals(GamePhase.Bidding, game.state.phase, "starting a round transitions to correct phase")
 
         game.execute(PlaceABid(actor = player1, bid = Bid.one)).orThrow()
@@ -34,7 +34,7 @@ class GameExampleTest {
         game.execute(CompleteTrick(trickNumber = TrickNumber.of(1))).orThrow()
         assertEquals(GamePhase.TrickScoring, game.state.phase, "completing a trick transitions to correct phase")
 
-        game.execute(CompleteRound(roundNumber = RoundNumber.one)).orThrow()
+        game.execute(CompleteRound(roundNumber = RoundNumber.One)).orThrow()
         assertEquals(GamePhase.AwaitingNextRound, game.state.phase, "completing a round transitions to correct phase")
     }
 }

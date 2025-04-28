@@ -1,29 +1,22 @@
 package com.tamj0rd2.skullking.domain.gamev2.values
 
-import dev.forkhandles.values.Value
+enum class RoundNumber(
+    private val value: Int,
+    val next: () -> RoundNumber,
+) {
+    One(value = 1, next = { Two }),
+    Two(value = 2, next = { Three }),
+    Three(value = 3, next = { Four }),
+    Four(value = 4, next = { Five }),
+    Five(value = 5, next = { Six }),
+    Six(value = 6, next = { Seven }),
+    Seven(value = 7, next = { Eight }),
+    Eight(value = 8, next = { Nine }),
+    Nine(value = 9, next = { Ten }),
+    Ten(value = 10, next = { error("${Ten::class.simpleName} is the final round.") }),
+    ;
 
-// TODO: wait... this is just an enum. Wtf am I doing?
-data class RoundNumber private constructor(
-    override val value: Int,
-) : Value<Int>,
-    Comparable<RoundNumber> {
-    val next: RoundNumber get() = RoundNumber(value + 1)
+    val totalCardsToDeal = value
 
-    override fun compareTo(other: RoundNumber): Int = value.compareTo(other.value)
-
-    @Suppress("MemberVisibilityCanBePrivate")
-    companion object {
-        val one = RoundNumber(1)
-        val two = RoundNumber(2)
-        val three = RoundNumber(3)
-        val four = RoundNumber(4)
-        val five = RoundNumber(5)
-        val six = RoundNumber(6)
-        val seven = RoundNumber(7)
-        val eight = RoundNumber(8)
-        val nine = RoundNumber(9)
-        val ten = RoundNumber(10)
-
-        val all = setOf(one, two, three, four, five, six, seven, eight, nine, ten)
-    }
+    fun differenceFrom(other: RoundNumber): Int = this.value - other.value
 }

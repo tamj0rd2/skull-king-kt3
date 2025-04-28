@@ -25,7 +25,7 @@ import io.kotest.property.exhaustive.map
 
 // NOTE: constrained otherwise generation is too slow
 private val Exhaustive.Companion.roundNumber
-    get() = exhaustive(RoundNumber.all.toList())
+    get() = exhaustive(RoundNumber.entries)
 
 val Exhaustive.Companion.trickNumber
     get() = exhaustive(TrickNumber.first.value..TrickNumber.last.value, TrickNumber)

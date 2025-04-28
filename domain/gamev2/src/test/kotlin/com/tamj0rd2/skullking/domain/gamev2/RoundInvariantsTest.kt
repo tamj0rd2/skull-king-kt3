@@ -19,7 +19,7 @@ class RoundInvariantsTest {
                 val initialRoundNumber = game.state.roundNumberInProgress
                 assumeThat(initialRoundNumber != null)
 
-                val command = StartRound(initialRoundNumber.next)
+                val command = StartRound(initialRoundNumber.next())
                 assume(game.execute(command) is Success)
 
                 val latestState = game.state
@@ -35,7 +35,7 @@ class RoundInvariantsTest {
                 val currentRoundNumber = game.state.roundNumberInProgress
                 assumeThat(currentRoundNumber != null)
 
-                val command = StartRound(currentRoundNumber.next)
+                val command = StartRound(currentRoundNumber.next())
                 assume(game.execute(command) is Success)
 
                 val latestState = game.state
@@ -50,7 +50,7 @@ class RoundInvariantsTest {
             checkAll(Arb.game) { game ->
                 val currentRoundNumber = game.state.roundNumberInProgress
                 assumeThat(currentRoundNumber != null)
-                assert(currentRoundNumber <= RoundNumber.ten)
+                assert(currentRoundNumber <= RoundNumber.Ten)
             }
         }
 
@@ -87,7 +87,7 @@ class RoundInvariantsTest {
                 val roundNumberNow = game.state.roundNumberInProgress
                 assumeThat(roundNumberNow != null)
 
-                val actualIncrease = roundNumberNow.value - roundNumberBefore.value
+                val actualIncrease = roundNumberNow.differenceFrom(roundNumberBefore)
                 assert(actualIncrease in setOf(0, 1))
 
                 statsRecorder.run {

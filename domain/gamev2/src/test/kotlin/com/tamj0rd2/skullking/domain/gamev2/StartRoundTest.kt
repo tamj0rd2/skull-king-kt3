@@ -19,7 +19,7 @@ class StartRoundTest {
     @Test
     fun `when a round has started, a round started event is emitted`() {
         val game = Arb.newGame.next()
-        val command = StartRound(RoundNumber.one)
+        val command = StartRound(RoundNumber.One)
         game.execute(command).orThrow()
 
         val roundStartedEvent =
@@ -30,7 +30,9 @@ class StartRoundTest {
 
         val dealtCardsPerPlayer = roundStartedEvent.dealtCards.perPlayer
         dealtCardsPerPlayer.onEachIndexed { index, (_, cards) ->
-            assert(cards.size == command.roundNumber.value) { "incorrect cards for player ${index + 1}/${Arb.validPlayerIds.next().size}" }
+            assert(
+                cards.size == command.roundNumber.totalCardsToDeal,
+            ) { "incorrect cards for player ${index + 1}/${Arb.validPlayerIds.next().size}" }
         }
     }
 
