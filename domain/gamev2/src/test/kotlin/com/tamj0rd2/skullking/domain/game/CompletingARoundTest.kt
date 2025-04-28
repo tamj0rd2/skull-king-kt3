@@ -3,17 +3,9 @@ package com.tamj0rd2.skullking.domain.game
 import com.tamj0rd2.extensions.assertFailureIs
 import com.tamj0rd2.propertytesting.PropertyTesting.propertyTest
 import com.tamj0rd2.skullking.domain.game.GameCommand.CompleteRound
-import com.tamj0rd2.skullking.domain.game.GameCommand.CompleteTrick
-import com.tamj0rd2.skullking.domain.game.GameCommand.StartRound
-import com.tamj0rd2.skullking.domain.game.GameCommand.StartTrick
 import com.tamj0rd2.skullking.domain.game.GameErrorCode.CannotCompleteRoundFromCurrentPhase
-import com.tamj0rd2.skullking.domain.game.GameEvent.RoundCompleted
 import com.tamj0rd2.skullking.domain.game.GamePhase.TrickScoring
-import com.tamj0rd2.skullking.domain.game.values.RoundNumber
-import com.tamj0rd2.skullking.domain.game.values.TrickNumber
-import dev.forkhandles.result4k.orThrow
 import io.kotest.property.Arb
-import io.kotest.property.arbitrary.next
 import io.kotest.property.assume
 import io.kotest.property.checkAll
 import org.junit.jupiter.api.Disabled
@@ -22,20 +14,6 @@ import org.junit.jupiter.api.Test
 
 @Nested
 class CompletingARoundTest {
-    @Test
-    fun `when a round is completed, a RoundCompleted event is emitted`() {
-        val roundNumber = RoundNumber.of(1)
-
-        val game = Arb.newGame.next()
-        game.execute(StartRound(roundNumber = roundNumber)).orThrow()
-        game.execute(StartTrick(trickNumber = TrickNumber.first)).orThrow()
-        game.execute(CompleteTrick(trickNumber = TrickNumber.first)).orThrow()
-        game.execute(CompleteRound(roundNumber = roundNumber)).orThrow()
-
-        val roundCompletedEvents = game.events.filterIsInstance<RoundCompleted>()
-        assert(roundCompletedEvents.single().roundNumber == roundNumber)
-    }
-
     @Test
     fun `cannot complete a round that is not in the trick scoring phase`() {
         propertyTest {

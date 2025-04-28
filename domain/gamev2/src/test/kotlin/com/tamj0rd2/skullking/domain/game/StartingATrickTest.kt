@@ -3,39 +3,21 @@ package com.tamj0rd2.skullking.domain.game
 import com.tamj0rd2.extensions.assertFailureIs
 import com.tamj0rd2.propertytesting.PropertyTesting.propertyTest
 import com.tamj0rd2.propertytesting.setMaxDiscardPercentage
-import com.tamj0rd2.skullking.domain.game.GameCommand.StartRound
 import com.tamj0rd2.skullking.domain.game.GameCommand.StartTrick
 import com.tamj0rd2.skullking.domain.game.GameErrorCode.CannotStartATrickFromCurrentPhase
 import com.tamj0rd2.skullking.domain.game.GamePhase.Bidding
 import com.tamj0rd2.skullking.domain.game.GamePhase.TrickScoring
-import com.tamj0rd2.skullking.domain.game.values.RoundNumber
-import com.tamj0rd2.skullking.domain.game.values.TrickNumber
 import dev.forkhandles.result4k.Success
-import dev.forkhandles.result4k.orThrow
 import io.kotest.property.Arb
-import io.kotest.property.arbitrary.filter
 import io.kotest.property.arbitrary.filterIsInstance
-import io.kotest.property.arbitrary.next
 import io.kotest.property.assume
 import io.kotest.property.checkAll
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import kotlin.test.assertEquals
 
 @Nested
 class StartingATrickTest {
-    @Test
-    fun `example - starting a trick in a two player game`() {
-        val players = Arb.validPlayerIds.filter { it.size == 2 }.next()
-        val game = Game.new(players).orThrow()
-
-        game.execute(StartRound(RoundNumber.first)).orThrow()
-        game.execute(StartTrick(TrickNumber.first)).orThrow()
-
-        assertEquals(GamePhase.TrickTaking, game.state.phase)
-    }
-
     @Test
     fun `successfully starting a trick transitions the phase to Trick Taking`() {
         propertyTest {

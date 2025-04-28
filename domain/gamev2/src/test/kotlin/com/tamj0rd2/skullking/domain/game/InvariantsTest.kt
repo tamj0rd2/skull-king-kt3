@@ -2,6 +2,20 @@ package com.tamj0rd2.skullking.domain.game
 
 import com.tamj0rd2.propertytesting.PropertyTesting.propertyTest
 import com.tamj0rd2.propertytesting.setMaxDiscardPercentage
+import com.tamj0rd2.skullking.domain.game.GameCommand.CompleteGame
+import com.tamj0rd2.skullking.domain.game.GameCommand.CompleteRound
+import com.tamj0rd2.skullking.domain.game.GameCommand.CompleteTrick
+import com.tamj0rd2.skullking.domain.game.GameCommand.PlaceABid
+import com.tamj0rd2.skullking.domain.game.GameCommand.PlayACard
+import com.tamj0rd2.skullking.domain.game.GameCommand.StartRound
+import com.tamj0rd2.skullking.domain.game.GameCommand.StartTrick
+import com.tamj0rd2.skullking.domain.game.GameEvent.BidPlaced
+import com.tamj0rd2.skullking.domain.game.GameEvent.CardPlayed
+import com.tamj0rd2.skullking.domain.game.GameEvent.GameCompleted
+import com.tamj0rd2.skullking.domain.game.GameEvent.RoundCompleted
+import com.tamj0rd2.skullking.domain.game.GameEvent.RoundStarted
+import com.tamj0rd2.skullking.domain.game.GameEvent.TrickCompleted
+import com.tamj0rd2.skullking.domain.game.GameEvent.TrickStarted
 import dev.forkhandles.result4k.Failure
 import dev.forkhandles.result4k.Success
 import dev.forkhandles.result4k.orThrow
@@ -99,6 +113,19 @@ class InvariantsTest {
 
                 assertEquals(eventsBeforeCommand.size + 1, eventsAfterCommand.size)
                 assertEquals(eventsBeforeCommand, eventsAfterCommand.dropLast(1))
+                assertEquals(
+                    expected =
+                        when (command) {
+                            CompleteGame -> GameCompleted::class
+                            is CompleteRound -> RoundCompleted::class
+                            is CompleteTrick -> TrickCompleted::class
+                            is PlaceABid -> BidPlaced::class
+                            is PlayACard -> CardPlayed::class
+                            is StartRound -> RoundStarted::class
+                            is StartTrick -> TrickStarted::class
+                        },
+                    actual = eventsAfterCommand.last()::class,
+                )
 
                 statsRecorder.runCatching {
                     CommandTypeStatistics.classify(command)
