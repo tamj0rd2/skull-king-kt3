@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 @Nested
-class CompletingARoundTest {
+class CompleteRoundTest {
     @Test
     fun `cannot complete a round that is not in the trick scoring phase`() {
         propertyTest {

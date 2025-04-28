@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
 @Nested
-class CompletingATrickTest {
+class CompleteTrickTest {
     @Test
     fun `example - when a trick is completed, the phase changes to TrickScoring`() {
         val command = CompleteTrick(trickNumber = TrickNumber.of(1))

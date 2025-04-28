@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 @Nested
-class StartingATrickTest {
+class StartTrickTest {
     @Test
     fun `successfully starting a trick transitions the phase to Trick Taking`() {
         propertyTest {

@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 @Nested
-class PlayingACardTest {
+class PlayACardTest {
     @Test
     fun `when a card is played, a CardPlayed event is emitted`() {
         val command =

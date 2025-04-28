@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 @Nested
-class CompletingAGameTest {
+class CompleteGameTest {
     @Test
     @Disabled
     fun `cannot complete the game if the final round has not been completed`() {

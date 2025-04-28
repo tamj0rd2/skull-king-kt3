@@ -22,7 +22,7 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
 @Nested
-class PlacingABidTest {
+class PlaceABidTest {
     @Test
     fun `the state reflects each player's bid`() {
         val game = Arb.newGame.filter { it.state.players.size == 2 }.next()

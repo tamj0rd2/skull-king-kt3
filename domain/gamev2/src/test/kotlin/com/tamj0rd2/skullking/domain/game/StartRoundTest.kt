@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 @Nested
-class StartingARoundTest {
+class StartRoundTest {
     @Test
     fun `when a round has started, a round started event is emitted`() {
         val game = Arb.newGame.next()

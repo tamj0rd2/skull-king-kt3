@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 @Nested
-class StartingAGameTest {
+class StartGameTest {
     @Test
     fun `a game always starts with a GameStarted event`() =
         propertyTest {
