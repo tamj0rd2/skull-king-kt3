@@ -49,7 +49,7 @@ class StartingARoundTest {
             checkAll(Arb.game) { game ->
                 assume(game.state.roundIsInProgress)
 
-                val command = StartRound(game.state.roundNumber)
+                val command = StartRound(game.state.roundInProgress.roundNumber)
                 assertFailureIs<CannotStartARoundThatIsAlreadyInProgress>(game.execute(command))
             }
         }

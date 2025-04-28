@@ -36,7 +36,7 @@ class CompletingARoundTest {
             checkAll(Arb.game) { game ->
                 assume(!game.state.roundIsInProgress)
 
-                val command = CompleteRound(game.state.roundNumber)
+                val command = CompleteRound(game.state.roundInProgress.roundNumber)
                 assertFailureIs<CannotCompleteARoundThatIsNotInProgress>(game.execute(command))
             }
         }
