@@ -21,7 +21,7 @@ class CompleteRoundTest {
             checkAll(Arb.game) { game ->
                 assume(game.state.phase != TrickScoring)
 
-                val currentRoundNumber = game.state.currentRoundNumber
+                val currentRoundNumber = game.state.roundNumberInProgress
                 assumeThat(currentRoundNumber != null)
 
                 val command = CompleteRound(currentRoundNumber)

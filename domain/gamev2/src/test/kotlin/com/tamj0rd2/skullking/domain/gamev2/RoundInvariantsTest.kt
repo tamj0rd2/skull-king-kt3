@@ -16,14 +16,14 @@ class RoundInvariantsTest {
     fun `when a round starts, the round number increases`() {
         propertyTest {
             checkAll(Arb.game) { game ->
-                val initialRoundNumber = game.state.currentRoundNumber
+                val initialRoundNumber = game.state.roundNumberInProgress
                 assumeThat(initialRoundNumber != null)
 
                 val command = StartRound(initialRoundNumber.next)
                 assume(game.execute(command) is Success)
 
                 val latestState = game.state
-                assert(latestState.currentRoundNumber!! > initialRoundNumber)
+                assert(latestState.roundNumberInProgress!! > initialRoundNumber)
             }
         }
     }
@@ -32,7 +32,7 @@ class RoundInvariantsTest {
     fun `when a round starts, the round phase is Bidding`() {
         propertyTest {
             checkAll(Arb.game) { game ->
-                val currentRoundNumber = game.state.currentRoundNumber
+                val currentRoundNumber = game.state.roundNumberInProgress
                 assumeThat(currentRoundNumber != null)
 
                 val command = StartRound(currentRoundNumber.next)
@@ -48,7 +48,7 @@ class RoundInvariantsTest {
     fun `the round number is never greater than 10`() =
         propertyTest {
             checkAll(Arb.game) { game ->
-                val currentRoundNumber = game.state.currentRoundNumber
+                val currentRoundNumber = game.state.roundNumberInProgress
                 assumeThat(currentRoundNumber != null)
                 assert(currentRoundNumber <= RoundNumber.last)
             }
@@ -58,11 +58,11 @@ class RoundInvariantsTest {
     fun `the round number never decreases`() =
         propertyTest { statsRecorder ->
             checkAll(setMaxDiscardPercentage(95), Arb.game, Arb.gameCommand) { game, command ->
-                val roundNumberBefore = game.state.currentRoundNumber
+                val roundNumberBefore = game.state.roundNumberInProgress
                 assumeThat(roundNumberBefore != null)
 
                 val commandResult = game.execute(command)
-                val roundNumberNow = game.state.currentRoundNumber
+                val roundNumberNow = game.state.roundNumberInProgress
 
                 assert(roundNumberNow!! >= roundNumberBefore)
 
@@ -79,12 +79,12 @@ class RoundInvariantsTest {
     fun `the round number only ever increases by 1 at a time`() =
         propertyTest { statsRecorder ->
             checkAll(setMaxDiscardPercentage(95), Arb.game, Arb.gameCommand) { game, command ->
-                val roundNumberBefore = game.state.currentRoundNumber
+                val roundNumberBefore = game.state.roundNumberInProgress
                 assumeThat(roundNumberBefore != null)
 
                 val commandResult = game.execute(command)
 
-                val roundNumberNow = game.state.currentRoundNumber
+                val roundNumberNow = game.state.roundNumberInProgress
                 assumeThat(roundNumberNow != null)
 
                 val actualIncrease = roundNumberNow.value - roundNumberBefore.value

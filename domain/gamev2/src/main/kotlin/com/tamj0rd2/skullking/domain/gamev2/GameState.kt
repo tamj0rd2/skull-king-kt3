@@ -43,7 +43,7 @@ data class GameState private constructor(
     val round: Round,
     val phase: GamePhase,
 ) {
-    val currentRoundNumber =
+    val roundNumberInProgress =
         when (round) {
             is Round.InProgress -> round.roundNumber
             is Round.WaitingToStart -> null
