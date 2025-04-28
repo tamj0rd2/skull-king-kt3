@@ -14,7 +14,7 @@ import kotlin.test.assertEquals
 class CompleteTrickTest {
     @Test
     fun `example - when a trick is completed, the phase changes to TrickScoring`() {
-        val command = CompleteTrick(trickNumber = TrickNumber.of(1))
+        val command = CompleteTrick(trickNumber = TrickNumber.One)
 
         val game = Arb.newGame.next()
         game.execute(command).orThrow()

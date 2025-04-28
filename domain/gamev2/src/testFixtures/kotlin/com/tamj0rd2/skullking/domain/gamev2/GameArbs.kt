@@ -28,7 +28,7 @@ private val Exhaustive.Companion.roundNumber
     get() = exhaustive(RoundNumber.entries)
 
 val Exhaustive.Companion.trickNumber
-    get() = exhaustive(TrickNumber.first.value..TrickNumber.last.value, TrickNumber)
+    get() = exhaustive(TrickNumber.entries)
 
 // NOTE: constrained otherwise generation is too slow
 val Exhaustive.Companion.bid
