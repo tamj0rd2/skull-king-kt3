@@ -20,7 +20,7 @@ class CompleteRoundTest {
             checkAll(Arb.game) { game ->
                 assume(game.state.phase != TrickScoring)
 
-                val command = CompleteRound(game.state.roundInProgress.roundNumber)
+                val command = CompleteRound(game.state.round.roundNumber)
                 assertFailureIs<CannotCompleteRoundFromCurrentPhase>(game.execute(command))
             }
         }

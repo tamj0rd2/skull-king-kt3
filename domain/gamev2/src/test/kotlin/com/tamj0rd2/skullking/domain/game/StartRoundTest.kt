@@ -44,7 +44,7 @@ class StartRoundTest {
                 // TODO: a clear sign that these particular phases should live with "RoundInProgress"
                 assume(game.state.phase in setOf(Bidding, TrickTaking, TrickScoring))
 
-                val command = StartRound(game.state.roundInProgress.roundNumber)
+                val command = StartRound(game.state.round.roundNumber)
                 assertFailureIs<CannotStartARoundThatIsAlreadyInProgress>(game.execute(command))
             }
         }

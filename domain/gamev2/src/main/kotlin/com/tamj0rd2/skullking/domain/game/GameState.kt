@@ -27,14 +27,16 @@ import com.tamj0rd2.skullking.domain.game.values.Bid
 import com.tamj0rd2.skullking.domain.game.values.RoundNumber
 import dev.forkhandles.result4k.Result4k
 
-data class RoundInProgress(
-    val roundNumber: RoundNumber,
-    val bids: Map<PlayerId, RoundBid>,
-)
+sealed interface Round {
+    data class InProgress(
+        val roundNumber: RoundNumber,
+        val bids: Map<PlayerId, RoundBid>,
+    ) : Round
+}
 
 data class GameState private constructor(
     val players: Set<PlayerId>,
-    val roundInProgress: RoundInProgress,
+    val round: Round.InProgress,
     val phase: GamePhase,
 ) {
     fun applyEvent(event: GameEvent): Result4k<GameState, GameErrorCode> =
@@ -66,10 +68,10 @@ data class GameState private constructor(
             event.roundNumber > RoundNumber.last ->
                 CannotPlayMoreThan10Rounds.asFailure()
 
-            event.roundNumber < roundInProgress.roundNumber ->
+            event.roundNumber < round.roundNumber ->
                 CannotStartAPreviousRound.asFailure()
 
-            event.roundNumber > roundInProgress.roundNumber.next ->
+            event.roundNumber > round.roundNumber.next ->
                 CannotStartARoundMoreThan1Ahead.asFailure()
 
             // TODO: this is smelly
@@ -79,8 +81,8 @@ data class GameState private constructor(
             else ->
                 copy(
                     phase = Bidding,
-                    roundInProgress =
-                        RoundInProgress(
+                    round =
+                        Round.InProgress(
                             roundNumber = event.roundNumber,
                             bids = players.associateWith { OutstandingBid },
                         ),
@@ -105,15 +107,15 @@ data class GameState private constructor(
             phase != Bidding ->
                 CannotBidOutsideBiddingPhase.asFailure()
 
-            roundInProgress.bids[event.placedBy] is APlacedBid ->
+            round.bids[event.placedBy] is APlacedBid ->
                 AlreadyBid.asFailure()
 
             else ->
                 copy(
                     // TODO: eeeewwww
-                    roundInProgress =
-                        roundInProgress.copy(
-                            bids = roundInProgress.bids + Pair(event.placedBy, APlacedBid(event.bid)),
+                    round =
+                        round.copy(
+                            bids = round.bids + Pair(event.placedBy, APlacedBid(event.bid)),
                         ),
                 ).asSuccess()
         }
@@ -134,8 +136,8 @@ data class GameState private constructor(
         val new =
             GameState(
                 players = emptySet(),
-                roundInProgress =
-                    RoundInProgress(
+                round =
+                    Round.InProgress(
                         roundNumber = RoundNumber.none,
                         bids = emptyMap(),
                     ),
