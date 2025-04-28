@@ -50,7 +50,7 @@ class RoundInvariantsTest {
             checkAll(Arb.game) { game ->
                 val currentRoundNumber = game.state.roundNumberInProgress
                 assumeThat(currentRoundNumber != null)
-                assert(currentRoundNumber <= RoundNumber.last)
+                assert(currentRoundNumber <= RoundNumber.ten)
             }
         }
 

@@ -18,7 +18,7 @@ data object RoundNumberStatistics : GameStatistics<RoundNumber?>() {
     override fun classifyData(data: RoundNumber?) =
         when {
             data == null -> `no round number`
-            data <= RoundNumber.last -> `round number is 1-10`
+            data <= RoundNumber.ten -> `round number is 1-10`
             else -> `round number greater than 10`
         }
 }

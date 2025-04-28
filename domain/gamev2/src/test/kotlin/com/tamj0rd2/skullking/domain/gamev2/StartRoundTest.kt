@@ -19,7 +19,7 @@ class StartRoundTest {
     @Test
     fun `when a round has started, a round started event is emitted`() {
         val game = Arb.newGame.next()
-        val command = StartRound(RoundNumber.of(1))
+        val command = StartRound(RoundNumber.one)
         game.execute(command).orThrow()
 
         val roundStartedEvent =
