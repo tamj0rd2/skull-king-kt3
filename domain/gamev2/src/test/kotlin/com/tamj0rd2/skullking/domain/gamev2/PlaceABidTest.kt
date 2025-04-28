@@ -31,12 +31,12 @@ class PlaceABidTest {
         val player1 = game.state.players.first()
         val player2 = game.state.players.last()
 
-        game.execute(PlaceABid(bid = Bid.one, actor = player1)).orThrow()
+        game.execute(PlaceABid(bid = Bid.One, actor = player1)).orThrow()
 
         assertEquals(
             (game.state.round as Round.InProgress).bids,
             mapOf(
-                player1 to APlacedBid(Bid.one),
+                player1 to APlacedBid(Bid.One),
                 player2 to OutstandingBid,
             ),
         )

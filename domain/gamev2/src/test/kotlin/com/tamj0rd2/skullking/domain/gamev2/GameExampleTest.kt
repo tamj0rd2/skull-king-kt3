@@ -24,8 +24,8 @@ class GameExampleTest {
         game.execute(StartRound(roundNumber = RoundNumber.One)).orThrow()
         assertEquals(GamePhase.Bidding, game.state.phase, "starting a round transitions to correct phase")
 
-        game.execute(PlaceABid(actor = player1, bid = Bid.one)).orThrow()
-        game.execute(PlaceABid(actor = player2, bid = Bid.zero)).orThrow()
+        game.execute(PlaceABid(actor = player1, bid = Bid.One)).orThrow()
+        game.execute(PlaceABid(actor = player2, bid = Bid.Zero)).orThrow()
         game.execute(StartTrick(trickNumber = TrickNumber.of(1))).orThrow()
         assertEquals(GamePhase.TrickTaking, game.state.phase, "starting a trick transitions to correct phase")
 

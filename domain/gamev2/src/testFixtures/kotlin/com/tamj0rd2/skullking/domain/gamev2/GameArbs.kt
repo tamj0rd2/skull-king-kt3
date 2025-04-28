@@ -32,7 +32,7 @@ val Exhaustive.Companion.trickNumber
 
 // NOTE: constrained otherwise generation is too slow
 val Exhaustive.Companion.bid
-    get() = exhaustive(Bid.allPossibleBids.toList())
+    get() = exhaustive(Bid.entries)
 
 val Arb.Companion.playerId get() = Arb.uuid().map { PlayerId.of(it) }
 
