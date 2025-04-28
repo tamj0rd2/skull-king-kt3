@@ -94,7 +94,10 @@ data class GameState private constructor(
             phase != TrickScoring ->
                 CannotCompleteRoundFromCurrentPhase(phase).asFailure()
 
-            else -> copy().asSuccess()
+            else ->
+                copy(
+                    phase = AwaitingNextRound,
+                ).asSuccess()
         }
 
     private fun applyEvent(event: BidPlaced): Result4k<GameState, GameErrorCode> =

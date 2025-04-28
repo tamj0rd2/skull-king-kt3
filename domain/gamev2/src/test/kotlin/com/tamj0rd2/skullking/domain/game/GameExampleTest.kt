@@ -22,20 +22,19 @@ class GameExampleTest {
         val game = Game.new(setOf(player1, player2)).orThrow()
 
         game.execute(StartRound(roundNumber = RoundNumber.of(1))).orThrow()
-        assertEquals(GamePhase.Bidding, game.state.phase)
+        assertEquals(GamePhase.Bidding, game.state.phase, "starting a round transitions to correct phase")
 
         game.execute(PlaceABid(actor = player1, bid = Bid.one)).orThrow()
         game.execute(PlaceABid(actor = player2, bid = Bid.zero)).orThrow()
         game.execute(StartTrick(trickNumber = TrickNumber.of(1))).orThrow()
-        assertEquals(GamePhase.TrickTaking, game.state.phase)
+        assertEquals(GamePhase.TrickTaking, game.state.phase, "starting a trick transitions to correct phase")
 
         game.execute(PlayACard(actor = player1, card = CannedCard)).orThrow()
         game.execute(PlayACard(actor = player2, card = CannedCard)).orThrow()
         game.execute(CompleteTrick(trickNumber = TrickNumber.of(1))).orThrow()
-        assertEquals(GamePhase.TrickScoring, game.state.phase)
+        assertEquals(GamePhase.TrickScoring, game.state.phase, "completing a trick transitions to correct phase")
 
         game.execute(CompleteRound(roundNumber = RoundNumber.of(1))).orThrow()
-        // TODO: introduce this assertion
-//        assertEquals(GamePhase.AwaitingNextRound, game.state.phase)
+        assertEquals(GamePhase.AwaitingNextRound, game.state.phase, "completing a round transitions to correct phase")
     }
 }
