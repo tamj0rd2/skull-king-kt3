@@ -25,14 +25,14 @@ class RoundInvariantsTest {
     }
 
     @Test
-    fun `when a round starts, the round is in progress`() {
+    fun `when a round starts, the round phase is Bidding`() {
         propertyTest {
             checkAll(Arb.game) { game ->
                 val command = StartRound(game.state.roundInProgress.roundNumber.next)
                 assume(game.execute(command) is Success)
 
                 val latestState = game.state
-                assert(latestState.roundIsInProgress)
+                assert(latestState.phase == GamePhase.Bidding)
             }
         }
     }

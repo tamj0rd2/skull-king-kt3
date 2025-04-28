@@ -4,7 +4,7 @@ import com.tamj0rd2.extensions.asFailure
 import com.tamj0rd2.extensions.asSuccess
 import com.tamj0rd2.skullking.domain.game.GameErrorCode.AlreadyBid
 import com.tamj0rd2.skullking.domain.game.GameErrorCode.CannotBidOutsideBiddingPhase
-import com.tamj0rd2.skullking.domain.game.GameErrorCode.CannotCompleteARoundThatIsNotInProgress
+import com.tamj0rd2.skullking.domain.game.GameErrorCode.CannotCompleteRoundFromCurrentPhase
 import com.tamj0rd2.skullking.domain.game.GameErrorCode.CannotPlayMoreThan10Rounds
 import com.tamj0rd2.skullking.domain.game.GameErrorCode.CannotStartAPreviousRound
 import com.tamj0rd2.skullking.domain.game.GameErrorCode.CannotStartARoundMoreThan1Ahead
@@ -37,18 +37,9 @@ data class GameState private constructor(
     val roundInProgress: RoundInProgress,
     val phase: GamePhase,
 ) {
-    // TODO: kill this off.
-    val roundIsInProgress: Boolean =
-        when (phase) {
-            AwaitingNextRound -> false
-            Bidding -> true
-            None -> false
-            TrickScoring -> true
-            TrickTaking -> true
-        }
-
     fun applyEvent(event: GameEvent): Result4k<GameState, GameErrorCode> =
         when (event) {
+            // TODO: try naming these functions more specifically for sanity.
             is GameStarted -> applyEvent(event)
             is RoundStarted -> applyEvent(event)
             is RoundCompleted -> applyEvent(event)
@@ -56,6 +47,7 @@ data class GameState private constructor(
             is TrickStarted -> applyEvent(event)
             is CardPlayed,
             is TrickCompleted,
+            -> copy(phase = TrickScoring).asSuccess()
             is GameCompleted,
             -> this.asSuccess()
         }
@@ -80,7 +72,8 @@ data class GameState private constructor(
             event.roundNumber > roundInProgress.roundNumber.next ->
                 CannotStartARoundMoreThan1Ahead.asFailure()
 
-            roundIsInProgress ->
+            // TODO: this is smelly
+            phase in setOf(Bidding, TrickTaking, TrickScoring) ->
                 CannotStartARoundThatIsAlreadyInProgress.asFailure()
 
             else ->
@@ -98,14 +91,16 @@ data class GameState private constructor(
         @Suppress("UNUSED_PARAMETER") event: RoundCompleted,
     ): Result4k<GameState, GameErrorCode> =
         when {
-            !roundIsInProgress -> CannotCompleteARoundThatIsNotInProgress.asFailure()
+            phase != TrickScoring ->
+                CannotCompleteRoundFromCurrentPhase(phase).asFailure()
 
             else -> copy().asSuccess()
         }
 
     private fun applyEvent(event: BidPlaced): Result4k<GameState, GameErrorCode> =
         when {
-            phase != Bidding -> CannotBidOutsideBiddingPhase.asFailure()
+            phase != Bidding ->
+                CannotBidOutsideBiddingPhase.asFailure()
 
             roundInProgress.bids[event.placedBy] is APlacedBid ->
                 AlreadyBid.asFailure()

@@ -5,6 +5,9 @@ import com.tamj0rd2.propertytesting.PropertyTesting.propertyTest
 import com.tamj0rd2.skullking.domain.game.GameCommand.StartRound
 import com.tamj0rd2.skullking.domain.game.GameErrorCode.CannotStartARoundThatIsAlreadyInProgress
 import com.tamj0rd2.skullking.domain.game.GameEvent.RoundStarted
+import com.tamj0rd2.skullking.domain.game.GamePhase.Bidding
+import com.tamj0rd2.skullking.domain.game.GamePhase.TrickScoring
+import com.tamj0rd2.skullking.domain.game.GamePhase.TrickTaking
 import com.tamj0rd2.skullking.domain.game.values.RoundNumber
 import dev.forkhandles.result4k.orThrow
 import io.kotest.property.Arb
@@ -47,7 +50,8 @@ class StartingARoundTest {
     fun `cannot start a round that is already in progress`() =
         propertyTest {
             checkAll(Arb.game) { game ->
-                assume(game.state.roundIsInProgress)
+                // TODO: a clear sign that these particular phases should live with "RoundInProgress"
+                assume(game.state.phase in setOf(Bidding, TrickTaking, TrickScoring))
 
                 val command = StartRound(game.state.roundInProgress.roundNumber)
                 assertFailureIs<CannotStartARoundThatIsAlreadyInProgress>(game.execute(command))

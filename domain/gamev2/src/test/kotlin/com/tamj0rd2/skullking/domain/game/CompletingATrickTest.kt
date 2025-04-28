@@ -9,11 +9,12 @@ import io.kotest.property.arbitrary.next
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import kotlin.test.assertEquals
 
 @Nested
 class CompletingATrickTest {
     @Test
-    fun `when a trick is completed, a TrickCompleted event is emitted`() {
+    fun `example - when a trick is completed, a TrickCompleted event is emitted`() {
         val command = CompleteTrick(trickNumber = TrickNumber.of(1))
 
         val game = Arb.newGame.next()
@@ -21,6 +22,16 @@ class CompletingATrickTest {
 
         val trickCompletedEvents = game.events.filterIsInstance<TrickCompleted>()
         assert(trickCompletedEvents.single().trickNumber == command.trickNumber)
+    }
+
+    @Test
+    fun `example - when a trick is completed, the phase changes to TrickScoring`() {
+        val command = CompleteTrick(trickNumber = TrickNumber.of(1))
+
+        val game = Arb.newGame.next()
+        game.execute(command).orThrow()
+
+        assertEquals(GamePhase.TrickScoring, game.state.phase)
     }
 
     @Test

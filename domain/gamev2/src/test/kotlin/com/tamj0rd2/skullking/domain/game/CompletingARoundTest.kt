@@ -3,10 +3,14 @@ package com.tamj0rd2.skullking.domain.game
 import com.tamj0rd2.extensions.assertFailureIs
 import com.tamj0rd2.propertytesting.PropertyTesting.propertyTest
 import com.tamj0rd2.skullking.domain.game.GameCommand.CompleteRound
+import com.tamj0rd2.skullking.domain.game.GameCommand.CompleteTrick
 import com.tamj0rd2.skullking.domain.game.GameCommand.StartRound
-import com.tamj0rd2.skullking.domain.game.GameErrorCode.CannotCompleteARoundThatIsNotInProgress
+import com.tamj0rd2.skullking.domain.game.GameCommand.StartTrick
+import com.tamj0rd2.skullking.domain.game.GameErrorCode.CannotCompleteRoundFromCurrentPhase
 import com.tamj0rd2.skullking.domain.game.GameEvent.RoundCompleted
+import com.tamj0rd2.skullking.domain.game.GamePhase.TrickScoring
 import com.tamj0rd2.skullking.domain.game.values.RoundNumber
+import com.tamj0rd2.skullking.domain.game.values.TrickNumber
 import dev.forkhandles.result4k.orThrow
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.next
@@ -24,6 +28,8 @@ class CompletingARoundTest {
 
         val game = Arb.newGame.next()
         game.execute(StartRound(roundNumber = roundNumber)).orThrow()
+        game.execute(StartTrick(trickNumber = TrickNumber.first)).orThrow()
+        game.execute(CompleteTrick(trickNumber = TrickNumber.first)).orThrow()
         game.execute(CompleteRound(roundNumber = roundNumber)).orThrow()
 
         val roundCompletedEvents = game.events.filterIsInstance<RoundCompleted>()
@@ -31,13 +37,13 @@ class CompletingARoundTest {
     }
 
     @Test
-    fun `cannot complete a round that is not in progress`() {
+    fun `cannot complete a round that is not in the trick scoring phase`() {
         propertyTest {
             checkAll(Arb.game) { game ->
-                assume(!game.state.roundIsInProgress)
+                assume(game.state.phase != TrickScoring)
 
                 val command = CompleteRound(game.state.roundInProgress.roundNumber)
-                assertFailureIs<CannotCompleteARoundThatIsNotInProgress>(game.execute(command))
+                assertFailureIs<CannotCompleteRoundFromCurrentPhase>(game.execute(command))
             }
         }
     }

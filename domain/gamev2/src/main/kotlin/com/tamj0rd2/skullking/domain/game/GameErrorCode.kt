@@ -19,13 +19,15 @@ sealed class GameErrorCode : IllegalStateException() {
 
     data object CannotStartARoundThatIsAlreadyInProgress : GameErrorCode()
 
-    data object CannotCompleteARoundThatIsNotInProgress : GameErrorCode()
-
     data object CannotBidOutsideBiddingPhase : GameErrorCode()
 
     data object AlreadyBid : GameErrorCode()
 
     data class CannotStartATrickFromCurrentPhase(
+        val currentPhase: GamePhase,
+    ) : GameErrorCode()
+
+    data class CannotCompleteRoundFromCurrentPhase(
         val currentPhase: GamePhase,
     ) : GameErrorCode()
 }
