@@ -10,16 +10,14 @@ import dev.forkhandles.result4k.Success
 sealed class GameStatistics<T> : StatisticsBase<T>()
 
 @Suppress("MemberVisibilityCanBePrivate", "ObjectPropertyName")
-data object RoundNumberStatistics : GameStatistics<RoundNumber>() {
-    internal val `round number less than 0` by optional()
-    internal val `round number is 0` by optional()
+data object RoundNumberStatistics : GameStatistics<RoundNumber?>() {
+    internal val `no round number` by optional()
     internal val `round number is 1-10` by required()
     internal val `round number greater than 10` by optional()
 
-    override fun classifyData(data: RoundNumber) =
+    override fun classifyData(data: RoundNumber?) =
         when {
-            data < RoundNumber.none -> `round number less than 0`
-            data == RoundNumber.none -> `round number is 0`
+            data == null -> `no round number`
             data <= RoundNumber.last -> `round number is 1-10`
             else -> `round number greater than 10`
         }
