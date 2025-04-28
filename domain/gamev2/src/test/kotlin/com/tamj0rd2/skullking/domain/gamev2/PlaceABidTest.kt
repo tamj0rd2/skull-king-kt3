@@ -32,8 +32,9 @@ class PlaceABidTest {
         val player2 = game.state.players.last()
 
         game.execute(PlaceABid(bid = Bid.one, actor = player1)).orThrow()
+
         assertEquals(
-            game.state.round.bids,
+            (game.state.round as Round.InProgress).bids,
             mapOf(
                 player1 to APlacedBid(Bid.one),
                 player2 to OutstandingBid,

@@ -12,7 +12,7 @@ sealed class GameStatistics<T> : StatisticsBase<T>()
 @Suppress("MemberVisibilityCanBePrivate", "ObjectPropertyName")
 data object RoundNumberStatistics : GameStatistics<RoundNumber>() {
     internal val `round number less than 0` by optional()
-    internal val `round number is 0` by required()
+    internal val `round number is 0` by optional()
     internal val `round number is 1-10` by required()
     internal val `round number greater than 10` by optional()
 

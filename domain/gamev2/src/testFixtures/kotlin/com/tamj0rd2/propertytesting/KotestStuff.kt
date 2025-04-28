@@ -5,9 +5,12 @@ import io.kotest.common.ExperimentalKotest
 import io.kotest.common.runBlocking
 import io.kotest.property.PropTestConfig
 import io.kotest.property.PropertyContext
+import io.kotest.property.assume
 import org.opentest4j.AssertionFailedError
 import java.io.OutputStream
 import java.io.PrintStream
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
 import kotlin.text.RegexOption.MULTILINE
 
 class StatsRecorder {
@@ -68,6 +71,14 @@ object PropertyTesting {
             }
         }
     }
+}
+
+@OptIn(ExperimentalContracts::class)
+fun assumeThat(value: Boolean) {
+    contract {
+        returns() implies value
+    }
+    assume(value)
 }
 
 @ExperimentalKotest

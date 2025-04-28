@@ -23,7 +23,6 @@ import com.tamj0rd2.skullking.domain.gamev2.GamePhase.Bidding
 import com.tamj0rd2.skullking.domain.gamev2.GamePhase.None
 import com.tamj0rd2.skullking.domain.gamev2.GamePhase.TrickScoring
 import com.tamj0rd2.skullking.domain.gamev2.GamePhase.TrickTaking
-import com.tamj0rd2.skullking.domain.gamev2.Round.InProgress
 import com.tamj0rd2.skullking.domain.gamev2.values.Bid
 import com.tamj0rd2.skullking.domain.gamev2.values.RoundNumber
 import dev.forkhandles.result4k.Result4k
@@ -33,13 +32,23 @@ sealed interface Round {
         val roundNumber: RoundNumber,
         val bids: Map<PlayerId, RoundBid>,
     ) : Round
+
+    data class WaitingToStart(
+        val roundNumber: RoundNumber,
+    ) : Round
 }
 
 data class GameState private constructor(
     val players: Set<PlayerId>,
-    val round: InProgress,
+    val round: Round,
     val phase: GamePhase,
 ) {
+    val currentRoundNumber =
+        when (round) {
+            is Round.InProgress -> round.roundNumber
+            is Round.WaitingToStart -> null
+        }
+
     fun applyEvent(event: GameEvent): Result4k<GameState, GameErrorCode> =
         when (event) {
             // TODO: try naming these functions more specifically for sanity.
@@ -69,21 +78,22 @@ data class GameState private constructor(
             event.roundNumber > RoundNumber.last ->
                 CannotPlayMoreThan10Rounds.asFailure()
 
+            round is Round.InProgress ->
+                CannotStartARoundThatIsAlreadyInProgress.asFailure()
+
+            round !is Round.WaitingToStart -> TODO()
+
             event.roundNumber < round.roundNumber ->
                 CannotStartAPreviousRound.asFailure()
 
             event.roundNumber > round.roundNumber.next ->
                 CannotStartARoundMoreThan1Ahead.asFailure()
 
-            // TODO: this is smelly
-            phase in setOf(Bidding, TrickTaking, TrickScoring) ->
-                CannotStartARoundThatIsAlreadyInProgress.asFailure()
-
             else ->
                 copy(
                     phase = Bidding,
                     round =
-                        InProgress(
+                        Round.InProgress(
                             roundNumber = event.roundNumber,
                             bids = players.associateWith { OutstandingBid },
                         ),
@@ -107,6 +117,8 @@ data class GameState private constructor(
         when {
             phase != Bidding ->
                 CannotBidOutsideBiddingPhase.asFailure()
+
+            round !is Round.InProgress -> TODO("what do?")
 
             round.bids[event.placedBy] is APlacedBid ->
                 AlreadyBid.asFailure()
@@ -137,11 +149,7 @@ data class GameState private constructor(
         val new =
             GameState(
                 players = emptySet(),
-                round =
-                    InProgress(
-                        roundNumber = RoundNumber.none,
-                        bids = emptyMap(),
-                    ),
+                round = Round.WaitingToStart(RoundNumber.first),
                 phase = None,
             )
     }

@@ -2,6 +2,7 @@ package com.tamj0rd2.skullking.domain.gamev2
 
 import com.tamj0rd2.extensions.assertFailureIs
 import com.tamj0rd2.propertytesting.PropertyTesting.propertyTest
+import com.tamj0rd2.propertytesting.assumeThat
 import com.tamj0rd2.skullking.domain.gamev2.GameCommand.CompleteRound
 import com.tamj0rd2.skullking.domain.gamev2.GameErrorCode.CannotCompleteRoundFromCurrentPhase
 import com.tamj0rd2.skullking.domain.gamev2.GamePhase.TrickScoring
@@ -20,7 +21,10 @@ class CompleteRoundTest {
             checkAll(Arb.game) { game ->
                 assume(game.state.phase != TrickScoring)
 
-                val command = CompleteRound(game.state.round.roundNumber)
+                val currentRoundNumber = game.state.currentRoundNumber
+                assumeThat(currentRoundNumber != null)
+
+                val command = CompleteRound(currentRoundNumber)
                 assertFailureIs<CannotCompleteRoundFromCurrentPhase>(game.execute(command))
             }
         }

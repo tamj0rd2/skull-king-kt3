@@ -1,6 +1,8 @@
 package com.tamj0rd2.skullking.domain.gamev2
 
 import com.tamj0rd2.propertytesting.PropertyTesting.propertyTest
+import com.tamj0rd2.propertytesting.assumeThat
+import com.tamj0rd2.propertytesting.setMaxDiscardPercentage
 import com.tamj0rd2.skullking.domain.gamev2.GameCommand.StartRound
 import com.tamj0rd2.skullking.domain.gamev2.values.RoundNumber
 import dev.forkhandles.result4k.Success
@@ -14,12 +16,14 @@ class RoundInvariantsTest {
     fun `when a round starts, the round number increases`() {
         propertyTest {
             checkAll(Arb.game) { game ->
-                val initialRoundNumber = game.state.round.roundNumber
+                val initialRoundNumber = game.state.currentRoundNumber
+                assumeThat(initialRoundNumber != null)
+
                 val command = StartRound(initialRoundNumber.next)
                 assume(game.execute(command) is Success)
 
                 val latestState = game.state
-                assert(latestState.round.roundNumber > initialRoundNumber)
+                assert(latestState.currentRoundNumber!! > initialRoundNumber)
             }
         }
     }
@@ -28,7 +32,10 @@ class RoundInvariantsTest {
     fun `when a round starts, the round phase is Bidding`() {
         propertyTest {
             checkAll(Arb.game) { game ->
-                val command = StartRound(game.state.round.roundNumber.next)
+                val currentRoundNumber = game.state.currentRoundNumber
+                assumeThat(currentRoundNumber != null)
+
+                val command = StartRound(currentRoundNumber.next)
                 assume(game.execute(command) is Success)
 
                 val latestState = game.state
@@ -41,18 +48,23 @@ class RoundInvariantsTest {
     fun `the round number is never greater than 10`() =
         propertyTest {
             checkAll(Arb.game) { game ->
-                assert(game.state.round.roundNumber <= RoundNumber.last)
+                val currentRoundNumber = game.state.currentRoundNumber
+                assumeThat(currentRoundNumber != null)
+                assert(currentRoundNumber <= RoundNumber.last)
             }
         }
 
     @Test
     fun `the round number never decreases`() =
         propertyTest { statsRecorder ->
-            checkAll(Arb.game, Arb.gameCommand) { game, command ->
-                val roundNumberBefore = game.state.round.roundNumber
+            checkAll(setMaxDiscardPercentage(95), Arb.game, Arb.gameCommand) { game, command ->
+                val roundNumberBefore = game.state.currentRoundNumber
+                assumeThat(roundNumberBefore != null)
+
                 val commandResult = game.execute(command)
-                val roundNumberNow = game.state.round.roundNumber
-                assert(roundNumberNow >= roundNumberBefore)
+                val roundNumberNow = game.state.currentRoundNumber
+
+                assert(roundNumberNow!! >= roundNumberBefore)
 
                 statsRecorder.run {
                     // TODO: round number 1-10 stats are way too low.
@@ -66,10 +78,14 @@ class RoundInvariantsTest {
     @Test
     fun `the round number only ever increases by 1 at a time`() =
         propertyTest { statsRecorder ->
-            checkAll(Arb.game, Arb.gameCommand) { game, command ->
-                val roundNumberBefore = game.state.round.roundNumber
+            checkAll(setMaxDiscardPercentage(95), Arb.game, Arb.gameCommand) { game, command ->
+                val roundNumberBefore = game.state.currentRoundNumber
+                assumeThat(roundNumberBefore != null)
+
                 val commandResult = game.execute(command)
-                val roundNumberNow = game.state.round.roundNumber
+
+                val roundNumberNow = game.state.currentRoundNumber
+                assumeThat(roundNumberNow != null)
 
                 val actualIncrease = roundNumberNow.value - roundNumberBefore.value
                 assert(actualIncrease in setOf(0, 1))
