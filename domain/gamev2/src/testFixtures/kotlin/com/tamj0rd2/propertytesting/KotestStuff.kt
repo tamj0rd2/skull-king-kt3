@@ -1,6 +1,5 @@
 package com.tamj0rd2.propertytesting
 
-import com.tamj0rd2.propertytesting.MyStatisticsReporter.printClassifications
 import com.tamj0rd2.skullking.domain.gamev2.Game
 import com.tamj0rd2.skullking.domain.gamev2.GameErrorCode
 import com.tamj0rd2.skullking.domain.gamev2.GameResult
@@ -17,15 +16,6 @@ import java.io.PrintStream
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 import kotlin.text.RegexOption.MULTILINE
-
-class StatsRecorder {
-    private val statisticClasses = mutableListOf<StatisticsBase<*>>()
-    val requiredStatistics get() = statisticClasses.toList()
-
-    fun registerStatistics(s: StatisticsBase<*>) {
-        statisticClasses.add(s)
-    }
-}
 
 object PropertyTesting {
     init {
@@ -51,13 +41,9 @@ object PropertyTesting {
     private fun Throwable.cleanedStackTrace(): Array<StackTraceElement> =
         stackTrace.filter { element -> stackTracePartsToIgnore.none { element.className.startsWith(it) } }.toTypedArray()
 
-    fun propertyTest(block: suspend (statsRecorder: StatsRecorder) -> PropertyContext) {
+    fun propertyTest(block: suspend () -> PropertyContext) {
         try {
-            val statsRecorder = StatsRecorder()
-            runBlocking { block(statsRecorder) }.apply {
-                printClassifications()
-                statsRecorder.requiredStatistics.forEach { it.check() }
-            }
+            runBlocking(block)
         } catch (e: AssertionError) {
             val args =
                 "Arg \\d+: .*"

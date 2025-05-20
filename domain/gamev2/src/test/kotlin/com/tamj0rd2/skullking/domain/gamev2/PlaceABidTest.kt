@@ -46,17 +46,13 @@ class PlaceABidTest {
 
     @Test
     fun `cannot place a bid outside of the bidding phase`() {
-        propertyTest { statsRecorder ->
+        propertyTest {
             checkAll(Arb.game, Exhaustive.bid) { initial, bid ->
                 assume(initial.state.phase != Bidding)
 
                 val playerToBid = initial.state.players.random(randomSource().random)
                 val command = PlaceABid(bid = bid, actor = playerToBid)
                 assertFailureIs<CannotBidOutsideBiddingPhase>(initial.execute(command), "coming from phase ${initial.state.phase}")
-
-                statsRecorder.run {
-                    classify(initial.state.phase::class.simpleName!!)
-                }
             }
         }
     }

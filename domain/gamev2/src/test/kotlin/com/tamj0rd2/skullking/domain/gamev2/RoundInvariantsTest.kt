@@ -49,7 +49,7 @@ class RoundInvariantsTest {
 
     @Test
     fun `the round number never decreases`() =
-        propertyTest { statsRecorder ->
+        propertyTest {
             checkAll(setMaxDiscardPercentage(95), Arb.game, Arb.gameCommand) { initial, command ->
                 val roundNumberBefore = initial.state.roundNumberInProgress
                 assumeThat(roundNumberBefore != null)
@@ -60,17 +60,12 @@ class RoundInvariantsTest {
                         .assumeSuccess()
                         .state.roundNumberInProgress
                 assert(roundNumberNow!! >= roundNumberBefore)
-
-                statsRecorder.run {
-                    // TODO: round number 1-10 stats are way too low.
-                    RoundNumberStatistics.classify(roundNumberBefore)
-                }
             }
         }
 
     @Test
     fun `the round number only ever increases by a maximum of 1 at a time`() =
-        propertyTest { statsRecorder ->
+        propertyTest {
             checkAll(setMaxDiscardPercentage(95), Arb.game, Arb.gameCommand) { initial, command ->
                 val roundNumberBefore = initial.state.roundNumberInProgress
                 assumeThat(roundNumberBefore != null)
@@ -84,11 +79,6 @@ class RoundInvariantsTest {
 
                 val actualIncrease = roundNumberNow.differenceFrom(roundNumberBefore)
                 assert(actualIncrease in setOf(0, 1))
-
-                statsRecorder.run {
-                    // TODO: round number 1-10 stats are way too low.
-                    RoundNumberStatistics.classify(roundNumberBefore)
-                }
             }
         }
 }

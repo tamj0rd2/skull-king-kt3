@@ -38,63 +38,46 @@ class InvariantsTest {
 
     @Test
     fun `the players in the game never change`() =
-        propertyTest { statsRecorder ->
+        propertyTest {
             checkAll(setMaxDiscardPercentage(50), Arb.game, Arb.gameCommand) { initial, command ->
                 val updated = initial.execute(command).assumeSuccess()
                 assertEquals(initial.state.players, updated.state.players)
-
-                statsRecorder.run {
-                    CommandTypeStatistics.classify(command)
-                }
             }
         }
 
     @Test
     fun `the game's id never changes`() =
-        propertyTest { statsRecorder ->
+        propertyTest {
             checkAll(setMaxDiscardPercentage(50), Arb.game, Arb.gameCommand) { initial, command ->
                 val updated = initial.execute(command).assumeSuccess()
                 assertEquals(initial.id, updated.id)
-
-                statsRecorder.run {
-                    CommandTypeStatistics.classify(command)
-                }
             }
         }
 
     @Test
     fun `every event in the game is related to that specific game`() =
-        propertyTest { statsRecorder ->
+        propertyTest {
             checkAll(Arb.game) { game ->
                 val gameIdsFromEvents =
                     game.events
                         .map { it.gameId }
                         .toSet()
                 assert(gameIdsFromEvents.single() == game.id)
-
-                statsRecorder.run {
-                    // TODO: this test isn't really producing enough events. Most of the time there are only 1-10 which doesn't represent a normal game.
-                    EventCountStatistics.classify(game.events)
-                }
             }
         }
 
     @Test
     fun `a game that is rebuilt from its history of events has the same identity, events and state as the original`() =
-        propertyTest { statsRecorder ->
+        propertyTest {
             checkAll(Arb.game) { initial ->
                 val reconstitutedGame = Game.reconstituteFrom(initial.events).orThrow()
                 assertEquals(initial, reconstitutedGame)
-
-                statsRecorder.run {
-                    EventCountStatistics.classify(initial.events)
-                }
             }
         }
 
     @Test
     fun `each successful command results in 1 event being emitted`() {
-        propertyTest { statsRecorder ->
+        propertyTest {
             checkAll(setMaxDiscardPercentage(60), Arb.game, Arb.gameCommand) { initial, command ->
                 val initialEvents = initial.events
                 val eventsAfterCommand = initial.execute(command).assumeSuccess().events
@@ -114,11 +97,6 @@ class InvariantsTest {
                         },
                     actual = eventsAfterCommand.last()::class,
                 )
-
-                statsRecorder.runCatching {
-                    CommandTypeStatistics.classify(command)
-                    EventCountStatistics.classify(initialEvents)
-                }
             }
         }
     }
@@ -126,14 +104,10 @@ class InvariantsTest {
     @Test
     @Disabled("just not implemented yet")
     fun `each successful command results in a state change`() {
-        propertyTest { statsRecorder ->
+        propertyTest {
             checkAll(Arb.game, Arb.gameCommand) { initial, command ->
                 val updated = initial.execute(command).assumeSuccess()
                 assertNotEquals(initial.state, updated.state)
-
-                statsRecorder.runCatching {
-                    CommandTypeStatistics.classify(command)
-                }
             }
         }
     }
