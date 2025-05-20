@@ -2,12 +2,12 @@ package com.tamj0rd2.skullking.domain.gamev2
 
 import com.tamj0rd2.extensions.assertFailureIs
 import com.tamj0rd2.propertytesting.PropertyTesting.propertyTest
+import com.tamj0rd2.propertytesting.assumeSuccess
 import com.tamj0rd2.propertytesting.setMaxDiscardPercentage
 import com.tamj0rd2.skullking.domain.gamev2.GameCommand.StartTrick
 import com.tamj0rd2.skullking.domain.gamev2.GameErrorCode.CannotStartATrickFromCurrentPhase
 import com.tamj0rd2.skullking.domain.gamev2.GamePhase.Bidding
 import com.tamj0rd2.skullking.domain.gamev2.GamePhase.TrickScoring
-import dev.forkhandles.result4k.Success
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.filterIsInstance
 import io.kotest.property.assume
@@ -23,10 +23,9 @@ class StartTrickTest {
         propertyTest {
             val startTrickArb = Arb.gameCommand.filterIsInstance<StartTrick>()
 
-            checkAll(setMaxDiscardPercentage(98), Arb.game, startTrickArb) { game, command ->
-                assume(game.execute(command) is Success)
-
-                val currentPhase = game.state.phase
+            checkAll(setMaxDiscardPercentage(98), Arb.game, startTrickArb) { initial, command ->
+                val updated = initial.execute(command).assumeSuccess()
+                val currentPhase = updated.state.phase
                 assert(currentPhase == GamePhase.TrickTaking)
             }
         }
@@ -37,10 +36,10 @@ class StartTrickTest {
         propertyTest {
             val startTrickArb = Arb.gameCommand.filterIsInstance<StartTrick>()
 
-            checkAll(setMaxDiscardPercentage(45), Arb.game, startTrickArb) { game, command ->
-                assume(game.state.phase !in setOf(Bidding, TrickScoring))
+            checkAll(setMaxDiscardPercentage(45), Arb.game, startTrickArb) { initial, command ->
+                assume(initial.state.phase !in setOf(Bidding, TrickScoring))
 
-                assertFailureIs<CannotStartATrickFromCurrentPhase>(game.execute(command), "coming from phase ${game.state.phase}")
+                assertFailureIs<CannotStartATrickFromCurrentPhase>(initial.execute(command), "coming from phase ${initial.state.phase}")
             }
         }
 

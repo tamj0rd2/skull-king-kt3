@@ -9,11 +9,11 @@ import com.tamj0rd2.skullking.domain.gamev2.GameEvent.BidPlaced
 import com.tamj0rd2.skullking.domain.gamev2.GamePhase.Bidding
 import com.tamj0rd2.skullking.domain.gamev2.values.Bid
 import com.tamj0rd2.skullking.domain.gamev2.values.RoundNumber
+import dev.forkhandles.result4k.flatMap
 import dev.forkhandles.result4k.orThrow
+import dev.forkhandles.values.random
 import io.kotest.property.Arb
 import io.kotest.property.Exhaustive
-import io.kotest.property.arbitrary.filter
-import io.kotest.property.arbitrary.next
 import io.kotest.property.assume
 import io.kotest.property.checkAll
 import org.junit.jupiter.api.Disabled
@@ -25,13 +25,15 @@ import kotlin.test.assertEquals
 class PlaceABidTest {
     @Test
     fun `the state reflects each player's bid`() {
-        val game = Arb.newGame.filter { it.state.players.size == 2 }.next()
-        game.execute(StartRound(RoundNumber.One)).orThrow()
+        val player1 = PlayerId.random()
+        val player2 = PlayerId.random()
 
-        val player1 = game.state.players.first()
-        val player2 = game.state.players.last()
-
-        game.execute(PlaceABid(bid = Bid.One, actor = player1)).orThrow()
+        val game =
+            Game
+                .new(setOf(player1, player2))
+                .flatMap { it.execute(StartRound(RoundNumber.One)) }
+                .flatMap { it.execute(PlaceABid(bid = Bid.One, actor = player1)) }
+                .orThrow()
 
         assertEquals(
             (game.state.round as Round.InProgress).bids,
@@ -45,15 +47,15 @@ class PlaceABidTest {
     @Test
     fun `cannot place a bid outside of the bidding phase`() {
         propertyTest { statsRecorder ->
-            checkAll(Arb.game, Exhaustive.bid) { game, bid ->
-                assume(game.state.phase != Bidding)
+            checkAll(Arb.game, Exhaustive.bid) { initial, bid ->
+                assume(initial.state.phase != Bidding)
 
-                val playerToBid = game.state.players.random(randomSource().random)
+                val playerToBid = initial.state.players.random(randomSource().random)
                 val command = PlaceABid(bid = bid, actor = playerToBid)
-                assertFailureIs<CannotBidOutsideBiddingPhase>(game.execute(command), "coming from phase ${game.state.phase}")
+                assertFailureIs<CannotBidOutsideBiddingPhase>(initial.execute(command), "coming from phase ${initial.state.phase}")
 
                 statsRecorder.run {
-                    classify(game.state.phase::class.simpleName!!)
+                    classify(initial.state.phase::class.simpleName!!)
                 }
             }
         }

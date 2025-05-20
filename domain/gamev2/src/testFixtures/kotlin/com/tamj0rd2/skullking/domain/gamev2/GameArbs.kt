@@ -1,11 +1,12 @@
 package com.tamj0rd2.skullking.domain.gamev2
 
-import com.tamj0rd2.extensions.fold
+import com.tamj0rd2.extensions.asSuccess
 import com.tamj0rd2.skullking.domain.gamev2.values.Bid
 import com.tamj0rd2.skullking.domain.gamev2.values.RoundNumber
 import com.tamj0rd2.skullking.domain.gamev2.values.TrickNumber
 import dev.forkhandles.result4k.Result4k
 import dev.forkhandles.result4k.Success
+import dev.forkhandles.result4k.flatMap
 import dev.forkhandles.result4k.orThrow
 import dev.forkhandles.values.IntValueFactory
 import dev.forkhandles.values.Value
@@ -52,7 +53,9 @@ val Arb.Companion.gameResult
             Arb.newGameResult,
             Arb.gameCommands,
         ) { gameResult, gameCommands ->
-            gameResult.fold(gameCommands, Game::execute)
+            gameCommands.fold(gameResult) { acc, command ->
+                acc.flatMap { it.execute(command) }
+            }
         }
 
 val Arb.Companion.game
@@ -77,3 +80,8 @@ private fun <T : Value<Int>> exhaustive(
     .exhaustive()
     .map(factory::ofResult4k)
     .successesOnly()
+
+internal fun GameResult.executeAndAssert(
+    act: (Game) -> GameResult,
+    assert: (Game) -> Unit,
+) = flatMap(act).orThrow().also(assert).asSuccess()

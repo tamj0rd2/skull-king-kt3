@@ -1,6 +1,7 @@
 package com.tamj0rd2.skullking.domain.gamev2
 
 import com.tamj0rd2.propertytesting.PropertyTesting.propertyTest
+import com.tamj0rd2.propertytesting.assumeSuccess
 import com.tamj0rd2.propertytesting.setMaxDiscardPercentage
 import com.tamj0rd2.skullking.domain.gamev2.GameCommand.CompleteGame
 import com.tamj0rd2.skullking.domain.gamev2.GameCommand.CompleteRound
@@ -16,11 +17,8 @@ import com.tamj0rd2.skullking.domain.gamev2.GameEvent.RoundCompleted
 import com.tamj0rd2.skullking.domain.gamev2.GameEvent.RoundStarted
 import com.tamj0rd2.skullking.domain.gamev2.GameEvent.TrickCompleted
 import com.tamj0rd2.skullking.domain.gamev2.GameEvent.TrickStarted
-import dev.forkhandles.result4k.Failure
-import dev.forkhandles.result4k.Success
 import dev.forkhandles.result4k.orThrow
 import io.kotest.property.Arb
-import io.kotest.property.assume
 import io.kotest.property.checkAll
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
@@ -41,15 +39,12 @@ class InvariantsTest {
     @Test
     fun `the players in the game never change`() =
         propertyTest { statsRecorder ->
-            checkAll(Arb.game, Arb.gameCommand) { game, command ->
-                val initialPlayers = game.state.players
-                val commandResult = game.execute(command)
-                val playersNow = game.state.players
-                assertEquals(initialPlayers, playersNow)
+            checkAll(setMaxDiscardPercentage(50), Arb.game, Arb.gameCommand) { initial, command ->
+                val updated = initial.execute(command).assumeSuccess()
+                assertEquals(initial.state.players, updated.state.players)
 
                 statsRecorder.run {
                     CommandTypeStatistics.classify(command)
-                    CommandExecutionStatistics.classify(commandResult)
                 }
             }
         }
@@ -57,15 +52,12 @@ class InvariantsTest {
     @Test
     fun `the game's id never changes`() =
         propertyTest { statsRecorder ->
-            checkAll(Arb.game, Arb.gameCommand) { game, command ->
-                val initialGameId = game.id
-                val commandResult = game.execute(command)
-                val gameIdNow = game.id
-                assertEquals(initialGameId, gameIdNow)
+            checkAll(setMaxDiscardPercentage(50), Arb.game, Arb.gameCommand) { initial, command ->
+                val updated = initial.execute(command).assumeSuccess()
+                assertEquals(initial.id, updated.id)
 
                 statsRecorder.run {
                     CommandTypeStatistics.classify(command)
-                    CommandExecutionStatistics.classify(commandResult)
                 }
             }
         }
@@ -90,15 +82,12 @@ class InvariantsTest {
     @Test
     fun `a game that is rebuilt from its history of events has the same identity, events and state as the original`() =
         propertyTest { statsRecorder ->
-            checkAll(Arb.game) { game ->
-                val reconstitutedGame = Game.reconstituteFrom(game.events).orThrow()
-                assertEquals(game, reconstitutedGame)
-                assertEquals(game.id, reconstitutedGame.id)
-                assertEquals(game.events, reconstitutedGame.events)
-                assertEquals(game.state, reconstitutedGame.state)
+            checkAll(Arb.game) { initial ->
+                val reconstitutedGame = Game.reconstituteFrom(initial.events).orThrow()
+                assertEquals(initial, reconstitutedGame)
 
                 statsRecorder.run {
-                    EventCountStatistics.classify(game.events)
+                    EventCountStatistics.classify(initial.events)
                 }
             }
         }
@@ -106,13 +95,12 @@ class InvariantsTest {
     @Test
     fun `each successful command results in 1 event being emitted`() {
         propertyTest { statsRecorder ->
-            checkAll(setMaxDiscardPercentage(60), Arb.game, Arb.gameCommand) { game, command ->
-                val eventsBeforeCommand = game.events
-                assume(game.execute(command) is Success)
-                val eventsAfterCommand = game.events
+            checkAll(setMaxDiscardPercentage(60), Arb.game, Arb.gameCommand) { initial, command ->
+                val initialEvents = initial.events
+                val eventsAfterCommand = initial.execute(command).assumeSuccess().events
 
-                assertEquals(eventsBeforeCommand.size + 1, eventsAfterCommand.size)
-                assertEquals(eventsBeforeCommand, eventsAfterCommand.dropLast(1))
+                assertEquals(initialEvents.size + 1, eventsAfterCommand.size)
+                assertEquals(initialEvents, eventsAfterCommand.dropLast(1))
                 assertEquals(
                     expected =
                         when (command) {
@@ -129,7 +117,7 @@ class InvariantsTest {
 
                 statsRecorder.runCatching {
                     CommandTypeStatistics.classify(command)
-                    EventCountStatistics.classify(eventsBeforeCommand)
+                    EventCountStatistics.classify(initialEvents)
                 }
             }
         }
@@ -139,51 +127,12 @@ class InvariantsTest {
     @Disabled("just not implemented yet")
     fun `each successful command results in a state change`() {
         propertyTest { statsRecorder ->
-            checkAll(Arb.game, Arb.gameCommand) { game, command ->
-                val stateBeforeCommand = game.state
-                assume(game.execute(command) is Success)
-                val stateAfterCommand = game.state
-                assertNotEquals(stateBeforeCommand, stateAfterCommand)
+            checkAll(Arb.game, Arb.gameCommand) { initial, command ->
+                val updated = initial.execute(command).assumeSuccess()
+                assertNotEquals(initial.state, updated.state)
 
                 statsRecorder.runCatching {
                     CommandTypeStatistics.classify(command)
-                }
-            }
-        }
-    }
-
-    @Test
-    fun `a failed command does not append any events`() {
-        propertyTest { statsRecorder ->
-            // TODO: reduce max discard percent by implementing more validation logic.
-            checkAll(setMaxDiscardPercentage(75), Arb.game, Arb.gameCommand) { game, command ->
-                val eventsBeforeCommand = game.events
-                assume(game.execute(command) is Failure)
-                val eventsAfterCommand = game.events
-                assertEquals(eventsBeforeCommand, eventsAfterCommand)
-
-                statsRecorder.runCatching {
-                    // TODO: re-enable classifications once more validation logic has been implemented
-                    // CommandTypeStatistics.classify(command)
-                    EventCountStatistics.classify(eventsBeforeCommand)
-                }
-            }
-        }
-    }
-
-    @Test
-    fun `a failed command does not modify the game's state`() {
-        propertyTest { statsRecorder ->
-            // TODO: reduce max discard percent by implementing more validation logic.
-            checkAll(setMaxDiscardPercentage(75), Arb.game, Arb.gameCommand) { game, command ->
-                val stateBeforeCommand = game.state
-                assume(game.execute(command) is Failure)
-                val stateAfterCommand = game.state
-                assertEquals(stateBeforeCommand, stateAfterCommand)
-
-                statsRecorder.runCatching {
-                    // TODO: re-enable classifications once more validation logic has been implemented
-//                    CommandTypeStatistics.classify(command)
                 }
             }
         }

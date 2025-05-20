@@ -9,7 +9,7 @@ import com.tamj0rd2.skullking.domain.gamev2.GameCommand.StartTrick
 import com.tamj0rd2.skullking.domain.gamev2.values.Bid
 import com.tamj0rd2.skullking.domain.gamev2.values.RoundNumber
 import com.tamj0rd2.skullking.domain.gamev2.values.TrickNumber
-import dev.forkhandles.result4k.orThrow
+import dev.forkhandles.result4k.flatMap
 import dev.forkhandles.values.random
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -19,22 +19,31 @@ class GameExampleTest {
     fun `example - phase transitions - playing a 2 player game up until the end of round 1`() {
         val player1 = PlayerId.random()
         val player2 = PlayerId.random()
-        val game = Game.new(setOf(player1, player2)).orThrow()
 
-        game.execute(StartRound(roundNumber = RoundNumber.One)).orThrow()
-        assertEquals(GamePhase.Bidding, game.state.phase, "starting a round transitions to correct phase")
-
-        game.execute(PlaceABid(actor = player1, bid = Bid.One)).orThrow()
-        game.execute(PlaceABid(actor = player2, bid = Bid.Zero)).orThrow()
-        game.execute(StartTrick(trickNumber = TrickNumber.One)).orThrow()
-        assertEquals(GamePhase.TrickTaking, game.state.phase, "starting a trick transitions to correct phase")
-
-        game.execute(PlayACard(actor = player1, card = CannedCard)).orThrow()
-        game.execute(PlayACard(actor = player2, card = CannedCard)).orThrow()
-        game.execute(CompleteTrick(trickNumber = TrickNumber.One)).orThrow()
-        assertEquals(GamePhase.TrickScoring, game.state.phase, "completing a trick transitions to correct phase")
-
-        game.execute(CompleteRound(roundNumber = RoundNumber.One)).orThrow()
-        assertEquals(GamePhase.AwaitingNextRound, game.state.phase, "completing a round transitions to correct phase")
+        Game
+            .new(setOf(player1, player2))
+            .executeAndAssert(
+                act = { it.execute(StartRound(roundNumber = RoundNumber.One)) },
+                assert = { assertEquals(GamePhase.Bidding, it.state.phase, "starting a round transitions to correct phase") },
+            ).executeAndAssert(
+                act = { it ->
+                    it
+                        .execute(PlaceABid(actor = player1, bid = Bid.One))
+                        .flatMap { it.execute(PlaceABid(actor = player2, bid = Bid.Zero)) }
+                        .flatMap { it.execute(StartTrick(trickNumber = TrickNumber.One)) }
+                },
+                assert = { assertEquals(GamePhase.TrickTaking, it.state.phase, "starting a trick transitions to correct phase") },
+            ).executeAndAssert(
+                act = { it ->
+                    it
+                        .execute(PlayACard(actor = player1, card = CannedCard))
+                        .flatMap { it.execute(PlayACard(actor = player2, card = CannedCard)) }
+                        .flatMap { it.execute(CompleteTrick(trickNumber = TrickNumber.One)) }
+                },
+                assert = { assertEquals(GamePhase.TrickScoring, it.state.phase, "completing a trick transitions to correct phase") },
+            ).executeAndAssert(
+                act = { it.execute(CompleteRound(roundNumber = RoundNumber.One)) },
+                assert = { assertEquals(GamePhase.AwaitingNextRound, it.state.phase, "completing a round transitions to correct phase") },
+            )
     }
 }

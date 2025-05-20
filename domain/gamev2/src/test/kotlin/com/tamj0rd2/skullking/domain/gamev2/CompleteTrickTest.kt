@@ -16,8 +16,11 @@ class CompleteTrickTest {
     fun `example - when a trick is completed, the phase changes to TrickScoring`() {
         val command = CompleteTrick(trickNumber = TrickNumber.One)
 
-        val game = Arb.newGame.next()
-        game.execute(command).orThrow()
+        val game =
+            Arb.newGame
+                .next()
+                .execute(command)
+                .orThrow()
 
         assertEquals(GamePhase.TrickScoring, game.state.phase)
     }

@@ -20,8 +20,11 @@ class PlayACardTest {
                 actor = PlayerId.random(),
             )
 
-        val game = Arb.newGame.next()
-        game.execute(command).orThrow()
+        val game =
+            Arb.newGame
+                .next()
+                .execute(command)
+                .orThrow()
 
         val cardPlayedEvent =
             game.events

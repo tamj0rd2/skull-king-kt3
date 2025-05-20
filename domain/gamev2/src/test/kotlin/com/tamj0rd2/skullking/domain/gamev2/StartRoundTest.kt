@@ -18,20 +18,24 @@ import org.junit.jupiter.api.Test
 class StartRoundTest {
     @Test
     fun `when a round has started, a round started event is emitted`() {
-        val game = Arb.newGame.next()
-        val command = StartRound(RoundNumber.One)
-        game.execute(command).orThrow()
+        val roundToStart = RoundNumber.One
+
+        val game =
+            Arb.newGame
+                .next()
+                .execute(StartRound(roundToStart))
+                .orThrow()
 
         val roundStartedEvent =
             game.events
                 .filterIsInstance<RoundStarted>()
                 .single()
-        assert(roundStartedEvent.roundNumber == command.roundNumber)
+        assert(roundStartedEvent.roundNumber == roundToStart)
 
         val dealtCardsPerPlayer = roundStartedEvent.dealtCards.perPlayer
         dealtCardsPerPlayer.onEachIndexed { index, (_, cards) ->
             assert(
-                cards.size == command.roundNumber.totalCardsToDeal,
+                cards.size == roundToStart.totalCardsToDeal,
             ) { "incorrect cards for player ${index + 1}/${Arb.validPlayerIds.next().size}" }
         }
     }
@@ -39,12 +43,12 @@ class StartRoundTest {
     @Test
     fun `cannot start a round that is already in progress`() =
         propertyTest {
-            checkAll(Arb.game) { game ->
-                val round = game.state.round
+            checkAll(Arb.game) { initial ->
+                val round = initial.state.round
                 assumeThat(round is Round.InProgress)
 
                 val command = StartRound(round.roundNumber)
-                assertFailureIs<CannotStartARoundThatIsAlreadyInProgress>(game.execute(command))
+                assertFailureIs<CannotStartARoundThatIsAlreadyInProgress>(initial.execute(command))
             }
         }
 }

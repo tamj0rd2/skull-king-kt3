@@ -22,11 +22,11 @@ import com.tamj0rd2.skullking.domain.gamev2.GameEvent.TrickCompleted
 import com.tamj0rd2.skullking.domain.gamev2.GameEvent.TrickStarted
 import dev.forkhandles.result4k.Result
 import dev.forkhandles.result4k.Result4k
+import dev.forkhandles.result4k.flatMap
 import dev.forkhandles.result4k.onFailure
 import dev.forkhandles.values.UUIDValueFactory
 import dev.forkhandles.values.Value
 import dev.forkhandles.values.random
-import java.util.Objects
 import java.util.UUID
 
 data class GameId private constructor(
@@ -35,20 +35,14 @@ data class GameId private constructor(
     companion object : UUIDValueFactory<GameId>(::GameId)
 }
 
-class Game private constructor(
+typealias GameResult = Result4k<Game, GameErrorCode>
+
+data class Game private constructor(
     val id: GameId,
+    val state: GameState = GameState.new,
+    val events: List<GameEvent> = emptyList(),
 ) {
-    override fun equals(other: Any?): Boolean = other is Game && other.id == id
-
-    override fun hashCode(): Int = Objects.hash(id)
-
-    var state = GameState.new
-        private set
-
-    private val _events = mutableListOf<GameEvent>()
-    val events get() = _events.toList()
-
-    fun execute(command: GameCommand): Result4k<Unit, GameErrorCode> =
+    fun execute(command: GameCommand): Result4k<Game, GameErrorCode> =
         when (command) {
             is StartRound -> {
                 appendEvent(
@@ -110,11 +104,13 @@ class Game private constructor(
                 )
         }
 
-    private fun appendEvent(event: GameEvent): Result4k<Unit, GameErrorCode> {
+    private fun appendEvent(event: GameEvent): Result4k<Game, GameErrorCode> {
         if (event.gameId != id) return GameIdMismatch.asFailure()
-        state = state.applyEvent(event).onFailure { return it }
-        _events.add(event)
-        return Unit.asSuccess()
+
+        return copy(
+            events = events + event,
+            state = state.applyEvent(event).onFailure { return it },
+        ).asSuccess()
     }
 
     companion object {
@@ -124,15 +120,15 @@ class Game private constructor(
         fun new(players: Set<PlayerId>): Result<Game, GameErrorCode> {
             if (players.size < MINIMUM_PLAYER_COUNT) return NotEnoughPlayersToCreateGame.asFailure()
             if (players.size > MAXIMUM_PLAYER_COUNT) return TooManyPlayersToCreateGame.asFailure()
-            val game = Game(GameId.random())
-            game.appendEvent(GameStarted(gameId = game.id, players = players)).onFailure { return it }
-            return game.asSuccess()
+            val id = GameId.random()
+            return Game(id).appendEvent(GameStarted(gameId = id, players = players))
         }
 
         fun reconstituteFrom(events: List<GameEvent>): Result<Game, GameErrorCode> {
-            val game = Game(events.first().gameId)
-            events.forEach { event -> game.appendEvent(event).onFailure { return it } }
-            return game.asSuccess()
+            val initial = Game(events.first().gameId).asSuccess() as Result<Game, GameErrorCode>
+            return events.fold(initial) { result, command ->
+                result.flatMap { it.appendEvent(command) }
+            }
         }
     }
 }

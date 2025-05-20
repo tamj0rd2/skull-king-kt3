@@ -36,11 +36,11 @@ data object CommandTypeStatistics : GameStatistics<GameCommand>() {
 }
 
 @Suppress("MemberVisibilityCanBePrivate", "ObjectPropertyName")
-data object CommandExecutionStatistics : GameStatistics<Result4k<Unit, GameErrorCode>>() {
+data object CommandExecutionStatistics : GameStatistics<Result4k<Game, GameErrorCode>>() {
     internal val `command failed` by required()
     internal val `command succeeded` by required()
 
-    override fun classifyData(data: Result4k<Unit, GameErrorCode>) =
+    override fun classifyData(data: Result4k<Game, GameErrorCode>) =
         when (data) {
             is Success -> `command succeeded`
             is Failure -> `command failed`
