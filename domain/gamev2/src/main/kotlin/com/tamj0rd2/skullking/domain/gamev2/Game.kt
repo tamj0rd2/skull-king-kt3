@@ -42,7 +42,7 @@ data class Game private constructor(
     val state: GameState = GameState.new,
     val events: List<GameEvent> = emptyList(),
 ) {
-    fun execute(command: GameCommand): Result4k<Game, GameErrorCode> =
+    fun execute(command: GameCommand): GameResult =
         when (command) {
             is StartRound -> {
                 appendEvent(
@@ -104,7 +104,7 @@ data class Game private constructor(
                 )
         }
 
-    private fun appendEvent(event: GameEvent): Result4k<Game, GameErrorCode> {
+    private fun appendEvent(event: GameEvent): GameResult {
         if (event.gameId != id) return GameIdMismatch.asFailure()
 
         return copy(
