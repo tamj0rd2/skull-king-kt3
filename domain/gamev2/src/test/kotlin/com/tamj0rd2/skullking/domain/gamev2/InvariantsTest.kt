@@ -72,6 +72,9 @@ class InvariantsTest {
             checkAll(Arb.game) { initial ->
                 val reconstitutedGame = Game.reconstituteFrom(initial.events).orThrow()
                 assertEquals(initial, reconstitutedGame)
+                assertEquals(initial.id, reconstitutedGame.id)
+                assertEquals(initial.events, reconstitutedGame.events)
+                assertEquals(initial.state, reconstitutedGame.state)
             }
         }
 

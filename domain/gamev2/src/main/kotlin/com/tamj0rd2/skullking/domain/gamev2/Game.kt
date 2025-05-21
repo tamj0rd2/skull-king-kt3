@@ -27,6 +27,7 @@ import dev.forkhandles.result4k.onFailure
 import dev.forkhandles.values.UUIDValueFactory
 import dev.forkhandles.values.Value
 import dev.forkhandles.values.random
+import java.util.Objects
 import java.util.UUID
 
 data class GameId private constructor(
@@ -42,6 +43,10 @@ data class Game private constructor(
     val state: GameState = GameState.new,
     val events: List<GameEvent> = emptyList(),
 ) {
+    override fun equals(other: Any?): Boolean = other is Game && other.id == id
+
+    override fun hashCode(): Int = Objects.hash(id)
+
     fun execute(command: GameCommand): GameResult =
         when (command) {
             is StartRound -> {
