@@ -38,6 +38,8 @@ sealed interface Round {
     ) : Round
 }
 
+typealias GameStateResult = Result4k<GameState, GameErrorCode>
+
 data class GameState private constructor(
     val players: Set<PlayerId>,
     val round: Round,
@@ -49,7 +51,7 @@ data class GameState private constructor(
             is Round.WaitingToStart -> null
         }
 
-    fun applyEvent(event: GameEvent): Result4k<GameState, GameErrorCode> =
+    fun applyEvent(event: GameEvent): GameStateResult =
         when (event) {
             // TODO: try naming these functions more specifically for sanity.
             is GameStarted -> applyEvent(event)
@@ -64,7 +66,7 @@ data class GameState private constructor(
             -> this.asSuccess()
         }
 
-    private fun applyEvent(event: GameStarted): Result4k<GameState, GameErrorCode> =
+    private fun applyEvent(event: GameStarted): GameStateResult =
         when {
             else ->
                 copy(
@@ -73,7 +75,7 @@ data class GameState private constructor(
                 ).asSuccess()
         }
 
-    private fun applyEvent(event: RoundStarted): Result4k<GameState, GameErrorCode> =
+    private fun applyEvent(event: RoundStarted): GameStateResult =
         when {
             event.roundNumber > RoundNumber.Ten ->
                 CannotPlayMoreThan10Rounds.asFailure()
@@ -102,7 +104,7 @@ data class GameState private constructor(
 
     private fun applyEvent(
         @Suppress("UNUSED_PARAMETER") event: RoundCompleted,
-    ): Result4k<GameState, GameErrorCode> =
+    ): GameStateResult =
         when {
             phase != TrickScoring ->
                 CannotCompleteRoundFromCurrentPhase(phase).asFailure()
@@ -113,7 +115,7 @@ data class GameState private constructor(
                 ).asSuccess()
         }
 
-    private fun applyEvent(event: BidPlaced): Result4k<GameState, GameErrorCode> =
+    private fun applyEvent(event: BidPlaced): GameStateResult =
         when {
             phase != Bidding ->
                 CannotBidOutsideBiddingPhase.asFailure()
@@ -135,7 +137,7 @@ data class GameState private constructor(
 
     private fun applyEvent(
         @Suppress("UNUSED_PARAMETER") event: TrickStarted,
-    ): Result4k<GameState, GameErrorCode> =
+    ): GameStateResult =
         when {
             phase !in setOf(Bidding, TrickScoring) -> CannotStartATrickFromCurrentPhase(phase).asFailure()
 
