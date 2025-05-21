@@ -1,11 +1,13 @@
 package com.tamj0rd2.skullking.domain.gamev2
 
-enum class GamePhase {
-    None,
-    AwaitingNextRound,
+sealed interface GamePhase {
+    data object None : GamePhase
 
-    // TODO: these ones only apply when the round is in progress
-    Bidding,
-    TrickTaking,
-    TrickScoring,
+    data object AwaitingNextRound : GamePhase
+
+    data object Bidding : GamePhase
+
+    data object TrickTaking : GamePhase
+
+    data object TrickScoring : GamePhase
 }
