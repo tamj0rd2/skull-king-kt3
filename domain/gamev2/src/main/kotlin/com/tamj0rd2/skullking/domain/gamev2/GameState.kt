@@ -59,11 +59,9 @@ data class GameState private constructor(
             is RoundCompleted -> applyEvent(event)
             is BidPlaced -> applyEvent(event)
             is TrickStarted -> applyEvent(event)
-            is CardPlayed,
-            is TrickCompleted,
-            -> copy(phase = TrickScoring).asSuccess()
-            is GameCompleted,
-            -> this.asSuccess()
+            is CardPlayed -> this.asSuccess()
+            is TrickCompleted -> copy(phase = TrickScoring).asSuccess()
+            is GameCompleted -> this.asSuccess()
         }
 
     private fun applyEvent(event: GameStarted): GameStateResult =
