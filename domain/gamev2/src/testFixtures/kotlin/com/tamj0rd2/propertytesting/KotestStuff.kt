@@ -1,9 +1,7 @@
 package com.tamj0rd2.propertytesting
 
 import com.tamj0rd2.skullking.domain.gamev2.Game
-import com.tamj0rd2.skullking.domain.gamev2.GameErrorCode
 import com.tamj0rd2.skullking.domain.gamev2.GameResult
-import dev.forkhandles.result4k.Failure
 import dev.forkhandles.result4k.Success
 import io.kotest.common.ExperimentalKotest
 import io.kotest.common.runBlocking
@@ -72,15 +70,9 @@ fun assumeThat(value: Boolean) {
     assume(value)
 }
 
-@OptIn(ExperimentalContracts::class)
 fun GameResult.assumeSuccess(): Game {
     assumeThat(this is Success)
     return this.value
-}
-
-fun GameResult.assumeFailure(): GameErrorCode {
-    assumeThat(this is Failure)
-    return this.reason
 }
 
 @ExperimentalKotest

@@ -5,6 +5,7 @@ import com.tamj0rd2.extensions.asSuccess
 import com.tamj0rd2.skullking.domain.gamev2.GameErrorCode.AlreadyBid
 import com.tamj0rd2.skullking.domain.gamev2.GameErrorCode.CannotBidOutsideBiddingPhase
 import com.tamj0rd2.skullking.domain.gamev2.GameErrorCode.CannotCompleteRoundFromCurrentPhase
+import com.tamj0rd2.skullking.domain.gamev2.GameErrorCode.CannotCompleteTrickFromCurrentPhase
 import com.tamj0rd2.skullking.domain.gamev2.GameErrorCode.CannotPlayMoreThan10Rounds
 import com.tamj0rd2.skullking.domain.gamev2.GameErrorCode.CannotStartAPreviousRound
 import com.tamj0rd2.skullking.domain.gamev2.GameErrorCode.CannotStartARoundMoreThan1Ahead
@@ -60,7 +61,7 @@ data class GameState private constructor(
             is BidPlaced -> applyEvent(event)
             is TrickStarted -> applyEvent(event)
             is CardPlayed -> this.asSuccess()
-            is TrickCompleted -> copy(phase = TrickScoring).asSuccess()
+            is TrickCompleted -> applyEvent(event)
             is GameCompleted -> this.asSuccess()
         }
 
@@ -100,11 +101,17 @@ data class GameState private constructor(
                 ).asSuccess()
         }
 
+    private fun applyEvent(event: TrickCompleted): GameStateResult =
+        when {
+            round !is Round.InProgress -> CannotCompleteTrickFromCurrentPhase(phase).asFailure()
+            else -> copy(phase = TrickScoring(round.roundNumber)).asSuccess()
+        }
+
     private fun applyEvent(
         @Suppress("UNUSED_PARAMETER") event: RoundCompleted,
     ): GameStateResult =
         when {
-            phase != TrickScoring ->
+            phase !is TrickScoring ->
                 CannotCompleteRoundFromCurrentPhase(phase).asFailure()
 
             else ->
@@ -137,7 +144,8 @@ data class GameState private constructor(
         @Suppress("UNUSED_PARAMETER") event: TrickStarted,
     ): GameStateResult =
         when {
-            phase !in setOf(Bidding, TrickScoring) -> CannotStartATrickFromCurrentPhase(phase).asFailure()
+            phase !is Bidding && phase !is TrickScoring ->
+                CannotStartATrickFromCurrentPhase(phase).asFailure()
 
             else ->
                 copy(

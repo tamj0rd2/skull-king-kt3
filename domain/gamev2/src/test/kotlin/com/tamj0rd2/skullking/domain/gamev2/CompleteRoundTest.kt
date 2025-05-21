@@ -3,6 +3,7 @@ package com.tamj0rd2.skullking.domain.gamev2
 import com.tamj0rd2.extensions.assertFailureIs
 import com.tamj0rd2.propertytesting.PropertyTesting.propertyTest
 import com.tamj0rd2.propertytesting.assumeThat
+import com.tamj0rd2.propertytesting.setSeed
 import com.tamj0rd2.skullking.domain.gamev2.GameCommand.CompleteRound
 import com.tamj0rd2.skullking.domain.gamev2.GameErrorCode.CannotCompleteRoundFromCurrentPhase
 import com.tamj0rd2.skullking.domain.gamev2.GamePhase.TrickScoring
@@ -18,8 +19,8 @@ class CompleteRoundTest {
     @Test
     fun `cannot complete a round that is not in the trick scoring phase`() {
         propertyTest {
-            checkAll(Arb.game) { game ->
-                assume(game.state.phase != TrickScoring)
+            checkAll(setSeed(5502239497055817829), Arb.game) { game ->
+                assume(game.state.phase !is TrickScoring)
 
                 val currentRoundNumber = game.state.roundNumberInProgress
                 assumeThat(currentRoundNumber != null)

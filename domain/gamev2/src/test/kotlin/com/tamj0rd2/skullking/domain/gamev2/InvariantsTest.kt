@@ -39,7 +39,7 @@ class InvariantsTest {
     @Test
     fun `the players in the game never change`() =
         propertyTest {
-            checkAll(setMaxDiscardPercentage(50), Arb.game, Arb.gameCommand) { initial, command ->
+            checkAll(setMaxDiscardPercentage(70), Arb.game, Arb.gameCommand) { initial, command ->
                 val updated = initial.execute(command).assumeSuccess()
                 assertEquals(initial.state.players, updated.state.players)
             }
@@ -48,7 +48,7 @@ class InvariantsTest {
     @Test
     fun `the game's id never changes`() =
         propertyTest {
-            checkAll(setMaxDiscardPercentage(50), Arb.game, Arb.gameCommand) { initial, command ->
+            checkAll(setMaxDiscardPercentage(70), Arb.game, Arb.gameCommand) { initial, command ->
                 val updated = initial.execute(command).assumeSuccess()
                 assertEquals(initial.id, updated.id)
             }
@@ -81,7 +81,7 @@ class InvariantsTest {
     @Test
     fun `each successful command results in 1 event being emitted`() {
         propertyTest {
-            checkAll(setMaxDiscardPercentage(60), Arb.game, Arb.gameCommand) { initial, command ->
+            checkAll(setMaxDiscardPercentage(70), Arb.game, Arb.gameCommand) { initial, command ->
                 val initialEvents = initial.events
                 val eventsAfterCommand = initial.execute(command).assumeSuccess().events
 

@@ -1,5 +1,7 @@
 package com.tamj0rd2.skullking.domain.gamev2
 
+import com.tamj0rd2.skullking.domain.gamev2.values.RoundNumber
+
 sealed interface GamePhase {
     data object None : GamePhase
 
@@ -9,5 +11,7 @@ sealed interface GamePhase {
 
     data object TrickTaking : GamePhase
 
-    data object TrickScoring : GamePhase
+    data class TrickScoring(
+        val roundNumber: RoundNumber,
+    ) : GamePhase
 }

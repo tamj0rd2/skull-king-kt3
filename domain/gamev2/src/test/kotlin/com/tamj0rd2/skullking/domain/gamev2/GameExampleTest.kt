@@ -40,7 +40,13 @@ class GameExampleTest {
                         .flatMap { it.execute(PlayACard(actor = player2, card = CannedCard)) }
                         .flatMap { it.execute(CompleteTrick(trickNumber = TrickNumber.One)) }
                 },
-                assert = { assertEquals(GamePhase.TrickScoring, it.state.phase, "completing a trick transitions to correct phase") },
+                assert = {
+                    assertEquals(
+                        GamePhase.TrickScoring(RoundNumber.One),
+                        it.state.phase,
+                        "completing a trick transitions to correct phase",
+                    )
+                },
             ).executeAndAssert(
                 act = { it.execute(CompleteRound(roundNumber = RoundNumber.One)) },
                 assert = { assertEquals(GamePhase.AwaitingNextRound, it.state.phase, "completing a round transitions to correct phase") },

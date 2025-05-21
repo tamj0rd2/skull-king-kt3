@@ -30,4 +30,10 @@ sealed class GameErrorCode : IllegalStateException() {
     data class CannotCompleteRoundFromCurrentPhase(
         val currentPhase: GamePhase,
     ) : GameErrorCode()
+
+    data class CannotCompleteTrickFromCurrentPhase(
+        val currentPhase: GamePhase,
+    ) : GameErrorCode()
+
+    data object WIP : GameErrorCode()
 }

@@ -37,7 +37,7 @@ class StartTrickTest {
             val startTrickArb = Arb.gameCommand.filterIsInstance<StartTrick>()
 
             checkAll(setMaxDiscardPercentage(45), Arb.game, startTrickArb) { initial, command ->
-                assume(initial.state.phase !in setOf(Bidding, TrickScoring))
+                assume(initial.state.phase !is Bidding && initial.state.phase !is TrickScoring)
 
                 assertFailureIs<CannotStartATrickFromCurrentPhase>(initial.execute(command), "coming from phase ${initial.state.phase}")
             }
