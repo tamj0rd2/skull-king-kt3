@@ -1,8 +1,10 @@
 package com.tamj0rd2.skullking.domain.gamev3
 
+import com.tamj0rd2.extensions.asFailure
 import com.tamj0rd2.extensions.asSuccess
+import com.tamj0rd2.skullking.domain.gamev3.GamePhase.AwaitingNextRound
+import com.tamj0rd2.skullking.domain.gamev3.GamePhase.Bidding
 import com.tamj0rd2.skullking.domain.gamev3.GamePhase.NotStarted
-import com.tamj0rd2.skullking.domain.gamev3.GamePhase.SomeOtherPhase
 import dev.forkhandles.result4k.Result4k
 
 typealias GameStateResult = Result4k<GameState, GameErrorCode>
@@ -17,9 +19,23 @@ data class GameState private constructor(
             is RoundStartedEvent -> startRound(event)
         }
 
-    private fun startGame(event: GameStartedEvent): GameStateResult = copy(players = event.players).asSuccess()
+    private fun startGame(event: GameStartedEvent): GameStateResult =
+        copy(
+            players = event.players,
+            phase = AwaitingNextRound,
+        ).asSuccess()
 
-    private fun startRound(event: RoundStartedEvent): GameStateResult = copy(phase = SomeOtherPhase).asSuccess()
+    private fun startRound(event: RoundStartedEvent): GameStateResult =
+        when {
+            phase != AwaitingNextRound ->
+                GameErrorCode
+                    .CannotPerformActionInCurrentPhase(
+                        command = StartRoundCommand,
+                        phase = phase,
+                    ).asFailure()
+
+            else -> copy(phase = Bidding).asSuccess()
+        }
 
     companion object {
         val new =
@@ -33,5 +49,7 @@ data class GameState private constructor(
 sealed interface GamePhase {
     data object NotStarted : GamePhase
 
-    data object SomeOtherPhase : GamePhase
+    data object AwaitingNextRound : GamePhase
+
+    data object Bidding : GamePhase
 }

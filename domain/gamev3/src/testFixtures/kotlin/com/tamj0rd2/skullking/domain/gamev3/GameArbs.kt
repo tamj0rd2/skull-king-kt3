@@ -18,14 +18,27 @@ val Arb.Companion.playerId get() = Arb.uuid().map { SomePlayerId.ofResult4k(it) 
 
 val Arb.Companion.command get() = Arb.default<GameCommand>()
 
-val Arb.Companion.game get() =
+val Arb.Companion.gameWithPotentiallyInvalidPlayers get() =
     Arb.bind(
         Arb.set(Arb.playerId),
         Arb.list(Arb.command),
-    ) { playerIds, commands ->
-        commands.fold(Game.new(playerIds)) { result, command ->
-            result.flatMap { it.execute(command) }
-        }
-    }
+        ::buildGame,
+    )
+
+val Arb.Companion.game get() =
+    Arb.bind(
+        // TODO: use constants from the domain.
+        Arb.set(Arb.playerId, 2..6),
+        Arb.list(Arb.command),
+        ::buildGame,
+    )
 
 fun <T> Arb<Result4k<T, *>>.validOnly(): Arb<T> = filter { it is Success }.map { it.valueOrNull()!! }
+
+private fun buildGame(
+    playerIds: Set<SomePlayerId>,
+    commands: List<GameCommand>,
+): GameResult =
+    commands.fold(Game.new(playerIds)) { result, command ->
+        result.flatMap { it.execute(command) }
+    }

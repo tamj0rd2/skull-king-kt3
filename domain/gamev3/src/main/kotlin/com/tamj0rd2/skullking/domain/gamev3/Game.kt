@@ -9,6 +9,7 @@ import dev.forkhandles.values.random
 
 typealias GameResult = Result4k<Game, GameErrorCode>
 
+@ConsistentCopyVisibility
 data class Game private constructor(
     val id: GameId,
     val events: List<GameEvent> = emptyList(),
