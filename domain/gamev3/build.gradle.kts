@@ -7,3 +7,7 @@ dependencies {
     api(libs.result4k)
     api(project(":lib:forkhandles-extensions"))
 }
+
+tasks.test {
+    systemProperty("junit.jupiter.execution.timeout.test.method.default", "10s")
+}
