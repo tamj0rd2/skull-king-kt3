@@ -7,6 +7,7 @@ import io.kotest.property.Arb
 import io.kotest.property.checkAll
 import org.junit.jupiter.api.Test
 import strikt.api.expectThat
+import strikt.assertions.containsExactly
 import strikt.assertions.count
 import strikt.assertions.filterIsInstance
 import strikt.assertions.isA
@@ -19,6 +20,15 @@ class Invariants {
         propertyTest {
             checkAll(Arb.game.validOnly()) { game ->
                 expectThat(game.state.players.size).isIn(2..6)
+            }
+        }
+
+    @Test
+    fun `each command results in 1 new event being emitted`() =
+        propertyTest {
+            checkAll(Arb.game.validOnly(), Arb.command) { initialGame, command ->
+                val updatedGame = initialGame.execute(command).assumeWasSuccessful()
+                expectThat(updatedGame.events.size).isEqualTo(initialGame.events.size + 1)
             }
         }
 
@@ -37,6 +47,15 @@ class Invariants {
             checkAll(Arb.game.validOnly(), Arb.command) { initialGame, command ->
                 val updatedGame = initialGame.execute(command).assumeWasSuccessful()
                 expectThat(updatedGame.id).isEqualTo(initialGame.id)
+            }
+        }
+
+    @Test
+    fun `commands never cause existing events to be changed or removed`() =
+        propertyTest {
+            checkAll(Arb.game.validOnly(), Arb.command) { initialGame, command ->
+                val updatedGame = initialGame.execute(command).assumeWasSuccessful()
+                expectThat(updatedGame.events.dropLast(1)).containsExactly(initialGame.events)
             }
         }
 

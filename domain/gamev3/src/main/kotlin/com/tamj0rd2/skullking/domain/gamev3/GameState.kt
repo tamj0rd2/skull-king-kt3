@@ -11,9 +11,12 @@ data class GameState private constructor(
     fun apply(event: GameEvent): GameStateResult =
         when (event) {
             is GameStartedEvent -> startGame(event)
+            is RoundStartedEvent -> startRound(event)
         }
 
     private fun startGame(event: GameStartedEvent): GameStateResult = copy(players = event.players).asSuccess()
+
+    private fun startRound(event: RoundStartedEvent): GameStateResult = copy().asSuccess()
 
     companion object {
         val new = GameState(players = emptySet())

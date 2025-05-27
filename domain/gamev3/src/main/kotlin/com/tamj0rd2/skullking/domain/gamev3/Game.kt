@@ -21,7 +21,10 @@ data class Game private constructor(
 
     override fun hashCode(): Int = id.hashCode()
 
-    fun execute(command: GameCommand): GameResult = copy().asSuccess()
+    fun execute(command: GameCommand): GameResult =
+        when (command) {
+            StartRoundCommand -> appendEvent(RoundStartedEvent(id))
+        }
 
     private fun appendEvent(event: GameEvent): GameResult {
         return copy(
