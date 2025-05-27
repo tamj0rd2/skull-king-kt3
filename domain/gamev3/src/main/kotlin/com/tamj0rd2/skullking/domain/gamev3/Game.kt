@@ -9,8 +9,10 @@ data class Game private constructor(
     val id: GameId,
     val state: GameState,
 ) {
+    fun execute(command: GameCommand): GameResult = copy().asSuccess()
+
     companion object {
-        fun new(players: Set<PlayerId>): Result4k<Game, GameErrorCode> {
+        fun new(players: Set<PlayerId>): GameResult {
             when {
                 players.size < 2 -> return GameErrorCode.NotEnoughPlayers.asFailure()
                 players.size > 6 -> return GameErrorCode.TooManyPlayers.asFailure()
@@ -27,6 +29,8 @@ data class Game private constructor(
 data class GameState(
     val players: Set<PlayerId>,
 )
+
+typealias GameResult = Result4k<Game, GameErrorCode>
 
 enum class GameErrorCode {
     NotEnoughPlayers,

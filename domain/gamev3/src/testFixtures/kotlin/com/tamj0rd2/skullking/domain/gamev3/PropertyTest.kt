@@ -1,5 +1,7 @@
 package com.tamj0rd2.skullking.domain.gamev3
 
+import dev.forkhandles.result4k.Result4k
+import dev.forkhandles.result4k.Success
 import io.kotest.common.runBlocking
 import io.kotest.property.PropertyContext
 import io.kotest.property.assume
@@ -62,5 +64,10 @@ object PropertyTesting {
             returns() implies value
         }
         assume(value)
+    }
+
+    fun <T> Result4k<T, *>.assumeSuccess(): T {
+        assumeThat(this is Success)
+        return value
     }
 }
