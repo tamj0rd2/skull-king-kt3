@@ -6,6 +6,7 @@ import io.kotest.property.Arb
 import io.kotest.property.checkAll
 import org.junit.jupiter.api.Test
 import strikt.api.expectThat
+import strikt.assertions.isA
 import strikt.assertions.isEqualTo
 import strikt.assertions.isIn
 
@@ -33,6 +34,14 @@ class Invariants {
             checkAll(Arb.game.validOnly(), Arb.command) { initialGame, command ->
                 val updatedGame = initialGame.execute(command).assumeSuccess()
                 expectThat(updatedGame.id).isEqualTo(initialGame.id)
+            }
+        }
+
+    @Test
+    fun `a game always start with a GameStarted event`() =
+        propertyTest {
+            Arb.game.validOnly().checkAll { game ->
+                expectThat(game.events.first()).isA<GameStartedEvent>()
             }
         }
 }

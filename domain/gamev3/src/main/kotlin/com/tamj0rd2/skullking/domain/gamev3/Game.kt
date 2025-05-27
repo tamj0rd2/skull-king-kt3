@@ -7,9 +7,12 @@ import dev.forkhandles.values.random
 
 data class Game private constructor(
     val id: GameId,
+    val events: List<GameEvent>,
     val state: GameState,
 ) {
     fun execute(command: GameCommand): GameResult = copy().asSuccess()
+
+    private fun appendEvent(event: GameEvent): GameResult = copy(events = events + event).asSuccess()
 
     companion object {
         fun new(players: Set<PlayerId>): GameResult {
@@ -20,8 +23,9 @@ data class Game private constructor(
 
             return Game(
                 id = SomeGameId.random(),
+                events = emptyList(),
                 state = GameState(players = players),
-            ).asSuccess()
+            ).appendEvent(GameStartedEvent)
         }
     }
 }
