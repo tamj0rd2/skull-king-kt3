@@ -26,4 +26,13 @@ class Invariants {
                 expectThat(updatedGame.state.players).isEqualTo(initialGame.state.players)
             }
         }
+
+    @Test
+    fun `commands never change the game's ID`() =
+        propertyTest {
+            checkAll(Arb.game.validOnly(), Arb.command) { initialGame, command ->
+                val updatedGame = initialGame.execute(command).assumeSuccess()
+                expectThat(updatedGame.id).isEqualTo(initialGame.id)
+            }
+        }
 }
