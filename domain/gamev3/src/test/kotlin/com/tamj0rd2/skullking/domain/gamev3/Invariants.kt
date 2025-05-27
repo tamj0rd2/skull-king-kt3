@@ -13,6 +13,7 @@ import strikt.assertions.filterIsInstance
 import strikt.assertions.isA
 import strikt.assertions.isEqualTo
 import strikt.assertions.isIn
+import strikt.assertions.isNotEqualTo
 
 class Invariants {
     @Test
@@ -45,6 +46,15 @@ class Invariants {
             checkAll(Arb.game.validOnly(), Arb.command) { initialGame, command ->
                 val updatedGame = initialGame.execute(command).assumeWasSuccessful()
                 expectThat(updatedGame.events.size).isEqualTo(initialGame.events.size + 1)
+            }
+        }
+
+    @Test
+    fun `each successful command results in a state change`() =
+        propertyTest {
+            checkAll(Arb.game.validOnly(), Arb.command) { initialGame, command ->
+                val updatedGame = initialGame.execute(command).assumeWasSuccessful()
+                expectThat(updatedGame.state).isNotEqualTo(initialGame.state)
             }
         }
 
