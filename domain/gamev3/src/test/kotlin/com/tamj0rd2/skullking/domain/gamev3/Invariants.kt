@@ -1,7 +1,8 @@
 package com.tamj0rd2.skullking.domain.gamev3
 
-import com.tamj0rd2.skullking.domain.gamev3.PropertyTesting.assumeSuccess
+import com.tamj0rd2.skullking.domain.gamev3.PropertyTesting.assumeWasSuccessful
 import com.tamj0rd2.skullking.domain.gamev3.PropertyTesting.propertyTest
+import com.tamj0rd2.skullking.domain.gamev3.PropertyTesting.wasSuccessful
 import io.kotest.property.Arb
 import io.kotest.property.checkAll
 import org.junit.jupiter.api.Test
@@ -25,7 +26,7 @@ class Invariants {
     fun `commands never change the players in the game`() =
         propertyTest {
             checkAll(Arb.game.validOnly(), Arb.command) { initialGame, command ->
-                val updatedGame = initialGame.execute(command).assumeSuccess()
+                val updatedGame = initialGame.execute(command).assumeWasSuccessful()
                 expectThat(updatedGame.state.players).isEqualTo(initialGame.state.players)
             }
         }
@@ -34,7 +35,7 @@ class Invariants {
     fun `commands never change the game's ID`() =
         propertyTest {
             checkAll(Arb.game.validOnly(), Arb.command) { initialGame, command ->
-                val updatedGame = initialGame.execute(command).assumeSuccess()
+                val updatedGame = initialGame.execute(command).assumeWasSuccessful()
                 expectThat(updatedGame.id).isEqualTo(initialGame.id)
             }
         }
@@ -52,6 +53,19 @@ class Invariants {
         propertyTest {
             Arb.game.validOnly().checkAll { game ->
                 expectThat(game.events).filterIsInstance<GameStartedEvent>().count().isEqualTo(1)
+            }
+        }
+
+    @Test
+    fun `a game reconstituted from events has the same identity, state and events as the original game`() =
+        propertyTest {
+            Arb.game.validOnly().checkAll { originalGame ->
+                expectThat(Game.reconstitute(originalGame.events)).wasSuccessful().and {
+                    isEqualTo(originalGame)
+                    get { id }.isEqualTo(originalGame.id)
+                    get { state }.isEqualTo(originalGame.state)
+                    get { events }.isEqualTo(originalGame.events)
+                }
             }
         }
 }

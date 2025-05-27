@@ -1,5 +1,10 @@
 package com.tamj0rd2.skullking.domain.gamev3
 
-sealed interface GameEvent
+sealed interface GameEvent {
+    val id: GameId
+}
 
-data object GameStartedEvent : GameEvent
+data class GameStartedEvent(
+    override val id: GameId,
+    val players: Set<PlayerId>,
+) : GameEvent
