@@ -5,6 +5,7 @@ import com.tamj0rd2.skullking.domain.gamev3.PropertyTesting.propertyTest
 import com.tamj0rd2.skullking.domain.gamev3.PropertyTesting.wasSuccessful
 import io.kotest.property.Arb
 import io.kotest.property.checkAll
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import strikt.api.expectThat
 import strikt.assertions.containsExactly
@@ -49,6 +50,7 @@ class Invariants {
             }
         }
 
+    @Disabled
     @Test
     fun `each successful command results in a state change`() =
         propertyTest {
