@@ -49,7 +49,7 @@ class Invariants {
         }
 
     @Test
-    fun `commands never change the players in the game`() =
+    fun `successful commands never change the players in the game`() =
         propertyTest {
             checkAll(Arb.game.validOnly(), Arb.command) { initialGame, command ->
                 val updatedGame = initialGame.execute(command).assumeWasSuccessful()
@@ -58,7 +58,7 @@ class Invariants {
         }
 
     @Test
-    fun `commands never change the game's ID`() =
+    fun `successful commands never change the game's ID`() =
         propertyTest {
             checkAll(Arb.game.validOnly(), Arb.command) { initialGame, command ->
                 val updatedGame = initialGame.execute(command).assumeWasSuccessful()
@@ -67,7 +67,7 @@ class Invariants {
         }
 
     @Test
-    fun `commands never cause existing events to be changed or removed`() =
+    fun `successful commands never cause existing events to be changed or removed`() =
         propertyTest {
             checkAll(Arb.game.validOnly(), Arb.command) { initialGame, command ->
                 val updatedGame = initialGame.execute(command).assumeWasSuccessful()
