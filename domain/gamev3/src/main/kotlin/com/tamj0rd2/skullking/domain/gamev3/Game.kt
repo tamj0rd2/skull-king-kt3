@@ -49,25 +49,3 @@ data class Game private constructor(
         }
     }
 }
-
-typealias GameStateResult = Result4k<GameState, GameErrorCode>
-
-data class GameState private constructor(
-    val players: Set<PlayerId>,
-) {
-    fun apply(event: GameEvent): GameStateResult =
-        when (event) {
-            is GameStartedEvent -> startGame(event)
-        }
-
-    private fun startGame(event: GameStartedEvent): GameStateResult = copy(players = event.players).asSuccess()
-
-    companion object {
-        val new = GameState(players = emptySet())
-    }
-}
-
-enum class GameErrorCode {
-    NotEnoughPlayers,
-    TooManyPlayers,
-}
