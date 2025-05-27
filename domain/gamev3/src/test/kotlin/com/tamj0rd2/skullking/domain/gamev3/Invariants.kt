@@ -57,7 +57,7 @@ class Invariants {
         }
 
     @Test
-    fun `a game reconstituted from events has the same identity, state and events as the original game`() =
+    fun `a game reconstituted from events has the same identity, state and events as the game it was reconstituted from`() =
         propertyTest {
             Arb.game.validOnly().checkAll { originalGame ->
                 expectThat(Game.reconstitute(originalGame.events)).wasSuccessful().and {
