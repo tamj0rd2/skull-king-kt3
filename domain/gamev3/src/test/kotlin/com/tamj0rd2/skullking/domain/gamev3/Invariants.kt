@@ -6,6 +6,8 @@ import io.kotest.property.Arb
 import io.kotest.property.checkAll
 import org.junit.jupiter.api.Test
 import strikt.api.expectThat
+import strikt.assertions.count
+import strikt.assertions.filterIsInstance
 import strikt.assertions.isA
 import strikt.assertions.isEqualTo
 import strikt.assertions.isIn
@@ -42,6 +44,14 @@ class Invariants {
         propertyTest {
             Arb.game.validOnly().checkAll { game ->
                 expectThat(game.events.first()).isA<GameStartedEvent>()
+            }
+        }
+
+    @Test
+    fun `a game only ever has 1 GameStarted event`() =
+        propertyTest {
+            Arb.game.validOnly().checkAll { game ->
+                expectThat(game.events).filterIsInstance<GameStartedEvent>().count().isEqualTo(1)
             }
         }
 }
