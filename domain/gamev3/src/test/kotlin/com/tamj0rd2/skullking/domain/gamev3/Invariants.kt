@@ -17,7 +17,7 @@ class Invariants {
     @Test
     fun `a valid game always has 2-6 players`() =
         propertyTest {
-            Arb.game.validOnly().checkAll { game ->
+            checkAll(Arb.game.validOnly()) { game ->
                 expectThat(game.state.players.size).isIn(2..6)
             }
         }
@@ -43,7 +43,7 @@ class Invariants {
     @Test
     fun `a game always start with a GameStarted event`() =
         propertyTest {
-            Arb.game.validOnly().checkAll { game ->
+            checkAll(Arb.game.validOnly()) { game ->
                 expectThat(game.events.first()).isA<GameStartedEvent>()
             }
         }
@@ -51,7 +51,7 @@ class Invariants {
     @Test
     fun `a game only ever has 1 GameStarted event`() =
         propertyTest {
-            Arb.game.validOnly().checkAll { game ->
+            checkAll(Arb.game.validOnly()) { game ->
                 expectThat(game.events).filterIsInstance<GameStartedEvent>().count().isEqualTo(1)
             }
         }
@@ -59,7 +59,7 @@ class Invariants {
     @Test
     fun `a game reconstituted from events has the same identity, state and events as the game it was reconstituted from`() =
         propertyTest {
-            Arb.game.validOnly().checkAll { originalGame ->
+            checkAll(Arb.game.validOnly()) { originalGame ->
                 expectThat(Game.reconstitute(originalGame.events)).wasSuccessful().and {
                     isEqualTo(originalGame)
                     get { id }.isEqualTo(originalGame.id)
