@@ -24,7 +24,23 @@ class Invariants {
         }
 
     @Test
-    fun `each command results in 1 new event being emitted`() =
+    fun `a game always start with a GameStarted event`() =
+        propertyTest {
+            checkAll(Arb.game.validOnly()) { game ->
+                expectThat(game.events.first()).isA<GameStartedEvent>()
+            }
+        }
+
+    @Test
+    fun `a game only ever has 1 GameStarted event`() =
+        propertyTest {
+            checkAll(Arb.game.validOnly()) { game ->
+                expectThat(game.events).filterIsInstance<GameStartedEvent>().count().isEqualTo(1)
+            }
+        }
+
+    @Test
+    fun `each successful command results in 1 new event being emitted`() =
         propertyTest {
             checkAll(Arb.game.validOnly(), Arb.command) { initialGame, command ->
                 val updatedGame = initialGame.execute(command).assumeWasSuccessful()
@@ -56,22 +72,6 @@ class Invariants {
             checkAll(Arb.game.validOnly(), Arb.command) { initialGame, command ->
                 val updatedGame = initialGame.execute(command).assumeWasSuccessful()
                 expectThat(updatedGame.events.dropLast(1)).containsExactly(initialGame.events)
-            }
-        }
-
-    @Test
-    fun `a game always start with a GameStarted event`() =
-        propertyTest {
-            checkAll(Arb.game.validOnly()) { game ->
-                expectThat(game.events.first()).isA<GameStartedEvent>()
-            }
-        }
-
-    @Test
-    fun `a game only ever has 1 GameStarted event`() =
-        propertyTest {
-            checkAll(Arb.game.validOnly()) { game ->
-                expectThat(game.events).filterIsInstance<GameStartedEvent>().count().isEqualTo(1)
             }
         }
 
