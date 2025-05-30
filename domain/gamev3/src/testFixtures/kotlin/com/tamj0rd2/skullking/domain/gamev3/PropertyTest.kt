@@ -2,9 +2,13 @@ package com.tamj0rd2.skullking.domain.gamev3
 
 import dev.forkhandles.result4k.Result4k
 import dev.forkhandles.result4k.Success
+import io.kotest.common.ExperimentalKotest
 import io.kotest.common.runBlocking
+import io.kotest.property.Constraints
+import io.kotest.property.PropTestConfig
 import io.kotest.property.PropertyContext
 import io.kotest.property.assume
+import io.kotest.property.or
 import org.opentest4j.AssertionFailedError
 import strikt.api.Assertion
 import strikt.assertions.isA
@@ -13,6 +17,7 @@ import java.io.PrintStream
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 import kotlin.text.RegexOption.MULTILINE
+import kotlin.time.Duration.Companion.seconds
 
 object PropertyTesting {
     init {
@@ -21,6 +26,12 @@ object PropertyTesting {
         // makes kotest shut up.
         System.setOut(PrintStream(OutputStream.nullOutputStream()))
     }
+
+    @OptIn(ExperimentalKotest::class)
+    val propTestConfig get() = PropTestConfig(
+        maxDiscardPercentage = 99,
+        constraints = Constraints { it.successes() < 1000 }.or(Constraints.duration(2.seconds))
+    )
 
     private val stackTracePartsToIgnore =
         setOf(
