@@ -45,11 +45,3 @@ data class DeprecatedGameState private constructor(
             )
     }
 }
-
-sealed interface GamePhase {
-    data object NotStarted : GamePhase
-
-    data object AwaitingNextRound : GamePhase
-
-    data object Bidding : GamePhase
-}
