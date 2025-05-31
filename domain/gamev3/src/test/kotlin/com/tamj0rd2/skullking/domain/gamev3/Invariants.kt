@@ -1,7 +1,7 @@
 package com.tamj0rd2.skullking.domain.gamev3
 
-import com.tamj0rd2.skullking.domain.gamev3.GamePhase.AwaitingNextRound
-import com.tamj0rd2.skullking.domain.gamev3.GamePhase.Bidding
+import com.tamj0rd2.skullking.domain.gamev3.GameState.AwaitingNextRound
+import com.tamj0rd2.skullking.domain.gamev3.GameState.Bidding
 import com.tamj0rd2.skullking.domain.gamev3.PropertyTesting.assumeWasSuccessful
 import com.tamj0rd2.skullking.domain.gamev3.PropertyTesting.propTestConfig
 import com.tamj0rd2.skullking.domain.gamev3.PropertyTesting.propertyTest

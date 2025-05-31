@@ -7,6 +7,6 @@ sealed interface GameErrorCode {
 
     data class CannotPerformActionInCurrentPhase(
         val command: GameCommand,
-        val phase: GamePhase,
+        val phase: GameState,
     ) : GameErrorCode
 }
