@@ -6,7 +6,7 @@ sealed interface GameErrorCode {
     data object TooManyPlayers : GameErrorCode
 
     data class CannotApplyEventInCurrentState(
-        val event: RoundStartedEvent,
+        val event: GameEvent,
         val phase: GameState,
     ) : GameErrorCode
 }

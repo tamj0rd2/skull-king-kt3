@@ -96,8 +96,10 @@ class Invariants {
                 expectThat(Game.reconstitute(originalGame.events)).wasSuccessful().and {
                     isEqualTo(originalGame)
                     get { id }.isEqualTo(originalGame.id)
-                    get { deprecatedState }.isEqualTo(originalGame.deprecatedState)
                     get { events }.isEqualTo(originalGame.events)
+                    get { deprecatedState }.isEqualTo(originalGame.deprecatedState)
+                    get { state }.isEqualTo(originalGame.state)
+                    get { state }.isEqualTo(originalGame.deprecatedState.state)
                 }
             }
         }

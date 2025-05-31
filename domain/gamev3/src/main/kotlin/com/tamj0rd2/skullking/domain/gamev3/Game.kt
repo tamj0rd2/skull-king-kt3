@@ -12,6 +12,7 @@ typealias GameResult = Result4k<Game, GameErrorCode>
 data class Game private constructor(
     val id: GameId,
     val events: List<GameEvent> = emptyList(),
+    val state: GameState = GameState.NotStarted,
     val deprecatedState: DeprecatedGameState = DeprecatedGameState.new,
 ) {
     override fun equals(other: Any?): Boolean {
@@ -29,6 +30,7 @@ data class Game private constructor(
     private fun appendEvent(event: GameEvent): GameResult {
         return copy(
             events = events + event,
+            state = state.apply(event).onFailure { return it },
             deprecatedState = deprecatedState.apply(event).onFailure { return it },
         ).asSuccess()
     }
