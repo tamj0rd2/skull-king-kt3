@@ -18,13 +18,6 @@ val Arb.Companion.playerId get() = Arb.uuid().map { SomePlayerId.ofResult4k(it) 
 
 val Arb.Companion.command get() = Arb.default<GameCommand>()
 
-val Arb.Companion.gameWithPotentiallyInvalidPlayers get() =
-    Arb.bind(
-        Arb.set(Arb.playerId),
-        Arb.list(Arb.command),
-        ::buildGame,
-    )
-
 val Arb.Companion.game get() =
     Arb.bind(
         // TODO: use constants from the domain.

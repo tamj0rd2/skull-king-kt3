@@ -21,9 +21,9 @@ import strikt.assertions.isNotEqualTo
 
 class Invariants {
     @Test
-    fun `a valid game always has 2-6 players`() =
+    fun `a game always has 2-6 players`() =
         propertyTest {
-            checkAll(propTestConfig, Arb.gameWithPotentiallyInvalidPlayers.validOnly()) { game ->
+            checkAll(propTestConfig, Arb.game.validOnly()) { game ->
                 expectThat(game.state.players.size).isIn(2..6)
             }
         }
