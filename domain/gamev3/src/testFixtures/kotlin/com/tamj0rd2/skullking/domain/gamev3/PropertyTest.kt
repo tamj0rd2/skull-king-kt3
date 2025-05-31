@@ -19,6 +19,7 @@ import kotlin.contracts.contract
 import kotlin.text.RegexOption.MULTILINE
 import kotlin.time.Duration.Companion.seconds
 
+@OptIn(ExperimentalKotest::class)
 object PropertyTesting {
     init {
         System.setProperty("kotest.assertions.collection.print.size", "10")
@@ -28,10 +29,11 @@ object PropertyTesting {
     }
 
     @OptIn(ExperimentalKotest::class)
-    val propTestConfig get() = PropTestConfig(
-        maxDiscardPercentage = 99,
-        constraints = Constraints { it.successes() < 1000 }.or(Constraints.duration(2.seconds))
-    )
+    val propTestConfig get() =
+        PropTestConfig(
+            maxDiscardPercentage = 99,
+            constraints = Constraints { it.successes() < 1000 }.or(Constraints.duration(2.seconds)),
+        )
 
     private val stackTracePartsToIgnore =
         setOf(
@@ -49,9 +51,11 @@ object PropertyTesting {
     private fun Throwable.cleanedStackTrace(): Array<StackTraceElement> =
         stackTrace.filter { element -> stackTracePartsToIgnore.none { element.className.startsWith(it) } }.toTypedArray()
 
+    private val statsReporter = MyStatisticsReporter(System.err)
+
     fun propertyTest(block: suspend () -> PropertyContext) {
         try {
-            runBlocking(block)
+            runBlocking(block).also(statsReporter::print)
         } catch (e: AssertionError) {
             val args =
                 "Arg \\d+: .*"
