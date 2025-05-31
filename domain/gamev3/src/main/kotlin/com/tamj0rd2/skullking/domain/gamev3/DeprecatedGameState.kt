@@ -7,41 +7,41 @@ import com.tamj0rd2.skullking.domain.gamev3.GameState.Bidding
 import com.tamj0rd2.skullking.domain.gamev3.GameState.NotStarted
 import dev.forkhandles.result4k.Result4k
 
-typealias GameStateResult = Result4k<DeprecatedGameState, GameErrorCode>
+typealias DeprecatedGameStateResult = Result4k<DeprecatedGameState, GameErrorCode>
 
 data class DeprecatedGameState private constructor(
     val players: Set<PlayerId>,
-    val phase: GameState,
+    val state: GameState,
 ) {
-    fun apply(event: GameEvent): GameStateResult =
+    fun apply(event: GameEvent): DeprecatedGameStateResult =
         when (event) {
             is GameStartedEvent -> startGame(event)
             is RoundStartedEvent -> startRound(event)
         }
 
-    private fun startGame(event: GameStartedEvent): GameStateResult =
+    private fun startGame(event: GameStartedEvent): DeprecatedGameStateResult =
         copy(
             players = event.players,
-            phase = AwaitingNextRound,
+            state = AwaitingNextRound,
         ).asSuccess()
 
-    private fun startRound(event: RoundStartedEvent): GameStateResult =
+    private fun startRound(event: RoundStartedEvent): DeprecatedGameStateResult =
         when {
-            phase != AwaitingNextRound ->
+            state != AwaitingNextRound ->
                 GameErrorCode
                     .CannotPerformActionInCurrentPhase(
                         command = StartRoundCommand,
-                        phase = phase,
+                        phase = state,
                     ).asFailure()
 
-            else -> copy(phase = Bidding).asSuccess()
+            else -> copy(state = Bidding).asSuccess()
         }
 
     companion object {
         val new =
             DeprecatedGameState(
                 players = emptySet(),
-                phase = NotStarted,
+                state = NotStarted,
             )
     }
 }

@@ -111,11 +111,11 @@ class Invariants {
                 propTestConfig,
                 // TODO: I'm using gameWithValidPlayers as a shortcut, otherwise the test would take way too long to run.
                 //  check this in the book.
-                Arb.game.validOnly().filter { it.deprecatedState.phase is AwaitingNextRound },
+                Arb.game.validOnly().filter { it.deprecatedState.state is AwaitingNextRound },
                 Arb.command,
             ) { initialGame, command ->
                 val updatedGame = initialGame.execute(command).assumeWasSuccessful()
-                expectThat(updatedGame.deprecatedState.phase).isA<Bidding>()
+                expectThat(updatedGame.deprecatedState.state).isA<Bidding>()
             }
         }
 }
