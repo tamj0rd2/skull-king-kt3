@@ -9,6 +9,7 @@ import io.kotest.property.PropTestConfig
 import io.kotest.property.PropertyContext
 import io.kotest.property.assume
 import io.kotest.property.or
+import org.junit.jupiter.api.fail
 import org.opentest4j.AssertionFailedError
 import strikt.api.Assertion
 import strikt.assertions.isA
@@ -51,11 +52,11 @@ object PropertyTesting {
     private fun Throwable.cleanedStackTrace(): Array<StackTraceElement> =
         stackTrace.filter { element -> stackTracePartsToIgnore.none { element.className.startsWith(it) } }.toTypedArray()
 
-    private val statsReporter = MyStatisticsReporter(System.err)
+    fun PropertyContext.printStatistics() = apply { MyStatisticsReporter(System.err).print(this) }
 
     fun propertyTest(block: suspend () -> PropertyContext) {
         try {
-            runBlocking(block).also(statsReporter::print)
+            runBlocking(block)
         } catch (e: AssertionError) {
             val args =
                 "Arg \\d+: .*"
@@ -92,3 +93,24 @@ object PropertyTesting {
 
     fun <T, R : Result4k<T, *>> Assertion.Builder<R>.wasFailure() = run { isA<Success<T>>().get { value } }
 }
+
+fun PropertyContext.checkCoveragePercentages(vararg expectedClassifications: Pair<Any?, Double>) =
+    apply {
+        require(expectedClassifications.isNotEmpty()) { "You should pass at least 1 classification expectation" }
+        checkCoveragePercentages(expectedClassifications.toMap())
+    }
+
+@OptIn(ExperimentalKotest::class)
+fun PropertyContext.checkCoveragePercentages(expectedClassifications: Map<Any?, Double>) =
+    apply {
+        // TODO: why does this only check the null label?
+        val stats = statistics()[null] ?: emptyMap()
+        expectedClassifications.forEach { (classification, min) ->
+            val count = stats[classification] ?: 0
+            val attempts = attempts()
+            val actual = (count.toDouble() / attempts.toDouble()) * 100.0
+            if (actual < min) {
+                fail("Required coverage of $min% for [$classification] but was [${actual.toInt()}%]")
+            }
+        }
+    }

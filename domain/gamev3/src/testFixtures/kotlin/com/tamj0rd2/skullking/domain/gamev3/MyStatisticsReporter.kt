@@ -18,7 +18,7 @@ class MyStatisticsReporter(
 ) {
     fun print(context: PropertyContext) =
         runBlocking {
-            val iterations = context.evals()
+            val iterations = context.attempts()
 
             val statistics = context.statistics()
             if (statistics.isEmpty()) {
