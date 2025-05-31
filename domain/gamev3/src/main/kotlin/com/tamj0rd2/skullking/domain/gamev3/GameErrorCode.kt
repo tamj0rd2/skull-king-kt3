@@ -5,8 +5,8 @@ sealed interface GameErrorCode {
 
     data object TooManyPlayers : GameErrorCode
 
-    data class CannotPerformActionInCurrentPhase(
-        val command: GameCommand,
+    data class CannotApplyEventInCurrentState(
+        val event: RoundStartedEvent,
         val phase: GameState,
     ) : GameErrorCode
 }

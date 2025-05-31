@@ -29,8 +29,8 @@ data class DeprecatedGameState private constructor(
         when {
             state != AwaitingNextRound ->
                 GameErrorCode
-                    .CannotPerformActionInCurrentPhase(
-                        command = StartRoundCommand,
+                    .CannotApplyEventInCurrentState(
+                        event = event,
                         phase = state,
                     ).asFailure()
 
