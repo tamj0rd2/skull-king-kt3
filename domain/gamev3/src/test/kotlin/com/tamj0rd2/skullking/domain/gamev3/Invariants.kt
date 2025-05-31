@@ -2,6 +2,7 @@ package com.tamj0rd2.skullking.domain.gamev3
 
 import com.tamj0rd2.skullking.domain.gamev3.GameState.AwaitingNextRound
 import com.tamj0rd2.skullking.domain.gamev3.GameState.Bidding
+import com.tamj0rd2.skullking.domain.gamev3.PropertyTesting.assumeThat
 import com.tamj0rd2.skullking.domain.gamev3.PropertyTesting.assumeWasSuccessful
 import com.tamj0rd2.skullking.domain.gamev3.PropertyTesting.printStatistics
 import com.tamj0rd2.skullking.domain.gamev3.PropertyTesting.propTestConfig
@@ -24,7 +25,14 @@ import strikt.assertions.isNotEqualTo
 class Invariants {
     private companion object {
         @Suppress("NO_REFLECTION_IN_CLASS_PATH")
-        val statesToCheck = GameState::class.sealedSubclasses.minus(GameState.NotStarted::class).map { it.simpleName }
+        val statesToCheck =
+            GameState::class
+                .sealedSubclasses
+                .toSet()
+                .minus(GameState.NotStarted::class)
+                .minus(GameState.InProgress::class)
+                .map { it.simpleName }
+                .toSet()
 
         fun expectGameStates(): Map<Any?, Double> =
             statesToCheck
@@ -41,11 +49,12 @@ class Invariants {
     }
 
     @Test
-    fun `a game always has 2-6 players`() =
+    fun `a game in progress always has 2-6 players`() =
         propertyTest {
             checkAll(propTestConfig, Arb.game.validOnly()) { game ->
+                assumeThat(game.state is GameState.InProgress)
                 collectState(game)
-                expectThat(game.deprecatedState.players.size).isIn(2..6)
+                expectThat(game.state.players.size).isIn(2..6)
             }.printStatistics().checkCoveragePercentages(expectGameStates())
         }
 
@@ -91,9 +100,12 @@ class Invariants {
     fun `successful commands never change the players in the game`() =
         propertyTest {
             checkAll(propTestConfig, Arb.game.validOnly(), Arb.command) { initialGame, command ->
+                // TODO: when I introduce a completed state, I should also check this here.
+                assumeThat(initialGame.state is GameState.InProgress)
+
                 val updatedGame = initialGame.execute(command).assumeWasSuccessful()
                 collectState(initialGame)
-                expectThat(updatedGame.deprecatedState.players).isEqualTo(initialGame.deprecatedState.players)
+                expectThat(updatedGame.state).isA<GameState.InProgress>().get { players }.isEqualTo(initialGame.state.players)
             }.printStatistics().checkCoveragePercentages(expectGameStates())
         }
 

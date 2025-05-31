@@ -13,22 +13,30 @@ sealed class GameState {
     data object NotStarted : GameState() {
         override fun apply(event: GameEvent): GameStateResult {
             return when (event) {
-                is GameStartedEvent -> return AwaitingNextRound.asSuccess()
+                is GameStartedEvent -> return AwaitingNextRound(event.players).asSuccess()
                 else -> GameErrorCode.CannotApplyEventInCurrentState(event, this).asFailure()
             }
         }
     }
 
-    data object AwaitingNextRound : GameState() {
+    sealed class InProgress : GameState() {
+        abstract val players: Set<PlayerId>
+    }
+
+    data class AwaitingNextRound(
+        override val players: Set<PlayerId>,
+    ) : InProgress() {
         override fun apply(event: GameEvent): GameStateResult {
             return when (event) {
-                is RoundStartedEvent -> return Bidding.asSuccess()
+                is RoundStartedEvent -> return Bidding(players).asSuccess()
                 else -> GameErrorCode.CannotApplyEventInCurrentState(event, this).asFailure()
             }
         }
     }
 
-    data object Bidding : GameState() {
+    data class Bidding(
+        override val players: Set<PlayerId>,
+    ) : InProgress() {
         override fun apply(event: GameEvent): GameStateResult = GameErrorCode.CannotApplyEventInCurrentState(event, this).asFailure()
     }
 }

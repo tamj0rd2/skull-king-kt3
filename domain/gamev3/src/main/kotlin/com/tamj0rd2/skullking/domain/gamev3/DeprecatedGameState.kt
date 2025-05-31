@@ -22,19 +22,19 @@ data class DeprecatedGameState private constructor(
     private fun startGame(event: GameStartedEvent): DeprecatedGameStateResult =
         copy(
             players = event.players,
-            state = AwaitingNextRound,
+            state = AwaitingNextRound(event.players),
         ).asSuccess()
 
     private fun startRound(event: RoundStartedEvent): DeprecatedGameStateResult =
         when {
-            state != AwaitingNextRound ->
+            state !is AwaitingNextRound ->
                 GameErrorCode
                     .CannotApplyEventInCurrentState(
                         event = event,
                         phase = state,
                     ).asFailure()
 
-            else -> copy(state = Bidding).asSuccess()
+            else -> copy(state = Bidding(players)).asSuccess()
         }
 
     companion object {
