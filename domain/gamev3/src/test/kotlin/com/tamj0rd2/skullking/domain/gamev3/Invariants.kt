@@ -92,7 +92,7 @@ class Invariants {
             checkAll(propTestConfig, Arb.game.validOnly(), Arb.command) { initialGame, command ->
                 val updatedGame = initialGame.execute(command).assumeWasSuccessful()
                 collectState(initialGame)
-                expectThat(updatedGame.deprecatedState).isNotEqualTo(initialGame.deprecatedState)
+                expectThat(updatedGame.state).isNotEqualTo(initialGame.state)
             }.printStatistics().checkCoveragePercentages(expectGameStates())
         }
 
@@ -138,9 +138,7 @@ class Invariants {
                     isEqualTo(originalGame)
                     get { id }.isEqualTo(originalGame.id)
                     get { events }.isEqualTo(originalGame.events)
-                    get { deprecatedState }.isEqualTo(originalGame.deprecatedState)
                     get { state }.isEqualTo(originalGame.state)
-                    get { state }.isEqualTo(originalGame.deprecatedState.state)
                 }
             }.printStatistics().checkCoveragePercentages(expectGameStates())
         }
@@ -154,12 +152,12 @@ class Invariants {
                 propTestConfig,
                 // TODO: I'm using gameWithValidPlayers as a shortcut, otherwise the test would take way too long to run.
                 //  check this in the book.
-                Arb.game.validOnly().filter { it.deprecatedState.state is AwaitingNextRound },
+                Arb.game.validOnly().filter { it.state is AwaitingNextRound },
                 Arb.command,
             ) { initialGame, command ->
                 val updatedGame = initialGame.execute(command).assumeWasSuccessful()
                 collectState(initialGame)
-                expectThat(updatedGame.deprecatedState.state).isA<Bidding>()
+                expectThat(updatedGame.state).isA<Bidding>()
             }.printStatistics().checkCoveragePercentages(expectGameStates())
         }
 }
