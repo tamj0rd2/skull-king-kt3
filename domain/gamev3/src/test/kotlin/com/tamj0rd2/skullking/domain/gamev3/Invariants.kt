@@ -24,6 +24,7 @@ class Invariants {
     fun `a game always has 2-6 players`() =
         propertyTest {
             checkAll(propTestConfig, Arb.game.validOnly()) { game ->
+                collect(game.state)
                 expectThat(game.deprecatedState.players.size).isIn(2..6)
             }
         }
@@ -32,6 +33,7 @@ class Invariants {
     fun `a game always start with a GameStarted event`() =
         propertyTest {
             checkAll(propTestConfig, Arb.game.validOnly()) { game ->
+                collect(game.state)
                 expectThat(game.events.first()).isA<GameStartedEvent>()
             }
         }
@@ -40,6 +42,7 @@ class Invariants {
     fun `a game only ever has 1 GameStarted event`() =
         propertyTest {
             checkAll(propTestConfig, Arb.game.validOnly()) { game ->
+                collect(game.state)
                 expectThat(game.events).filterIsInstance<GameStartedEvent>().count().isEqualTo(1)
             }
         }
@@ -49,6 +52,7 @@ class Invariants {
         propertyTest {
             checkAll(propTestConfig, Arb.game.validOnly(), Arb.command) { initialGame, command ->
                 val updatedGame = initialGame.execute(command).assumeWasSuccessful()
+                collect(initialGame.state)
                 expectThat(updatedGame.events.size).isEqualTo(initialGame.events.size + 1)
             }
         }
@@ -58,6 +62,7 @@ class Invariants {
         propertyTest {
             checkAll(propTestConfig, Arb.game.validOnly(), Arb.command) { initialGame, command ->
                 val updatedGame = initialGame.execute(command).assumeWasSuccessful()
+                collect(initialGame.state)
                 expectThat(updatedGame.deprecatedState).isNotEqualTo(initialGame.deprecatedState)
             }
         }
@@ -67,6 +72,7 @@ class Invariants {
         propertyTest {
             checkAll(propTestConfig, Arb.game.validOnly(), Arb.command) { initialGame, command ->
                 val updatedGame = initialGame.execute(command).assumeWasSuccessful()
+                collect(initialGame.state)
                 expectThat(updatedGame.deprecatedState.players).isEqualTo(initialGame.deprecatedState.players)
             }
         }
@@ -76,6 +82,7 @@ class Invariants {
         propertyTest {
             checkAll(propTestConfig, Arb.game.validOnly(), Arb.command) { initialGame, command ->
                 val updatedGame = initialGame.execute(command).assumeWasSuccessful()
+                collect(initialGame.state)
                 expectThat(updatedGame.id).isEqualTo(initialGame.id)
             }
         }
@@ -85,6 +92,7 @@ class Invariants {
         propertyTest {
             checkAll(propTestConfig, Arb.game.validOnly(), Arb.command) { initialGame, command ->
                 val updatedGame = initialGame.execute(command).assumeWasSuccessful()
+                collect(initialGame.state)
                 expectThat(updatedGame.events.dropLast(1)).containsExactly(initialGame.events)
             }
         }
@@ -93,6 +101,7 @@ class Invariants {
     fun `a game reconstituted from events has the same identity, state and events as the game it was reconstituted from`() =
         propertyTest {
             checkAll(propTestConfig, Arb.game.validOnly()) { originalGame ->
+                collect(originalGame.state)
                 expectThat(Game.reconstitute(originalGame.events)).wasSuccessful().and {
                     isEqualTo(originalGame)
                     get { id }.isEqualTo(originalGame.id)
@@ -117,6 +126,7 @@ class Invariants {
                 Arb.command,
             ) { initialGame, command ->
                 val updatedGame = initialGame.execute(command).assumeWasSuccessful()
+                collect(initialGame.state)
                 expectThat(updatedGame.deprecatedState.state).isA<Bidding>()
             }
         }
