@@ -24,7 +24,7 @@ class Invariants {
     fun `a game always has 2-6 players`() =
         propertyTest {
             checkAll(propTestConfig, Arb.game.validOnly()) { game ->
-                expectThat(game.state.players.size).isIn(2..6)
+                expectThat(game.deprecatedState.players.size).isIn(2..6)
             }
         }
 
@@ -58,7 +58,7 @@ class Invariants {
         propertyTest {
             checkAll(propTestConfig, Arb.game.validOnly(), Arb.command) { initialGame, command ->
                 val updatedGame = initialGame.execute(command).assumeWasSuccessful()
-                expectThat(updatedGame.state).isNotEqualTo(initialGame.state)
+                expectThat(updatedGame.deprecatedState).isNotEqualTo(initialGame.deprecatedState)
             }
         }
 
@@ -67,7 +67,7 @@ class Invariants {
         propertyTest {
             checkAll(propTestConfig, Arb.game.validOnly(), Arb.command) { initialGame, command ->
                 val updatedGame = initialGame.execute(command).assumeWasSuccessful()
-                expectThat(updatedGame.state.players).isEqualTo(initialGame.state.players)
+                expectThat(updatedGame.deprecatedState.players).isEqualTo(initialGame.deprecatedState.players)
             }
         }
 
@@ -96,7 +96,7 @@ class Invariants {
                 expectThat(Game.reconstitute(originalGame.events)).wasSuccessful().and {
                     isEqualTo(originalGame)
                     get { id }.isEqualTo(originalGame.id)
-                    get { state }.isEqualTo(originalGame.state)
+                    get { deprecatedState }.isEqualTo(originalGame.deprecatedState)
                     get { events }.isEqualTo(originalGame.events)
                 }
             }
@@ -111,11 +111,11 @@ class Invariants {
                 propTestConfig,
                 // TODO: I'm using gameWithValidPlayers as a shortcut, otherwise the test would take way too long to run.
                 //  check this in the book.
-                Arb.game.validOnly().filter { it.state.phase is AwaitingNextRound },
+                Arb.game.validOnly().filter { it.deprecatedState.phase is AwaitingNextRound },
                 Arb.command,
             ) { initialGame, command ->
                 val updatedGame = initialGame.execute(command).assumeWasSuccessful()
-                expectThat(updatedGame.state.phase).isA<Bidding>()
+                expectThat(updatedGame.deprecatedState.phase).isA<Bidding>()
             }
         }
 }

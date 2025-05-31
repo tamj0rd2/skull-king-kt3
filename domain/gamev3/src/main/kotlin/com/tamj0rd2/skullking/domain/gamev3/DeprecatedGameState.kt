@@ -7,9 +7,9 @@ import com.tamj0rd2.skullking.domain.gamev3.GamePhase.Bidding
 import com.tamj0rd2.skullking.domain.gamev3.GamePhase.NotStarted
 import dev.forkhandles.result4k.Result4k
 
-typealias GameStateResult = Result4k<GameState, GameErrorCode>
+typealias GameStateResult = Result4k<DeprecatedGameState, GameErrorCode>
 
-data class GameState private constructor(
+data class DeprecatedGameState private constructor(
     val players: Set<PlayerId>,
     val phase: GamePhase,
 ) {
@@ -39,7 +39,7 @@ data class GameState private constructor(
 
     companion object {
         val new =
-            GameState(
+            DeprecatedGameState(
                 players = emptySet(),
                 phase = NotStarted,
             )

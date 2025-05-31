@@ -9,11 +9,10 @@ import dev.forkhandles.values.random
 
 typealias GameResult = Result4k<Game, GameErrorCode>
 
-@ConsistentCopyVisibility
 data class Game private constructor(
     val id: GameId,
     val events: List<GameEvent> = emptyList(),
-    val state: GameState = GameState.new,
+    val deprecatedState: DeprecatedGameState = DeprecatedGameState.new,
 ) {
     override fun equals(other: Any?): Boolean {
         if (other !is Game) return false
@@ -30,7 +29,7 @@ data class Game private constructor(
     private fun appendEvent(event: GameEvent): GameResult {
         return copy(
             events = events + event,
-            state = state.apply(event).onFailure { return it },
+            deprecatedState = deprecatedState.apply(event).onFailure { return it },
         ).asSuccess()
     }
 
