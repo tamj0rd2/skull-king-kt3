@@ -7,8 +7,8 @@ import io.kotest.common.runBlocking
 import io.kotest.property.Constraints
 import io.kotest.property.PropTestConfig
 import io.kotest.property.PropertyContext
+import io.kotest.property.and
 import io.kotest.property.assume
-import io.kotest.property.or
 import org.junit.jupiter.api.fail
 import org.opentest4j.AssertionFailedError
 import strikt.api.Assertion
@@ -33,7 +33,8 @@ object PropertyTesting {
     val propTestConfig get() =
         PropTestConfig(
             maxDiscardPercentage = 99,
-            constraints = Constraints { it.successes() < 1000 }.or(Constraints.duration(2.seconds)),
+            // stops when the attempt limit is met or the duration is reached.
+            constraints = Constraints { it.attempts() < 1000 }.and(Constraints.duration(2.seconds)),
         )
 
     private val stackTracePartsToIgnore =
