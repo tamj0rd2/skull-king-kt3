@@ -29,3 +29,7 @@ data class GameStartedEvent private constructor(
 data class RoundStartedEvent(
     override val id: GameId,
 ) : GameEvent
+
+data class BidPlacedEvent(
+    override val id: GameId,
+) : GameEvent

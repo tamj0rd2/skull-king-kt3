@@ -9,6 +9,7 @@ import io.kotest.property.PropTestConfig
 import io.kotest.property.PropertyContext
 import io.kotest.property.and
 import io.kotest.property.assume
+import io.kotest.property.statistics.Label
 import org.junit.jupiter.api.fail
 import org.opentest4j.AssertionFailedError
 import strikt.api.Assertion
@@ -95,23 +96,14 @@ object PropertyTesting {
     fun <T, R : Result4k<T, *>> Assertion.Builder<R>.wasFailure() = run { isA<Success<T>>().get { value } }
 }
 
-fun PropertyContext.checkCoveragePercentages(vararg expectedClassifications: Pair<Any?, Double>) =
-    apply {
-        require(expectedClassifications.isNotEmpty()) { "You should pass at least 1 classification expectation" }
-        checkCoveragePercentages(expectedClassifications.toMap())
-    }
-
 @OptIn(ExperimentalKotest::class)
-fun PropertyContext.checkCoveragePercentages(expectedClassifications: Map<Any?, Double>) =
-    apply {
-        // TODO: why does this only check the null label?
-        val stats = statistics()[null] ?: emptyMap()
-        expectedClassifications.forEach { (classification, min) ->
-            val count = stats[classification] ?: 0
-            val attempts = attempts()
-            val actual = (count.toDouble() / attempts.toDouble()) * 100.0
-            if (actual < min) {
-                fail("Required coverage of $min% for [$classification] but was [${actual.toInt()}%]")
-            }
-        }
+fun PropertyContext.checkCoverageCounts(
+    label: String? = null,
+    expectedClassifications: Map<Any?, Int>,
+) = apply {
+    val stats = statistics().getOrDefault(label?.let(::Label), emptyMap())
+    expectedClassifications.forEach { (classification, min) ->
+        val actual = stats[classification] ?: 0
+        if (actual < min) fail("Required coverage of $min for [$classification] but was [$actual]")
     }
+}

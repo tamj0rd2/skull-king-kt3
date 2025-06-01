@@ -33,21 +33,18 @@ class Invariants {
         val inProgressGameStates =
             GameState.InProgress::class
                 .sealedSubclasses
-                .filter {
-                    when (it) {
-                        // TODO: Bidding state is wip. remove this line to help drive the behaviour.
-                        Bidding::class -> false
-                        else -> true
-                    }
-                }.map { it.simpleName }
+                .map { it.simpleName }
                 .toSet()
                 .also { check(it.isNotEmpty()) }
 
-        fun expectInProgressGameStates(): Map<Any?, Double> = inProgressGameStates.associateWith { 95.00 / inProgressGameStates.size }
+        fun PropertyContext.checkCoverageForInProgressGameStates() =
+            apply {
+                checkCoverageCounts("state", inProgressGameStates.associateWith { 1 })
+            }
+
+        fun PropertyContext.collectState(state: GameState) = collect("state", state::class.simpleName)
 
         fun PropertyContext.collectState(game: Game) = collectState(game.state)
-
-        fun PropertyContext.collectState(state: GameState) = collect(state::class.simpleName)
     }
 
     @Test
@@ -57,7 +54,7 @@ class Invariants {
                 assumeThat(game.state is GameState.InProgress)
                 collectState(game)
                 expectThat(game.state.players.size).isIn(2..6)
-            }.printStatistics().checkCoveragePercentages(expectInProgressGameStates())
+            }.printStatistics().checkCoverageForInProgressGameStates()
         }
 
     @Test
@@ -66,7 +63,7 @@ class Invariants {
             checkAll(propTestConfig, Arb.game.validOnly()) { game ->
                 collectState(game)
                 expectThat(game.events.first()).isA<GameStartedEvent>()
-            }.printStatistics().checkCoveragePercentages(expectInProgressGameStates())
+            }.printStatistics().checkCoverageForInProgressGameStates()
         }
 
     @Test
@@ -75,16 +72,17 @@ class Invariants {
             checkAll(propTestConfig, Arb.game.validOnly()) { game ->
                 collectState(game)
                 expectThat(game.events).filterIsInstance<GameStartedEvent>().count().isEqualTo(1)
-            }.printStatistics().checkCoveragePercentages(expectInProgressGameStates())
+            }.printStatistics().checkCoverageForInProgressGameStates()
         }
 
     @Test
     fun `each event in a game is related to that specific game`() =
         propertyTest {
             checkAll(propTestConfig, Arb.game.validOnly()) { game ->
-                collect(game.events.map { it::class.simpleName })
+                collectState(game)
+                collect("events", game.events.map { it::class.simpleName })
                 expectThat(game.events).all { get { id }.isEqualTo(game.id) }
-            }.printStatistics().checkCoveragePercentages(expectInProgressGameStates())
+            }.printStatistics().checkCoverageForInProgressGameStates()
         }
 
     @Test
@@ -94,7 +92,7 @@ class Invariants {
                 val updatedGame = initialGame.execute(command).assumeWasSuccessful()
                 collectState(initialGame)
                 expectThat(updatedGame.events.size).isEqualTo(initialGame.events.size + 1)
-            }.printStatistics().checkCoveragePercentages(expectInProgressGameStates())
+            }.printStatistics().checkCoverageForInProgressGameStates()
         }
 
     @Test
@@ -104,7 +102,7 @@ class Invariants {
                 val updatedGame = initialGame.execute(command).assumeWasSuccessful()
                 collectState(initialGame)
                 expectThat(updatedGame.state).isNotEqualTo(initialGame.state)
-            }.printStatistics().checkCoveragePercentages(expectInProgressGameStates())
+            }.printStatistics().checkCoverageForInProgressGameStates()
         }
 
     @Test
@@ -117,7 +115,7 @@ class Invariants {
                 val updatedGame = initialGame.execute(command).assumeWasSuccessful()
                 collectState(initialGame)
                 expectThat(updatedGame.state).isA<GameState.InProgress>().get { players }.isEqualTo(initialGame.state.players)
-            }.printStatistics().checkCoveragePercentages(expectInProgressGameStates())
+            }.printStatistics().checkCoverageForInProgressGameStates()
         }
 
     @Test
@@ -127,7 +125,7 @@ class Invariants {
                 val updatedGame = initialGame.execute(command).assumeWasSuccessful()
                 collectState(initialGame)
                 expectThat(updatedGame.id).isEqualTo(initialGame.id)
-            }.printStatistics().checkCoveragePercentages(expectInProgressGameStates())
+            }.printStatistics().checkCoverageForInProgressGameStates()
         }
 
     @Test
@@ -137,7 +135,7 @@ class Invariants {
                 val updatedGame = initialGame.execute(command).assumeWasSuccessful()
                 collectState(initialGame)
                 expectThat(updatedGame.events.dropLast(1)).containsExactly(initialGame.events)
-            }.printStatistics().checkCoveragePercentages(expectInProgressGameStates())
+            }.printStatistics().checkCoverageForInProgressGameStates()
         }
 
     @Test
@@ -151,10 +149,10 @@ class Invariants {
                     get { events }.isEqualTo(originalGame.events)
                     get { state }.isEqualTo(originalGame.state)
                 }
-            }.printStatistics().checkCoveragePercentages(expectInProgressGameStates())
+            }.printStatistics().checkCoverageForInProgressGameStates()
         }
 
-    // TODO: possibly put these in another file? Also double check my tests against what the book suggests for state machines
+    // TODO: double check my tests against what the book suggests for state machines
 
     @Test
     fun `a game in the AwaitingNextRound phase can only ever transition to Bidding`() =
@@ -167,9 +165,8 @@ class Invariants {
                 Arb.command,
             ) { initialGame, command ->
                 val updatedGame = initialGame.execute(command).assumeWasSuccessful()
-                collectState(initialGame)
                 expectThat(updatedGame.state).isA<Bidding>()
-            }.printStatistics().checkCoveragePercentages(expectInProgressGameStates())
+            }.printStatistics()
         }
 
     @Test
@@ -177,18 +174,17 @@ class Invariants {
         propertyTest {
             checkAll(
                 propTestConfig,
-                // TODO: I'm using gameWithValidPlayers as a shortcut, otherwise the test would take way too long to run.
-                //  check this in the book.
                 Arb.game.validOnly().filter { it.state is GameState.InProgress },
                 Arb.command,
             ) { initialGame, command ->
                 val initialState = initialGame.state as GameState.InProgress
                 val updatedGameState = initialGame.execute(command).assumeWasSuccessful().state
                 assumeThat(updatedGameState is GameState.InProgress)
-
                 collectState(initialState)
+                collect("command", command::class.simpleName)
+
                 expectThat(updatedGameState.roundNumber).isGreaterThanOrEqualTo(initialState.roundNumber)
-            }.printStatistics().checkCoveragePercentages(expectInProgressGameStates())
+            }.printStatistics().checkCoverageForInProgressGameStates()
         }
 
     @Test
@@ -207,6 +203,6 @@ class Invariants {
 
                 collectState(initialState)
                 expectThat(updatedGameState.roundNumber).isIn(initialState.roundNumber..initialState.roundNumber.next())
-            }.printStatistics().checkCoveragePercentages(expectInProgressGameStates())
+            }.printStatistics().checkCoverageForInProgressGameStates()
         }
 }

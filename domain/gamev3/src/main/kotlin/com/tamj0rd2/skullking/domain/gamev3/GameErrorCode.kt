@@ -17,4 +17,8 @@ sealed interface GameErrorCode {
 
         data object MultipleGameIds : CannotReconstituteGame
     }
+
+    data class NotYetImplemented(
+        val message: String,
+    ) : GameErrorCode
 }

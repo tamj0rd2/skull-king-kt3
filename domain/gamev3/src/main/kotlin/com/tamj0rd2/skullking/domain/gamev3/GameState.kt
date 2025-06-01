@@ -17,7 +17,10 @@ sealed class GameState {
                     players = event.players,
                     roundNumber = RoundNumber.One,
                 ).asSuccess()
-                else -> GameErrorCode.CannotApplyEventInCurrentState(event, this).asFailure()
+
+                is BidPlacedEvent,
+                is RoundStartedEvent,
+                -> GameErrorCode.CannotApplyEventInCurrentState(event, this).asFailure()
             }
         }
     }
@@ -34,7 +37,9 @@ sealed class GameState {
         override fun apply(event: GameEvent): GameStateResult {
             return when (event) {
                 is RoundStartedEvent -> return Bidding(players, roundNumber).asSuccess()
-                else -> GameErrorCode.CannotApplyEventInCurrentState(event, this).asFailure()
+                is BidPlacedEvent,
+                is GameStartedEvent,
+                -> GameErrorCode.CannotApplyEventInCurrentState(event, this).asFailure()
             }
         }
     }
@@ -43,6 +48,12 @@ sealed class GameState {
         override val players: Set<PlayerId>,
         override val roundNumber: RoundNumber,
     ) : InProgress() {
-        override fun apply(event: GameEvent): GameStateResult = GameErrorCode.CannotApplyEventInCurrentState(event, this).asFailure()
+        override fun apply(event: GameEvent): GameStateResult =
+            when (event) {
+                is BidPlacedEvent -> this.asSuccess()
+                is GameStartedEvent,
+                is RoundStartedEvent,
+                -> GameErrorCode.CannotApplyEventInCurrentState(event, this).asFailure()
+            }
     }
 }
