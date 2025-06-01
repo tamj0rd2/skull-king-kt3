@@ -14,6 +14,7 @@ import io.kotest.property.arbitrary.filter
 import io.kotest.property.checkAll
 import org.junit.jupiter.api.Test
 import strikt.api.expectThat
+import strikt.assertions.all
 import strikt.assertions.containsExactly
 import strikt.assertions.count
 import strikt.assertions.filterIsInstance
@@ -74,6 +75,15 @@ class Invariants {
             checkAll(propTestConfig, Arb.game.validOnly()) { game ->
                 collectState(game)
                 expectThat(game.events).filterIsInstance<GameStartedEvent>().count().isEqualTo(1)
+            }.printStatistics().checkCoveragePercentages(expectGameStates())
+        }
+
+    @Test
+    fun `each event in a game is related to that specific game`() =
+        propertyTest {
+            checkAll(propTestConfig, Arb.game.validOnly()) { game ->
+                collect(game.events.map { it::class.simpleName })
+                expectThat(game.events).all { get { id }.isEqualTo(game.id) }
             }.printStatistics().checkCoveragePercentages(expectGameStates())
         }
 
