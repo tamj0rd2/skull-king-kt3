@@ -19,6 +19,7 @@ import strikt.assertions.count
 import strikt.assertions.filterIsInstance
 import strikt.assertions.isA
 import strikt.assertions.isEqualTo
+import strikt.assertions.isGreaterThanOrEqualTo
 import strikt.assertions.isIn
 import strikt.assertions.isNotEqualTo
 
@@ -43,9 +44,9 @@ class Invariants {
                     }
                 }.associateWith { 95.00 / statesToCheck.size }
 
-        fun PropertyContext.collectState(game: Game) {
-            collect(game.state::class.simpleName)
-        }
+        fun PropertyContext.collectState(game: Game) = collectState(game.state)
+
+        fun PropertyContext.collectState(state: GameState) = collect(state::class.simpleName)
     }
 
     @Test
@@ -158,6 +159,44 @@ class Invariants {
                 val updatedGame = initialGame.execute(command).assumeWasSuccessful()
                 collectState(initialGame)
                 expectThat(updatedGame.state).isA<Bidding>()
+            }.printStatistics().checkCoveragePercentages(expectGameStates())
+        }
+
+    @Test
+    fun `the round number of a game in progress never decreases`() =
+        propertyTest {
+            checkAll(
+                propTestConfig,
+                // TODO: I'm using gameWithValidPlayers as a shortcut, otherwise the test would take way too long to run.
+                //  check this in the book.
+                Arb.game.validOnly().filter { it.state is GameState.InProgress },
+                Arb.command,
+            ) { initialGame, command ->
+                val initialState = initialGame.state as GameState.InProgress
+                val updatedGameState = initialGame.execute(command).assumeWasSuccessful().state
+                assumeThat(updatedGameState is GameState.InProgress)
+
+                collectState(initialState)
+                expectThat(updatedGameState.roundNumber).isGreaterThanOrEqualTo(initialState.roundNumber)
+            }.printStatistics().checkCoveragePercentages(expectGameStates())
+        }
+
+    @Test
+    fun `the round number of a game in progress only ever increases by 1 at most`() =
+        propertyTest {
+            checkAll(
+                propTestConfig,
+                // TODO: I'm using gameWithValidPlayers as a shortcut, otherwise the test would take way too long to run.
+                //  check this in the book.
+                Arb.game.validOnly().filter { it.state is GameState.InProgress },
+                Arb.command,
+            ) { initialGame, command ->
+                val initialState = initialGame.state as GameState.InProgress
+                val updatedGameState = initialGame.execute(command).assumeWasSuccessful().state
+                assumeThat(updatedGameState is GameState.InProgress)
+
+                collectState(initialState)
+                expectThat(updatedGameState.roundNumber).isIn(initialState.roundNumber..initialState.roundNumber.next())
             }.printStatistics().checkCoveragePercentages(expectGameStates())
         }
 }

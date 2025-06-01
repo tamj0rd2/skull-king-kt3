@@ -11,4 +11,19 @@ enum class RoundNumber {
     Eight,
     Nine,
     Ten,
+    ;
+
+    fun next(): RoundNumber =
+        when (this) {
+            One -> Two
+            Two -> Three
+            Three -> Four
+            Four -> Five
+            Five -> Six
+            Six -> Seven
+            Seven -> Eight
+            Eight -> Nine
+            Nine -> Ten
+            Ten -> throw IllegalStateException("Cannot advance past the last round")
+        }
 }
