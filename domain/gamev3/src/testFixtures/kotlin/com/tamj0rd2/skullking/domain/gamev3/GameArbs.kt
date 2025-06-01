@@ -4,34 +4,33 @@ import dev.forkhandles.result4k.Result4k
 import dev.forkhandles.result4k.Success
 import dev.forkhandles.result4k.flatMap
 import dev.forkhandles.result4k.valueOrNull
-import dev.forkhandles.values.ofResult4k
+import dev.forkhandles.values.random
 import io.kotest.property.Arb
+import io.kotest.property.arbitrary.arbitrary
 import io.kotest.property.arbitrary.bind
 import io.kotest.property.arbitrary.filter
 import io.kotest.property.arbitrary.list
 import io.kotest.property.arbitrary.map
 import io.kotest.property.arbitrary.set
-import io.kotest.property.arbitrary.uuid
 import io.kotest.property.resolution.default
 
-val Arb.Companion.playerId get() = Arb.uuid().map { SomePlayerId.ofResult4k(it) }.validOnly()
+object GameArbs {
+    val Arb.Companion.command get() = Arb.default<GameCommand>()
+    val Arb.Companion.game get() = Arb.gameBuiltFromScratch
 
-val Arb.Companion.command get() = Arb.default<GameCommand>()
+    private val Arb.Companion.gameBuiltFromScratch
+        get() =
+            Arb.bind(
+                // TODO: use constants from the domain.
+                Arb.set(Arb.playerId, 2..6),
+                Arb.list(Arb.command),
+            ) { playerIds, commands ->
+                commands.fold(Game.new(playerIds)) { result, command ->
+                    result.flatMap { it.execute(command) }
+                }
+            }
 
-val Arb.Companion.game get() =
-    Arb.bind(
-        // TODO: use constants from the domain.
-        Arb.set(Arb.playerId, 2..6),
-        Arb.list(Arb.command),
-        ::buildGame,
-    )
+    private val Arb.Companion.playerId get() = arbitrary { SomePlayerId.random(it.random) }
 
-fun <T> Arb<Result4k<T, *>>.validOnly(): Arb<T> = filter { it is Success }.map { it.valueOrNull()!! }
-
-private fun buildGame(
-    playerIds: Set<SomePlayerId>,
-    commands: List<GameCommand>,
-): GameResult =
-    commands.fold(Game.new(playerIds)) { result, command ->
-        result.flatMap { it.execute(command) }
-    }
+    fun <T> Arb<Result4k<T, *>>.validOnly(): Arb<T> = filter { it is Success }.map { it.valueOrNull()!! }
+}
