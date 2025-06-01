@@ -30,23 +30,20 @@ import strikt.assertions.isNotEqualTo
 class Invariants {
     private companion object {
         @Suppress("NO_REFLECTION_IN_CLASS_PATH")
-        val statesToCheck =
-            GameState::class
+        val inProgressGameStates =
+            GameState.InProgress::class
                 .sealedSubclasses
-                .toSet()
-                .minus(GameState.NotStarted::class)
-                .minus(GameState.InProgress::class)
-                .map { it.simpleName }
-                .toSet()
-
-        fun expectGameStates(): Map<Any?, Double> =
-            statesToCheck
                 .filter {
                     when (it) {
-                        Bidding::class.simpleName -> false // TODO: Bidding state is wip. remove this line to help drive the behaviour.
+                        // TODO: Bidding state is wip. remove this line to help drive the behaviour.
+                        Bidding::class -> false
                         else -> true
                     }
-                }.associateWith { 95.00 / statesToCheck.size }
+                }.map { it.simpleName }
+                .toSet()
+                .also { check(it.isNotEmpty()) }
+
+        fun expectInProgressGameStates(): Map<Any?, Double> = inProgressGameStates.associateWith { 95.00 / inProgressGameStates.size }
 
         fun PropertyContext.collectState(game: Game) = collectState(game.state)
 
@@ -60,7 +57,7 @@ class Invariants {
                 assumeThat(game.state is GameState.InProgress)
                 collectState(game)
                 expectThat(game.state.players.size).isIn(2..6)
-            }.printStatistics().checkCoveragePercentages(expectGameStates())
+            }.printStatistics().checkCoveragePercentages(expectInProgressGameStates())
         }
 
     @Test
@@ -69,7 +66,7 @@ class Invariants {
             checkAll(propTestConfig, Arb.game.validOnly()) { game ->
                 collectState(game)
                 expectThat(game.events.first()).isA<GameStartedEvent>()
-            }.printStatistics().checkCoveragePercentages(expectGameStates())
+            }.printStatistics().checkCoveragePercentages(expectInProgressGameStates())
         }
 
     @Test
@@ -78,7 +75,7 @@ class Invariants {
             checkAll(propTestConfig, Arb.game.validOnly()) { game ->
                 collectState(game)
                 expectThat(game.events).filterIsInstance<GameStartedEvent>().count().isEqualTo(1)
-            }.printStatistics().checkCoveragePercentages(expectGameStates())
+            }.printStatistics().checkCoveragePercentages(expectInProgressGameStates())
         }
 
     @Test
@@ -87,7 +84,7 @@ class Invariants {
             checkAll(propTestConfig, Arb.game.validOnly()) { game ->
                 collect(game.events.map { it::class.simpleName })
                 expectThat(game.events).all { get { id }.isEqualTo(game.id) }
-            }.printStatistics().checkCoveragePercentages(expectGameStates())
+            }.printStatistics().checkCoveragePercentages(expectInProgressGameStates())
         }
 
     @Test
@@ -97,7 +94,7 @@ class Invariants {
                 val updatedGame = initialGame.execute(command).assumeWasSuccessful()
                 collectState(initialGame)
                 expectThat(updatedGame.events.size).isEqualTo(initialGame.events.size + 1)
-            }.printStatistics().checkCoveragePercentages(expectGameStates())
+            }.printStatistics().checkCoveragePercentages(expectInProgressGameStates())
         }
 
     @Test
@@ -107,7 +104,7 @@ class Invariants {
                 val updatedGame = initialGame.execute(command).assumeWasSuccessful()
                 collectState(initialGame)
                 expectThat(updatedGame.state).isNotEqualTo(initialGame.state)
-            }.printStatistics().checkCoveragePercentages(expectGameStates())
+            }.printStatistics().checkCoveragePercentages(expectInProgressGameStates())
         }
 
     @Test
@@ -120,7 +117,7 @@ class Invariants {
                 val updatedGame = initialGame.execute(command).assumeWasSuccessful()
                 collectState(initialGame)
                 expectThat(updatedGame.state).isA<GameState.InProgress>().get { players }.isEqualTo(initialGame.state.players)
-            }.printStatistics().checkCoveragePercentages(expectGameStates())
+            }.printStatistics().checkCoveragePercentages(expectInProgressGameStates())
         }
 
     @Test
@@ -130,7 +127,7 @@ class Invariants {
                 val updatedGame = initialGame.execute(command).assumeWasSuccessful()
                 collectState(initialGame)
                 expectThat(updatedGame.id).isEqualTo(initialGame.id)
-            }.printStatistics().checkCoveragePercentages(expectGameStates())
+            }.printStatistics().checkCoveragePercentages(expectInProgressGameStates())
         }
 
     @Test
@@ -140,7 +137,7 @@ class Invariants {
                 val updatedGame = initialGame.execute(command).assumeWasSuccessful()
                 collectState(initialGame)
                 expectThat(updatedGame.events.dropLast(1)).containsExactly(initialGame.events)
-            }.printStatistics().checkCoveragePercentages(expectGameStates())
+            }.printStatistics().checkCoveragePercentages(expectInProgressGameStates())
         }
 
     @Test
@@ -154,7 +151,7 @@ class Invariants {
                     get { events }.isEqualTo(originalGame.events)
                     get { state }.isEqualTo(originalGame.state)
                 }
-            }.printStatistics().checkCoveragePercentages(expectGameStates())
+            }.printStatistics().checkCoveragePercentages(expectInProgressGameStates())
         }
 
     // TODO: possibly put these in another file? Also double check my tests against what the book suggests for state machines
@@ -172,7 +169,7 @@ class Invariants {
                 val updatedGame = initialGame.execute(command).assumeWasSuccessful()
                 collectState(initialGame)
                 expectThat(updatedGame.state).isA<Bidding>()
-            }.printStatistics().checkCoveragePercentages(expectGameStates())
+            }.printStatistics().checkCoveragePercentages(expectInProgressGameStates())
         }
 
     @Test
@@ -191,7 +188,7 @@ class Invariants {
 
                 collectState(initialState)
                 expectThat(updatedGameState.roundNumber).isGreaterThanOrEqualTo(initialState.roundNumber)
-            }.printStatistics().checkCoveragePercentages(expectGameStates())
+            }.printStatistics().checkCoveragePercentages(expectInProgressGameStates())
         }
 
     @Test
@@ -210,6 +207,6 @@ class Invariants {
 
                 collectState(initialState)
                 expectThat(updatedGameState.roundNumber).isIn(initialState.roundNumber..initialState.roundNumber.next())
-            }.printStatistics().checkCoveragePercentages(expectGameStates())
+            }.printStatistics().checkCoveragePercentages(expectInProgressGameStates())
         }
 }
