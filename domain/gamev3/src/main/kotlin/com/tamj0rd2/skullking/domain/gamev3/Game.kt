@@ -40,8 +40,8 @@ data class Game private constructor(
                 players.size > 6 -> return GameErrorCode.TooManyPlayers.asFailure()
             }
 
-            val id = SomeGameId.random()
-            return Game(id).appendEvent(GameStartedEvent(id, players))
+            val game = Game(SomeGameId.random())
+            return GameStartedEvent.new(game.id, players).flatMap(game::appendEvent)
         }
 
         fun reconstitute(events: List<GameEvent>): GameResult {

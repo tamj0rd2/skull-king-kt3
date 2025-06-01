@@ -49,11 +49,21 @@ object GameArbs {
         mapOf<KClass<*>, Arb<*>>(
             GameId::class to Arb.gameId,
             PlayerId::class to Arb.playerId,
+            GameStartedEvent::class to Arb.gameStartedEvent,
         )
 
     @OptIn(DelicateKotest::class)
     @Suppress("NO_REFLECTION_IN_CLASS_PATH")
     private val Arb.Companion.event get() = Arb.sealed<GameEvent>()
+
+    private val Arb.Companion.gameStartedEvent
+        get() =
+            Arb
+                .bind(
+                    Arb.gameId,
+                    Arb.set(Arb.playerId, 0..10),
+                    GameStartedEvent::new,
+                ).validOnly()
 
     fun <T> Arb<Result4k<T, *>>.validOnly(): Arb<T> = filter { it is Success }.map { it.valueOrNull()!! }
 
