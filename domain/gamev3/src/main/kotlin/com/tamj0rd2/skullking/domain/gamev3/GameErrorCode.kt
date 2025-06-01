@@ -9,4 +9,12 @@ sealed interface GameErrorCode {
         val event: GameEvent,
         val phase: GameState,
     ) : GameErrorCode
+
+    sealed interface CannotReconstituteGame : GameErrorCode {
+        data object NoEvents : CannotReconstituteGame
+
+        data object InvalidFirstEvent : CannotReconstituteGame
+
+        data object MultipleGameIds : CannotReconstituteGame
+    }
 }

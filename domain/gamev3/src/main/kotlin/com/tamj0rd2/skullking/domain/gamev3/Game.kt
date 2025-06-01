@@ -45,6 +45,12 @@ data class Game private constructor(
         }
 
         fun reconstitute(events: List<GameEvent>): GameResult {
+            when {
+                events.isEmpty() -> return GameErrorCode.CannotReconstituteGame.NoEvents.asFailure()
+                events.first() !is GameStartedEvent -> return GameErrorCode.CannotReconstituteGame.InvalidFirstEvent.asFailure()
+                events.map { it.id }.toSet().size > 1 -> return GameErrorCode.CannotReconstituteGame.MultipleGameIds.asFailure()
+            }
+
             val initial = Game((events.first() as GameStartedEvent).id)
             return events.fold(initial.asSuccess() as GameResult) { result, event ->
                 result.flatMap { it.appendEvent(event) }
