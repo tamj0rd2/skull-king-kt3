@@ -46,7 +46,7 @@ class Invariants {
     }
 
     @Test
-    fun `a game in progress always has 2-6 players`() =
+    fun `a game in progress always has 2-6 players`() {
         propertyTest {
             checkAll(propTestConfig, Arb.game.validOnly()) { game ->
                 assumeThat(game.state is GameState.InProgress)
@@ -54,27 +54,30 @@ class Invariants {
                 expectThat(game.state.players.size).isIn(2..6)
             }.printStatistics().checkCoverageForInProgressGameStates()
         }
+    }
 
     @Test
-    fun `a game always start with a GameStarted event`() =
+    fun `a game always start with a GameStarted event`() {
         propertyTest {
             checkAll(propTestConfig, Arb.game.validOnly()) { game ->
                 collectState(game)
                 expectThat(game.events.first()).isA<GameStartedEvent>()
             }.printStatistics().checkCoverageForInProgressGameStates()
         }
+    }
 
     @Test
-    fun `a game only ever has 1 GameStarted event`() =
+    fun `a game only ever has 1 GameStarted event`() {
         propertyTest {
             checkAll(propTestConfig, Arb.game.validOnly()) { game ->
                 collectState(game)
                 expectThat(game.events).filterIsInstance<GameStartedEvent>().count().isEqualTo(1)
             }.printStatistics().checkCoverageForInProgressGameStates()
         }
+    }
 
     @Test
-    fun `each event in a game is related to that specific game`() =
+    fun `each event in a game is related to that specific game`() {
         propertyTest {
             checkAll(propTestConfig, Arb.game.validOnly()) { game ->
                 collectState(game)
@@ -82,9 +85,10 @@ class Invariants {
                 expectThat(game.events).all { get { id }.isEqualTo(game.id) }
             }.printStatistics().checkCoverageForInProgressGameStates()
         }
+    }
 
     @Test
-    fun `each successful command results in 1 new event being emitted`() =
+    fun `each successful command results in 1 new event being emitted`() {
         propertyTest {
             checkAll(propTestConfig, Arb.game.validOnly(), Arb.command) { initialGame, command ->
                 val updatedGame = initialGame.execute(command).assumeWasSuccessful()
@@ -92,9 +96,10 @@ class Invariants {
                 expectThat(updatedGame.events.size).isEqualTo(initialGame.events.size + 1)
             }.printStatistics().checkCoverageForInProgressGameStates()
         }
+    }
 
     @Test
-    fun `each successful command results in a state change`() =
+    fun `each successful command results in a state change`() {
         propertyTest {
             checkAll(propTestConfig, Arb.game.validOnly(), Arb.command) { initialGame, command ->
                 val updatedGame = initialGame.execute(command).assumeWasSuccessful()
@@ -102,9 +107,10 @@ class Invariants {
                 expectThat(updatedGame.state).isNotEqualTo(initialGame.state)
             }.printStatistics().checkCoverageForInProgressGameStates()
         }
+    }
 
     @Test
-    fun `successful commands never change the players in the game`() =
+    fun `successful commands never change the players in the game`() {
         propertyTest {
             checkAll(propTestConfig, Arb.game.validOnly(), Arb.command) { initialGame, command ->
                 // TODO: when I introduce a completed state, I should also check this here.
@@ -115,9 +121,10 @@ class Invariants {
                 expectThat(updatedGame.state).isA<GameState.InProgress>().get { players }.isEqualTo(initialGame.state.players)
             }.printStatistics().checkCoverageForInProgressGameStates()
         }
+    }
 
     @Test
-    fun `successful commands never change the game's ID`() =
+    fun `successful commands never change the game's ID`() {
         propertyTest {
             checkAll(propTestConfig, Arb.game.validOnly(), Arb.command) { initialGame, command ->
                 val updatedGame = initialGame.execute(command).assumeWasSuccessful()
@@ -125,9 +132,10 @@ class Invariants {
                 expectThat(updatedGame.id).isEqualTo(initialGame.id)
             }.printStatistics().checkCoverageForInProgressGameStates()
         }
+    }
 
     @Test
-    fun `successful commands never cause existing events to be changed or removed`() =
+    fun `successful commands never cause existing events to be changed or removed`() {
         propertyTest {
             checkAll(propTestConfig, Arb.game.validOnly(), Arb.command) { initialGame, command ->
                 val updatedGame = initialGame.execute(command).assumeWasSuccessful()
@@ -135,9 +143,10 @@ class Invariants {
                 expectThat(updatedGame.events.dropLast(1)).containsExactly(initialGame.events)
             }.printStatistics().checkCoverageForInProgressGameStates()
         }
+    }
 
     @Test
-    fun `a game reconstituted from events has the same identity, state and events as the game it was reconstituted from`() =
+    fun `a game reconstituted from events has the same identity, state and events as the game it was reconstituted from`() {
         propertyTest {
             checkAll(propTestConfig, Arb.game.validOnly()) { originalGame ->
                 collectState(originalGame)
@@ -149,11 +158,12 @@ class Invariants {
                 }
             }.printStatistics().checkCoverageForInProgressGameStates()
         }
+    }
 
     // TODO: double check my tests against what the book suggests for state machines
 
     @Test
-    fun `a game in the AwaitingNextRound phase can only ever transition to Bidding`() =
+    fun `a game in the AwaitingNextRound phase can only ever transition to Bidding`() {
         propertyTest {
             checkAll(
                 propTestConfig,
@@ -166,9 +176,10 @@ class Invariants {
                 expectThat(updatedGame.state).isA<Bidding>()
             }.printStatistics()
         }
+    }
 
     @Test
-    fun `the round number of a game in progress never decreases`() =
+    fun `the round number of a game in progress never decreases`() {
         propertyTest {
             checkAll(
                 propTestConfig,
@@ -184,9 +195,10 @@ class Invariants {
                 expectThat(updatedGameState.roundNumber).isGreaterThanOrEqualTo(initialState.roundNumber)
             }.printStatistics().checkCoverageForInProgressGameStates()
         }
+    }
 
     @Test
-    fun `the round number of a game in progress only ever increases by 1 at most`() =
+    fun `the round number of a game in progress only ever increases by 1 at most`() {
         propertyTest {
             checkAll(
                 propTestConfig,
@@ -203,4 +215,5 @@ class Invariants {
                 expectThat(updatedGameState.roundNumber).isIn(initialState.roundNumber..initialState.roundNumber.next())
             }.printStatistics().checkCoverageForInProgressGameStates()
         }
+    }
 }
