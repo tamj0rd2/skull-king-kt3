@@ -7,8 +7,8 @@ import io.kotest.common.runBlocking
 import io.kotest.property.Constraints
 import io.kotest.property.PropTestConfig
 import io.kotest.property.PropertyContext
-import io.kotest.property.and
 import io.kotest.property.assume
+import io.kotest.property.or
 import io.kotest.property.statistics.Label
 import org.junit.jupiter.api.fail
 import org.opentest4j.AssertionFailedError
@@ -28,12 +28,14 @@ object PropertyTesting {
         System.setOut(PrintStream(OutputStream.nullOutputStream()))
     }
 
+    private const val MIN_ATTEMPT_COUNT = 1000
+
     @OptIn(ExperimentalKotest::class)
     val propTestConfig get() =
         PropTestConfig(
             maxDiscardPercentage = 99,
-            // stops when the attempt limit is met or the duration is reached.
-            constraints = Constraints { it.attempts() < 1000 }.and(Constraints.duration(2.seconds)),
+            // stops when the attempt limit is met and the duration is reached.
+            constraints = Constraints { it.attempts() < MIN_ATTEMPT_COUNT }.or(Constraints.duration(2.seconds)),
         )
 
     private val stackTracePartsToIgnore =
@@ -70,8 +72,7 @@ object PropertyTesting {
 
             val rootCause = e.rootCause().also { it.stackTrace = it.cleanedStackTrace() }
             throw AssertionError("Property failed (seed: $seed)\n\n${args.joinToString("\n")}\n\n${rootCause.message}", rootCause).also {
-                it.stackTrace =
-                    rootCause.stackTrace
+                it.stackTrace = rootCause.stackTrace
             }
         }
     }
@@ -88,16 +89,23 @@ object PropertyTesting {
         assumeThat(this is Success)
         return value
     }
-}
 
-@OptIn(ExperimentalKotest::class)
-fun PropertyContext.checkCoverageCounts(
-    label: String? = null,
-    expectedClassifications: Map<Any?, Int>,
-) = apply {
-    val stats = statistics().getOrDefault(label?.let(::Label), emptyMap())
-    expectedClassifications.forEach { (classification, min) ->
-        val actual = stats[classification] ?: 0
-        if (actual < min) fail("Required coverage of $min for [$classification] but was [$actual]")
+    @OptIn(ExperimentalKotest::class)
+    fun PropertyContext.checkCoverageExists(
+        label: String? = null,
+        expectedClassifications: Set<Any?>,
+    ) = apply {
+        val stats = statistics().getOrDefault(label?.let(::Label), emptyMap())
+        val nonExistentClassifications = expectedClassifications - stats.keys
+
+        if (nonExistentClassifications.isNotEmpty()) {
+            fail(
+                """
+                Expected classifications to be collected at least once:
+                Seen: ${stats.keys.joinToString(", ")}
+                Never seen: ${nonExistentClassifications.joinToString(", ")}
+                """.trimIndent(),
+            )
+        }
     }
 }

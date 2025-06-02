@@ -7,6 +7,7 @@ import com.tamj0rd2.skullking.domain.gamev3.GameState.AwaitingNextRound
 import com.tamj0rd2.skullking.domain.gamev3.GameState.Bidding
 import com.tamj0rd2.skullking.domain.gamev3.PropertyTesting.assumeThat
 import com.tamj0rd2.skullking.domain.gamev3.PropertyTesting.assumeWasSuccessful
+import com.tamj0rd2.skullking.domain.gamev3.PropertyTesting.checkCoverageExists
 import com.tamj0rd2.skullking.domain.gamev3.PropertyTesting.printStatistics
 import com.tamj0rd2.skullking.domain.gamev3.PropertyTesting.propTestConfig
 import com.tamj0rd2.skullking.domain.gamev3.PropertyTesting.propertyTest
@@ -37,10 +38,7 @@ class Invariants {
                 .toSet()
                 .also { check(it.isNotEmpty()) }
 
-        fun PropertyContext.checkCoverageForInProgressGameStates() =
-            apply {
-                checkCoverageCounts("state", inProgressGameStates.associateWith { 1 })
-            }
+        fun PropertyContext.checkCoverageForInProgressGameStates() = apply { checkCoverageExists("state", inProgressGameStates) }
 
         fun PropertyContext.collectState(state: GameState) = collect("state", state::class.simpleName)
 
