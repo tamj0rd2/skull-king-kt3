@@ -32,4 +32,6 @@ data class RoundStartedEvent(
 
 data class BidPlacedEvent(
     override val id: GameId,
+    val playerId: PlayerId,
+    val bid: SomeBid,
 ) : GameEvent

@@ -47,13 +47,16 @@ sealed class GameState {
     data class Bidding(
         override val players: Set<PlayerId>,
         override val roundNumber: RoundNumber,
+        val bids: Map<PlayerId, Bid> = players.associateWith { NoBid },
     ) : InProgress() {
         override fun apply(event: GameEvent): GameStateResult =
             when (event) {
-                is BidPlacedEvent -> this.asSuccess()
+                is BidPlacedEvent -> addPlayerBid(event)
                 is GameStartedEvent,
                 is RoundStartedEvent,
                 -> GameErrorCode.CannotApplyEventInCurrentState(event, this).asFailure()
             }
+
+        private fun addPlayerBid(event: BidPlacedEvent): GameStateResult = copy(bids = bids + (event.playerId to event.bid)).asSuccess()
     }
 }

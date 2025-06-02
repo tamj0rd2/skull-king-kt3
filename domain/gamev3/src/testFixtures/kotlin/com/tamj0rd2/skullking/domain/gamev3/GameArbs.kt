@@ -15,6 +15,7 @@ import io.kotest.property.arbitrary.filter
 import io.kotest.property.arbitrary.list
 import io.kotest.property.arbitrary.map
 import io.kotest.property.arbitrary.set
+import io.kotest.property.resolution.GlobalArbResolver
 import io.kotest.property.resolution.default
 import kotlin.reflect.KClass
 
@@ -51,6 +52,11 @@ object GameArbs {
             PlayerId::class to Arb.playerId,
             GameStartedEvent::class to Arb.gameStartedEvent,
         )
+
+    init {
+        GlobalArbResolver.register<PlayerId>(Arb.playerId)
+        GlobalArbResolver.register<GameId>(Arb.gameId)
+    }
 
     @OptIn(DelicateKotest::class)
     @Suppress("NO_REFLECTION_IN_CLASS_PATH")

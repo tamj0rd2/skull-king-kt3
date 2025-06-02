@@ -23,8 +23,8 @@ data class Game private constructor(
 
     fun execute(command: GameCommand): GameResult =
         when (command) {
-            StartRoundCommand -> appendEvent(RoundStartedEvent(id))
-            PlaceBidCommand -> appendEvent(BidPlacedEvent(id))
+            is StartRoundCommand -> appendEvent(RoundStartedEvent(id))
+            is PlaceBidCommand -> appendEvent(BidPlacedEvent(id, command.playerId, command.bid))
         }
 
     private fun appendEvent(event: GameEvent): GameResult {
