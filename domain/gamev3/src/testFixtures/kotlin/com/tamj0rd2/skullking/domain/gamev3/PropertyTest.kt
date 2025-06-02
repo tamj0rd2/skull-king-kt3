@@ -56,9 +56,10 @@ object PropertyTesting {
 
     fun PropertyContext.printStatistics() = apply { MyStatisticsReporter(System.err).print(this) }
 
-    fun propertyTest(block: suspend () -> PropertyContext) {
+    fun propertyTest(block: suspend () -> PropertyContext): PropertyContext {
         try {
-            runBlocking(block)
+            return runBlocking(block)
+                .also { it.printStatistics() }
         } catch (e: AssertionError) {
             val args =
                 "Arg \\d+: .*"

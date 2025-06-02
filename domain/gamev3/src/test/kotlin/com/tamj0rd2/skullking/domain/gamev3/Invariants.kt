@@ -52,8 +52,8 @@ class Invariants {
                 assumeThat(game.state is GameState.InProgress)
                 collectState(game)
                 expectThat(game.state.players.size).isIn(2..6)
-            }.printStatistics().checkCoverageForInProgressGameStates()
-        }
+            }
+        }.checkCoverageForInProgressGameStates()
     }
 
     @Test
@@ -62,8 +62,8 @@ class Invariants {
             checkAll(propTestConfig, Arb.game.validOnly()) { game ->
                 collectState(game)
                 expectThat(game.events.first()).isA<GameStartedEvent>()
-            }.printStatistics().checkCoverageForInProgressGameStates()
-        }
+            }
+        }.checkCoverageForInProgressGameStates()
     }
 
     @Test
@@ -72,8 +72,8 @@ class Invariants {
             checkAll(propTestConfig, Arb.game.validOnly()) { game ->
                 collectState(game)
                 expectThat(game.events).filterIsInstance<GameStartedEvent>().count().isEqualTo(1)
-            }.printStatistics().checkCoverageForInProgressGameStates()
-        }
+            }
+        }.checkCoverageForInProgressGameStates()
     }
 
     @Test
@@ -83,8 +83,8 @@ class Invariants {
                 collectState(game)
                 collect("events", game.events.map { it::class.simpleName })
                 expectThat(game.events).all { get { id }.isEqualTo(game.id) }
-            }.printStatistics().checkCoverageForInProgressGameStates()
-        }
+            }
+        }.checkCoverageForInProgressGameStates()
     }
 
     @Test
@@ -94,8 +94,8 @@ class Invariants {
                 val updatedGame = initialGame.execute(command).assumeWasSuccessful()
                 collectState(initialGame)
                 expectThat(updatedGame.events.size).isEqualTo(initialGame.events.size + 1)
-            }.printStatistics().checkCoverageForInProgressGameStates()
-        }
+            }
+        }.checkCoverageForInProgressGameStates()
     }
 
     @Test
@@ -105,8 +105,8 @@ class Invariants {
                 val updatedGame = initialGame.execute(command).assumeWasSuccessful()
                 collectState(initialGame)
                 expectThat(updatedGame.state).isNotEqualTo(initialGame.state)
-            }.printStatistics().checkCoverageForInProgressGameStates()
-        }
+            }
+        }.checkCoverageForInProgressGameStates()
     }
 
     @Test
@@ -119,8 +119,8 @@ class Invariants {
                 val updatedGame = initialGame.execute(command).assumeWasSuccessful()
                 collectState(initialGame)
                 expectThat(updatedGame.state).isA<GameState.InProgress>().get { players }.isEqualTo(initialGame.state.players)
-            }.printStatistics().checkCoverageForInProgressGameStates()
-        }
+            }
+        }.checkCoverageForInProgressGameStates()
     }
 
     @Test
@@ -130,8 +130,8 @@ class Invariants {
                 val updatedGame = initialGame.execute(command).assumeWasSuccessful()
                 collectState(initialGame)
                 expectThat(updatedGame.id).isEqualTo(initialGame.id)
-            }.printStatistics().checkCoverageForInProgressGameStates()
-        }
+            }
+        }.checkCoverageForInProgressGameStates()
     }
 
     @Test
@@ -141,8 +141,8 @@ class Invariants {
                 val updatedGame = initialGame.execute(command).assumeWasSuccessful()
                 collectState(initialGame)
                 expectThat(updatedGame.events.dropLast(1)).containsExactly(initialGame.events)
-            }.printStatistics().checkCoverageForInProgressGameStates()
-        }
+            }
+        }.checkCoverageForInProgressGameStates()
     }
 
     @Test
@@ -156,8 +156,8 @@ class Invariants {
                     get { events }.isEqualTo(originalGame.events)
                     get { state }.isEqualTo(originalGame.state)
                 }
-            }.printStatistics().checkCoverageForInProgressGameStates()
-        }
+            }
+        }.checkCoverageForInProgressGameStates()
     }
 
     // TODO: double check my tests against what the book suggests for state machines
@@ -193,8 +193,8 @@ class Invariants {
                 collect("command", command::class.simpleName)
 
                 expectThat(updatedGameState.roundNumber).isGreaterThanOrEqualTo(initialState.roundNumber)
-            }.printStatistics().checkCoverageForInProgressGameStates()
-        }
+            }
+        }.checkCoverageForInProgressGameStates()
     }
 
     @Test
@@ -213,7 +213,7 @@ class Invariants {
 
                 collectState(initialState)
                 expectThat(updatedGameState.roundNumber).isIn(initialState.roundNumber..initialState.roundNumber.next())
-            }.printStatistics().checkCoverageForInProgressGameStates()
-        }
+            }
+        }.checkCoverageForInProgressGameStates()
     }
 }
