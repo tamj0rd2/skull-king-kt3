@@ -10,7 +10,7 @@ import com.tamj0rd2.skullking.domain.gamev3.PropertyTesting.assumeWasSuccessful
 import com.tamj0rd2.skullking.domain.gamev3.PropertyTesting.printStatistics
 import com.tamj0rd2.skullking.domain.gamev3.PropertyTesting.propTestConfig
 import com.tamj0rd2.skullking.domain.gamev3.PropertyTesting.propertyTest
-import com.tamj0rd2.skullking.domain.gamev3.PropertyTesting.wasSuccessful
+import dev.forkhandles.result4k.orThrow
 import io.kotest.property.Arb
 import io.kotest.property.PropertyContext
 import io.kotest.property.arbitrary.filter
@@ -143,7 +143,7 @@ class Invariants {
         propertyTest {
             checkAll(propTestConfig, Arb.game.validOnly()) { originalGame ->
                 collectState(originalGame)
-                expectThat(Game.reconstitute(originalGame.events)).wasSuccessful().and {
+                expectThat(Game.reconstitute(originalGame.events).orThrow()) {
                     isEqualTo(originalGame)
                     get { id }.isEqualTo(originalGame.id)
                     get { events }.isEqualTo(originalGame.events)

@@ -12,8 +12,6 @@ import io.kotest.property.assume
 import io.kotest.property.statistics.Label
 import org.junit.jupiter.api.fail
 import org.opentest4j.AssertionFailedError
-import strikt.api.Assertion
-import strikt.assertions.isA
 import java.io.OutputStream
 import java.io.PrintStream
 import kotlin.contracts.ExperimentalContracts
@@ -90,10 +88,6 @@ object PropertyTesting {
         assumeThat(this is Success)
         return value
     }
-
-    fun <T, R : Result4k<T, *>> Assertion.Builder<R>.wasSuccessful() = run { isA<Success<T>>().get { value } }
-
-    fun <T, R : Result4k<T, *>> Assertion.Builder<R>.wasFailure() = run { isA<Success<T>>().get { value } }
 }
 
 @OptIn(ExperimentalKotest::class)

@@ -1,24 +1,22 @@
 package com.tamj0rd2.skullking.domain.gamev3
 
-sealed interface GameErrorCode {
-    data object NotEnoughPlayers : GameErrorCode
+sealed class GameErrorCode : IllegalStateException() {
+    protected fun readResolve(): Any = this
 
-    data object TooManyPlayers : GameErrorCode
+    data object NotEnoughPlayers : GameErrorCode()
+
+    data object TooManyPlayers : GameErrorCode()
 
     data class CannotApplyEventInCurrentState(
         val event: GameEvent,
         val phase: GameState,
-    ) : GameErrorCode
+    ) : GameErrorCode()
 
-    sealed interface CannotReconstituteGame : GameErrorCode {
-        data object NoEvents : CannotReconstituteGame
+    sealed class CannotReconstituteGame : GameErrorCode() {
+        data object NoEvents : CannotReconstituteGame()
 
-        data object InvalidFirstEvent : CannotReconstituteGame
+        data object InvalidFirstEvent : CannotReconstituteGame()
 
-        data object MultipleGameIds : CannotReconstituteGame
+        data object MultipleGameIds : CannotReconstituteGame()
     }
-
-    data class NotYetImplemented(
-        val message: String,
-    ) : GameErrorCode
 }
