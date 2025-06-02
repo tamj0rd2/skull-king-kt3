@@ -8,3 +8,5 @@ data class PlaceBidCommand(
     val playerId: PlayerId,
     val bid: SomeBid,
 ) : GameCommand
+
+data object StartTrickCommand : GameCommand

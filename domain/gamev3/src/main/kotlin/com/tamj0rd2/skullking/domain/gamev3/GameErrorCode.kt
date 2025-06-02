@@ -19,4 +19,6 @@ sealed class GameErrorCode : IllegalStateException() {
 
         data object MultipleGameIds : CannotReconstituteGame()
     }
+
+    data object NotYetImplemented : GameErrorCode()
 }

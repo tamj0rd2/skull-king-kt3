@@ -2,6 +2,7 @@ package com.tamj0rd2.skullking.domain.gamev3
 
 import com.tamj0rd2.extensions.asFailure
 import com.tamj0rd2.extensions.asSuccess
+import com.tamj0rd2.skullking.domain.gamev3.GameErrorCode.CannotApplyEventInCurrentState
 import dev.forkhandles.result4k.Result4k
 
 typealias GameStateResult = Result4k<GameState, GameErrorCode>
@@ -18,9 +19,7 @@ sealed class GameState {
                     roundNumber = RoundNumber.One,
                 ).asSuccess()
 
-                is BidPlacedEvent,
-                is RoundStartedEvent,
-                -> GameErrorCode.CannotApplyEventInCurrentState(event, this).asFailure()
+                else -> CannotApplyEventInCurrentState(event, this).asFailure()
             }
         }
     }
@@ -39,7 +38,8 @@ sealed class GameState {
                 is RoundStartedEvent -> return Bidding(players, roundNumber).asSuccess()
                 is BidPlacedEvent,
                 is GameStartedEvent,
-                -> GameErrorCode.CannotApplyEventInCurrentState(event, this).asFailure()
+                is TrickStartedEvent,
+                -> CannotApplyEventInCurrentState(event, this).asFailure()
             }
         }
     }
@@ -52,11 +52,27 @@ sealed class GameState {
         override fun apply(event: GameEvent): GameStateResult =
             when (event) {
                 is BidPlacedEvent -> addPlayerBid(event)
+                is TrickStartedEvent -> startTrick()
                 is GameStartedEvent,
                 is RoundStartedEvent,
-                -> GameErrorCode.CannotApplyEventInCurrentState(event, this).asFailure()
+                -> CannotApplyEventInCurrentState(event, this).asFailure()
             }
 
+        private fun startTrick(): GameStateResult =
+            TrickTaking(
+                players = players,
+                roundNumber = roundNumber,
+                trickNumber = TrickNumber.One,
+            ).asSuccess()
+
         private fun addPlayerBid(event: BidPlacedEvent): GameStateResult = copy(bids = bids + (event.playerId to event.bid)).asSuccess()
+    }
+
+    data class TrickTaking(
+        override val players: Set<PlayerId>,
+        override val roundNumber: RoundNumber,
+        val trickNumber: TrickNumber,
+    ) : InProgress() {
+        override fun apply(event: GameEvent): GameStateResult = GameErrorCode.NotYetImplemented.asFailure()
     }
 }

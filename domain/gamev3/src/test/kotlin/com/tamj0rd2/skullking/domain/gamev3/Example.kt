@@ -20,10 +20,16 @@ class Example {
             .run { execute(StartRoundCommand).orThrow() }
             .run { execute(PlaceBidCommand(player1, SomeBid.One)).orThrow() }
             .run { execute(PlaceBidCommand(player2, SomeBid.Zero)).orThrow() }
-            .run {
+            .apply {
                 expectThat(state).isA<GameState.Bidding>().and {
                     get { bids }.getValue(player1).isEqualTo(SomeBid.One)
                     get { bids }.getValue(player2).isEqualTo(SomeBid.Zero)
+                }
+            }.run { execute(StartTrickCommand).orThrow() }
+            .apply {
+                expectThat(state).isA<GameState.TrickTaking>().and {
+                    get { roundNumber }.isEqualTo(RoundNumber.One)
+                    get { trickNumber }.isEqualTo(TrickNumber.One)
                 }
             }
     }

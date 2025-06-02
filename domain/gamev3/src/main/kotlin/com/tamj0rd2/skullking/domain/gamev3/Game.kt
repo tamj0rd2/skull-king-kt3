@@ -25,6 +25,7 @@ data class Game private constructor(
         when (command) {
             is StartRoundCommand -> appendEvent(RoundStartedEvent(id))
             is PlaceBidCommand -> appendEvent(BidPlacedEvent(id, command.playerId, command.bid))
+            is StartTrickCommand -> appendEvent(TrickStartedEvent(id))
         }
 
     private fun appendEvent(event: GameEvent): GameResult {

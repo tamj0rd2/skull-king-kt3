@@ -34,6 +34,7 @@ class Invariants {
         val inProgressGameStates =
             GameState.InProgress::class
                 .sealedSubclasses
+                .minus(GameState.TrickTaking::class) // TODO: remove this to drive further implementation
                 .map { it.simpleName }
                 .toSet()
                 .also { check(it.isNotEmpty()) }

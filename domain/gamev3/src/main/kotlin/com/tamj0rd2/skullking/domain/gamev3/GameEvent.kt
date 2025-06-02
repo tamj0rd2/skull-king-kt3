@@ -35,3 +35,7 @@ data class BidPlacedEvent(
     val playerId: PlayerId,
     val bid: SomeBid,
 ) : GameEvent
+
+data class TrickStartedEvent(
+    override val id: GameId,
+) : GameEvent
