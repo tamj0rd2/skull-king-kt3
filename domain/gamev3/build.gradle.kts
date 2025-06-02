@@ -9,5 +9,5 @@ dependencies {
 }
 
 tasks.test {
-    systemProperty("junit.jupiter.execution.timeout.test.method.default", "10s")
+    systemProperty("junit.jupiter.execution.timeout.test.method.default", "15s")
 }

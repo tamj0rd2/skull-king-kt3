@@ -21,4 +21,6 @@ sealed class GameErrorCode : IllegalStateException() {
     }
 
     data object NotYetImplemented : GameErrorCode()
+
+    data object PlayerNotInTheGame : GameErrorCode()
 }

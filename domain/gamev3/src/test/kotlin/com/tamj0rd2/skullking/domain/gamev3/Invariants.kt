@@ -23,9 +23,11 @@ import strikt.assertions.containsExactly
 import strikt.assertions.count
 import strikt.assertions.filterIsInstance
 import strikt.assertions.isA
+import strikt.assertions.isContainedIn
 import strikt.assertions.isEqualTo
 import strikt.assertions.isGreaterThanOrEqualTo
 import strikt.assertions.isIn
+import strikt.assertions.isLessThanOrEqualTo
 import strikt.assertions.isNotEqualTo
 
 class Invariants {
@@ -216,5 +218,30 @@ class Invariants {
                 expectThat(updatedGameState.roundNumber).isIn(initialState.roundNumber..initialState.roundNumber.next())
             }
         }.checkCoverageForInProgressGameStates()
+    }
+
+    @Test
+    fun `bids only include those by players in the game`() {
+        propertyTest {
+            checkAll(
+                propTestConfig,
+                Arb.game.validOnly().filter { it.state is Bidding },
+            ) { game ->
+                val state = game.state as Bidding
+                expectThat(state.bids.keys).all { isContainedIn(state.players) }
+                expectThat(game.events.filterIsInstance<BidPlacedEvent>()).all { get { playerId }.isContainedIn(state.players) }
+            }
+        }
+    }
+
+    @Test
+    fun `the number of bids placed placed in the game never exceeds the player count multiplied by 10`() {
+        propertyTest {
+            checkAll(propTestConfig, Arb.game.validOnly()) { game ->
+                collectState(game)
+                val initialPlayers = (game.events.first() as GameStartedEvent).players
+                expectThat(game.events.count { it is BidPlacedEvent }).isLessThanOrEqualTo(initialPlayers.size * 10)
+            }.checkCoverageForInProgressGameStates()
+        }
     }
 }

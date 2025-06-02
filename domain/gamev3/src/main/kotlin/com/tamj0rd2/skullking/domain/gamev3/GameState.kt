@@ -65,7 +65,13 @@ sealed class GameState {
                 trickNumber = TrickNumber.One,
             ).asSuccess()
 
-        private fun addPlayerBid(event: BidPlacedEvent): GameStateResult = copy(bids = bids + (event.playerId to event.bid)).asSuccess()
+        private fun addPlayerBid(event: BidPlacedEvent): GameStateResult {
+            when {
+                event.playerId !in players -> return GameErrorCode.PlayerNotInTheGame.asFailure()
+            }
+
+            return copy(bids = bids + (event.playerId to event.bid)).asSuccess()
+        }
     }
 
     data class TrickTaking(
