@@ -36,11 +36,6 @@ data class Game private constructor(
 
     companion object {
         fun new(players: Set<PlayerId>): GameResult {
-            when {
-                players.size < 2 -> return GameErrorCode.NotEnoughPlayers.asFailure()
-                players.size > 6 -> return GameErrorCode.TooManyPlayers.asFailure()
-            }
-
             val game = Game(SomeGameId.random())
             return GameStartedEvent.new(game.id, players).flatMap(game::appendEvent)
         }
