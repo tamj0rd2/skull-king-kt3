@@ -7,10 +7,10 @@ import dev.forkhandles.result4k.Result4k
 
 typealias GameStateResult = Result4k<GameState, GameErrorCode>
 
-sealed class GameState {
-    abstract fun apply(event: GameEvent): GameStateResult
+sealed interface GameState {
+    fun apply(event: GameEvent): GameStateResult
 
-    data object NotStarted : GameState() {
+    data object NotStarted : GameState {
         override fun apply(event: GameEvent): GameStateResult {
             return when (event) {
                 is GameStartedEvent -> return AwaitingNextRound(
@@ -23,15 +23,15 @@ sealed class GameState {
         }
     }
 
-    sealed class InProgress : GameState() {
-        abstract val players: Set<PlayerId>
-        abstract val roundNumber: RoundNumber
+    sealed interface InProgress : GameState {
+        val players: Set<PlayerId>
+        val roundNumber: RoundNumber
     }
 
     data class AwaitingNextRound(
         override val players: Set<PlayerId>,
         override val roundNumber: RoundNumber,
-    ) : InProgress() {
+    ) : InProgress {
         override fun apply(event: GameEvent): GameStateResult {
             return when (event) {
                 is RoundStartedEvent -> return Bidding(players, roundNumber).asSuccess()
@@ -47,7 +47,7 @@ sealed class GameState {
         override val players: Set<PlayerId>,
         override val roundNumber: RoundNumber,
         val bids: Map<PlayerId, Bid> = players.associateWith { NoBid },
-    ) : InProgress() {
+    ) : InProgress {
         override fun apply(event: GameEvent): GameStateResult =
             when (event) {
                 is BidPlacedEvent -> addPlayerBid(event)
@@ -77,7 +77,7 @@ sealed class GameState {
         override val players: Set<PlayerId>,
         override val roundNumber: RoundNumber,
         val trickNumber: TrickNumber,
-    ) : InProgress() {
+    ) : InProgress {
         override fun apply(event: GameEvent): GameStateResult = GameErrorCode.NotYetImplemented.asFailure()
     }
 }
