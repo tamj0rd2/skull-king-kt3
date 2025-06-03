@@ -8,8 +8,7 @@ import dev.forkhandles.result4k.Result4k
 typealias GameStateResult = Result4k<GameState, GameErrorCode>
 
 sealed class GameState {
-    // TODO: how can I make sure this is only ever called from the Game aggregate?
-    internal abstract fun apply(event: GameEvent): GameStateResult
+    abstract fun apply(event: GameEvent): GameStateResult
 
     data object NotStarted : GameState() {
         override fun apply(event: GameEvent): GameStateResult {
