@@ -5,6 +5,7 @@ import com.tamj0rd2.skullking.domain.gamev3.GameArbs.game
 import com.tamj0rd2.skullking.domain.gamev3.GameArbs.validOnly
 import com.tamj0rd2.skullking.domain.gamev3.GameState.AwaitingNextRound
 import com.tamj0rd2.skullking.domain.gamev3.GameState.Bidding
+import com.tamj0rd2.skullking.domain.gamev3.GameState.TrickTaking
 import com.tamj0rd2.skullking.domain.gamev3.PropertyTesting.assumeThat
 import com.tamj0rd2.skullking.domain.gamev3.PropertyTesting.assumeWasSuccessful
 import com.tamj0rd2.skullking.domain.gamev3.PropertyTesting.checkCoverageExists
@@ -16,6 +17,7 @@ import io.kotest.property.Arb
 import io.kotest.property.PropertyContext
 import io.kotest.property.arbitrary.filter
 import io.kotest.property.checkAll
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import strikt.api.expectThat
 import strikt.assertions.all
@@ -36,7 +38,7 @@ class Invariants {
         val inProgressGameStates =
             GameState.InProgress::class
                 .sealedSubclasses
-                .minus(GameState.TrickTaking::class) // TODO: remove this to drive further implementation
+                .minus(TrickTaking::class) // TODO: remove this to drive further implementation
                 .map { it.simpleName }
                 .toSet()
                 .also { check(it.isNotEmpty()) }
@@ -166,17 +168,36 @@ class Invariants {
     // TODO: double check my tests against what the book suggests for state machines
 
     @Test
-    fun `a game in the AwaitingNextRound phase can only ever transition to Bidding`() {
+    fun `a game in the AwaitingNextRound state can only ever transition to Bidding`() {
         propertyTest {
             checkAll(
                 propTestConfig,
-                // TODO: I'm using gameWithValidPlayers as a shortcut, otherwise the test would take way too long to run.
-                //  check this in the book.
                 Arb.game.validOnly().filter { it.state is AwaitingNextRound },
                 Arb.command,
             ) { initialGame, command ->
                 val updatedGame = initialGame.execute(command).assumeWasSuccessful()
                 expectThat(updatedGame.state).isA<Bidding>()
+            }.printStatistics()
+        }
+    }
+
+    /*
+    TODO: I think this is where I want to start using a test oracle to check state changes. I can write a super simple implementation that
+        describes the intended state changes, without any of the validation logic. Then I can simply check that if the state in my production
+        model has changed, it has followed the same state change as my test oracle.
+     */
+    @Test
+    @Disabled("TODO: takes a lifetime to run")
+    fun `a game in the Bidding state can only ever transition to TrickTaking`() {
+        propertyTest {
+            checkAll(
+                propTestConfig,
+                Arb.game.validOnly().filter { it.state is Bidding },
+                Arb.command,
+            ) { initialGame, command ->
+                val updatedGame = initialGame.execute(command).assumeWasSuccessful()
+                collect(command::class.simpleName)
+                expectThat(updatedGame.state).isA<TrickTaking>()
             }.printStatistics()
         }
     }
