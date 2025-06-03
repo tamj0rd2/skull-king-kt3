@@ -19,7 +19,7 @@ sealed class GameState {
                     roundNumber = RoundNumber.One,
                 ).asSuccess()
 
-                else -> CannotApplyEventInCurrentState(event, this).asFailure()
+                else -> CannotApplyEventInCurrentState(this, event).asFailure()
             }
         }
     }
@@ -39,7 +39,7 @@ sealed class GameState {
                 is BidPlacedEvent,
                 is GameStartedEvent,
                 is TrickStartedEvent,
-                -> CannotApplyEventInCurrentState(event, this).asFailure()
+                -> CannotApplyEventInCurrentState(this, event).asFailure()
             }
         }
     }
@@ -55,7 +55,7 @@ sealed class GameState {
                 is TrickStartedEvent -> startTrick()
                 is GameStartedEvent,
                 is RoundStartedEvent,
-                -> CannotApplyEventInCurrentState(event, this).asFailure()
+                -> CannotApplyEventInCurrentState(this, event).asFailure()
             }
 
         private fun startTrick(): GameStateResult =
