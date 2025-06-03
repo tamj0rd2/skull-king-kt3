@@ -14,6 +14,26 @@ data class Game private constructor(
     val events: List<GameEvent> = emptyList(),
     val state: GameState = GameState.NotStarted,
 ) {
+    companion object {
+        fun new(players: Set<PlayerId>): GameResult {
+            val game = Game(SomeGameId.random())
+            return GameStartedEvent.new(game.id, players).flatMap(game::appendEvent)
+        }
+
+        fun reconstitute(events: List<GameEvent>): GameResult {
+            when {
+                events.isEmpty() -> return GameErrorCode.CannotReconstituteGame.NoEvents.asFailure()
+                events.first() !is GameStartedEvent -> return GameErrorCode.CannotReconstituteGame.InvalidFirstEvent.asFailure()
+                events.map { it.id }.toSet().size > 1 -> return GameErrorCode.CannotReconstituteGame.MultipleGameIds.asFailure()
+            }
+
+            val initial = Game((events.first() as GameStartedEvent).id)
+            return events.fold(initial.asSuccess() as GameResult) { result, event ->
+                result.flatMap { it.appendEvent(event) }
+            }
+        }
+    }
+
     override fun equals(other: Any?): Boolean {
         if (other !is Game) return false
         return other.id == id
@@ -33,25 +53,5 @@ data class Game private constructor(
             events = events + event,
             state = state.apply(event).onFailure { return it },
         ).asSuccess()
-    }
-
-    companion object {
-        fun new(players: Set<PlayerId>): GameResult {
-            val game = Game(SomeGameId.random())
-            return GameStartedEvent.new(game.id, players).flatMap(game::appendEvent)
-        }
-
-        fun reconstitute(events: List<GameEvent>): GameResult {
-            when {
-                events.isEmpty() -> return GameErrorCode.CannotReconstituteGame.NoEvents.asFailure()
-                events.first() !is GameStartedEvent -> return GameErrorCode.CannotReconstituteGame.InvalidFirstEvent.asFailure()
-                events.map { it.id }.toSet().size > 1 -> return GameErrorCode.CannotReconstituteGame.MultipleGameIds.asFailure()
-            }
-
-            val initial = Game((events.first() as GameStartedEvent).id)
-            return events.fold(initial.asSuccess() as GameResult) { result, event ->
-                result.flatMap { it.appendEvent(event) }
-            }
-        }
     }
 }
