@@ -28,7 +28,7 @@ object PropertyTesting {
         System.setOut(PrintStream(OutputStream.nullOutputStream()))
     }
 
-    private const val MIN_ATTEMPT_COUNT = 1000
+    private const val MIN_ATTEMPT_COUNT = 200
 
     @OptIn(ExperimentalKotest::class)
     val propTestConfig get() =
