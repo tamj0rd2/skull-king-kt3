@@ -16,11 +16,13 @@ import io.kotest.property.arbitrary.list
 import io.kotest.property.arbitrary.map
 import io.kotest.property.arbitrary.set
 import io.kotest.property.resolution.GlobalArbResolver
-import io.kotest.property.resolution.default
 import kotlin.reflect.KClass
 
 object GameArbs {
-    val Arb.Companion.command get() = Arb.default<GameCommand>()
+    val Arb.Companion.command get() =
+        Arb.sealed<GameCommand>(
+            mapOf(PlayerOriginatedCommand::class to Arb.sealed<PlayerOriginatedCommand>()),
+        )
     val Arb.Companion.game get() = Arb.choice(Arb.gameBuiltFromScratch, Arb.reconstitutedGame)
 
     private val Arb.Companion.gameBuiltFromScratch
@@ -75,15 +77,17 @@ object GameArbs {
 
     @OptIn(DelicateKotest::class)
     @Suppress("NO_REFLECTION_IN_CLASS_PATH", "UNCHECKED_CAST")
-    private inline fun <reified T> Arb.Companion.sealed(): Arb<T> {
+    private inline fun <reified T> Arb.Companion.sealed(moreProvidedArbs: Map<KClass<*>, Arb<*>> = emptyMap()): Arb<T> {
         val clazz = T::class
         if (!clazz.isSealed) error("Class ${clazz.simpleName} is not sealed")
+
+        val allProvidedArbs = providedArbs + moreProvidedArbs
 
         return Arb.choice(
             clazz.sealedSubclasses.map { subclass ->
                 subclass.objectInstance?.let { Arb.constant(it) }
-                    ?: providedArbs[subclass]
-                    ?: Arb.bind(providedArbs, subclass)
+                    ?: allProvidedArbs[subclass]
+                    ?: Arb.bind(allProvidedArbs, subclass)
             },
         ) as Arb<T>
     }

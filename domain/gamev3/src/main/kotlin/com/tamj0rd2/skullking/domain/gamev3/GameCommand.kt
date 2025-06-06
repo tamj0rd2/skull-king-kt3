@@ -4,9 +4,14 @@ sealed interface GameCommand
 
 data object StartRoundCommand : GameCommand
 
+sealed interface PlayerOriginatedCommand : GameCommand {
+    val playerId: PlayerId
+}
+
 data class PlaceBidCommand(
-    val playerId: PlayerId,
+    override val playerId: PlayerId,
     val bid: SomeBid,
-) : GameCommand
+) : GameCommand,
+    PlayerOriginatedCommand
 
 data object StartTrickCommand : GameCommand

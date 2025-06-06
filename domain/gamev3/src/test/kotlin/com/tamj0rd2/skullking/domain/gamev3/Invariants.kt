@@ -5,6 +5,7 @@ import com.tamj0rd2.skullking.domain.gamev3.GameArbs.game
 import com.tamj0rd2.skullking.domain.gamev3.GameArbs.validOnly
 import com.tamj0rd2.skullking.domain.gamev3.GameState.AwaitingNextRound
 import com.tamj0rd2.skullking.domain.gamev3.GameState.Bidding
+import com.tamj0rd2.skullking.domain.gamev3.GameState.InProgress
 import com.tamj0rd2.skullking.domain.gamev3.GameState.TrickTaking
 import com.tamj0rd2.skullking.domain.gamev3.PropertyTesting.assumeThat
 import com.tamj0rd2.skullking.domain.gamev3.PropertyTesting.assumeWasSuccessful
@@ -15,8 +16,11 @@ import com.tamj0rd2.skullking.domain.gamev3.PropertyTesting.propertyTest
 import dev.forkhandles.result4k.orThrow
 import io.kotest.property.Arb
 import io.kotest.property.PropertyContext
+import io.kotest.property.arbitrary.arbitrary
 import io.kotest.property.arbitrary.choose
 import io.kotest.property.arbitrary.filter
+import io.kotest.property.arbitrary.flatMap
+import io.kotest.property.arbitrary.pair
 import io.kotest.property.checkAll
 import io.kotest.property.resolution.default
 import org.junit.jupiter.api.Test
@@ -55,6 +59,11 @@ class Invariants {
         fun PropertyContext.collectState(state: GameState) = collect("state", state.name)
 
         fun PropertyContext.collectState(game: Game) = collectState(game.state)
+
+        fun PlayerOriginatedCommand.overridePlayerId(playerId: PlayerId) =
+            when (this) {
+                is PlaceBidCommand -> copy(playerId = playerId)
+            }
     }
 
     @Test
@@ -196,13 +205,68 @@ class Invariants {
                 // TODO: can use Arb.choice. Ideally I want to make all BiddingStateCommands preferred.
                 Arb.choose(
                     5 to Arb.default<StartTrickCommand>(),
-                    1 to Arb.default<GameCommand>(),
+                    1 to Arb.command,
                 ),
             ) { initialGame, command ->
                 collect("command-before-execution", command::class.simpleName)
                 val updatedGame = initialGame.execute(command).assumeWasSuccessful()
                 collect(command::class.simpleName)
                 expectThat(updatedGame.state).isA<TrickTaking>()
+            }.printStatistics()
+        }
+    }
+
+    @Test
+    fun `a game in the Bidding state can only ever transition to TrickTaking - alternative approach`() {
+        propertyTest {
+            // TODO: can we filter while the arbs are being generated rather than after? might need to write my own arb
+            val arbForGameInBiddingPhase = Arb.game.validOnly().filter { it.state is Bidding }
+
+            fun arbForCommandBasedOnGame(
+                game: Game,
+                baseArb: Arb<GameCommand> = Arb.command,
+            ): Arb<GameCommand> {
+                val arbForCommandWithMoreAccuratePlayerId =
+                    arbitrary { rs ->
+                        val command = baseArb.bind()
+                        if (game.state is InProgress && command is PlayerOriginatedCommand) {
+                            command.overridePlayerId(game.state.players.random(rs.random))
+                        } else {
+                            command
+                        }
+                    }
+
+                return Arb.choose(
+                    // TODO: command with playerId not in the game is more of an edge case, not a standard case.
+                    1 to baseArb,
+                    10 to arbForCommandWithMoreAccuratePlayerId,
+                )
+            }
+
+            val commandArb =
+                Arb.choose(
+                    1 to Arb.command,
+                    3 to
+                        Arb.command.filter {
+                            when (it) {
+                                is PlaceBidCommand,
+                                StartTrickCommand,
+                                -> true
+                                else -> false
+                            }
+                        },
+                )
+
+            checkAll(
+                propTestConfig,
+                arbForGameInBiddingPhase.flatMap { game ->
+                    Arb.pair(arbitrary { game }, arbForCommandBasedOnGame(game, commandArb))
+                },
+            ) { (initialGame, command) ->
+                collect("command-before-execution", command::class.simpleName)
+                val updatedGame = initialGame.execute(command).assumeWasSuccessful()
+                collect(command::class.simpleName)
+                expectThat(updatedGame.state.name).isContainedIn(setOf(GameStateName.Bidding, GameStateName.TrickTaking))
             }.printStatistics()
         }
     }
@@ -222,6 +286,7 @@ class Invariants {
                     when (command) {
                         is StartRoundCommand,
                         -> if (currentStateName == GameStateName.AwaitingNextRound) currentStateName = GameStateName.Bidding
+
                         is PlaceBidCommand -> Unit
                         is StartTrickCommand -> if (currentStateName == GameStateName.Bidding) currentStateName = GameStateName.TrickTaking
                     }
