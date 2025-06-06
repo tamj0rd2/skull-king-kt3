@@ -15,9 +15,10 @@ import com.tamj0rd2.skullking.domain.gamev3.PropertyTesting.propertyTest
 import dev.forkhandles.result4k.orThrow
 import io.kotest.property.Arb
 import io.kotest.property.PropertyContext
+import io.kotest.property.arbitrary.choose
 import io.kotest.property.arbitrary.filter
 import io.kotest.property.checkAll
-import org.junit.jupiter.api.Disabled
+import io.kotest.property.resolution.default
 import org.junit.jupiter.api.Test
 import strikt.api.expectThat
 import strikt.assertions.all
@@ -181,20 +182,20 @@ class Invariants {
         }
     }
 
-    /*
-    TODO: I think this is where I want to start using a test oracle to check state changes. I can write a super simple implementation that
-        describes the intended state changes, without any of the validation logic. Then I can simply check that if the state in my production
-        model has changed, it has followed the same state change as my test oracle.
-     */
     @Test
-    @Disabled("TODO: takes a lifetime to run")
     fun `a game in the Bidding state can only ever transition to TrickTaking`() {
         propertyTest {
             checkAll(
                 propTestConfig,
+                // TODO: can we filter while the arbs are being generated rather than after? might need to write my own arb
                 Arb.game.validOnly().filter { it.state is Bidding },
-                Arb.command,
+                // TODO: can use Arb.choice. Ideally I want to make all BiddingStateCommands preferred.
+                Arb.choose(
+                    5 to Arb.default<StartTrickCommand>(),
+                    1 to Arb.default<GameCommand>(),
+                ),
             ) { initialGame, command ->
+                collect("command-before-execution", command::class.simpleName)
                 val updatedGame = initialGame.execute(command).assumeWasSuccessful()
                 collect(command::class.simpleName)
                 expectThat(updatedGame.state).isA<TrickTaking>()
