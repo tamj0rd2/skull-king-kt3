@@ -1,5 +1,6 @@
 package com.tamj0rd2.skullking.domain.gamev3
 
+import com.tamj0rd2.skullking.domain.gamev3.GameState.InProgress
 import dev.forkhandles.result4k.Result4k
 import dev.forkhandles.result4k.Success
 import dev.forkhandles.result4k.flatMap
@@ -10,20 +11,47 @@ import io.kotest.property.Arb
 import io.kotest.property.arbitrary.arbitrary
 import io.kotest.property.arbitrary.bind
 import io.kotest.property.arbitrary.choice
+import io.kotest.property.arbitrary.choose
 import io.kotest.property.arbitrary.constant
 import io.kotest.property.arbitrary.filter
+import io.kotest.property.arbitrary.flatMap
 import io.kotest.property.arbitrary.list
 import io.kotest.property.arbitrary.map
+import io.kotest.property.arbitrary.pair
 import io.kotest.property.arbitrary.set
 import io.kotest.property.resolution.GlobalArbResolver
 import kotlin.reflect.KClass
 
 object GameArbs {
-    val Arb.Companion.command get() =
-        Arb.sealed<GameCommand>(
-            mapOf(PlayerOriginatedCommand::class to Arb.sealed<PlayerOriginatedCommand>()),
-        )
+    val Arb.Companion.command
+        get() =
+            Arb.sealed<GameCommand>(
+                mapOf(PlayerOriginatedCommand::class to Arb.sealed<PlayerOriginatedCommand>()),
+            )
+
     val Arb.Companion.game get() = Arb.choice(Arb.gameBuiltFromScratch, Arb.reconstitutedGame)
+
+    val Arb<Game>.andACommand get() = flatMap { game -> Arb.pair(arbitrary { game }, Arb.commandDependentOnGame(game)) }
+
+    private fun Arb.Companion.commandDependentOnGame(game: Game): Arb<GameCommand> {
+        val baseCommandArb = Arb.sealed<GameCommand>(mapOf(PlayerOriginatedCommand::class to Arb.sealed<PlayerOriginatedCommand>()))
+
+        val arbForCommandWithMoreAccuratePlayerId =
+            arbitrary { rs ->
+                val command = baseCommandArb.bind()
+                if (game.state is InProgress && command is PlayerOriginatedCommand) {
+                    command.overridePlayerId(game.state.players.random(rs.random))
+                } else {
+                    command
+                }
+            }
+
+        return Arb.choose(
+            // TODO: command with playerId not in the game is an edge case, not a standard case. how can I make this clear?
+            1 to baseCommandArb,
+            10 to arbForCommandWithMoreAccuratePlayerId,
+        )
+    }
 
     private val Arb.Companion.gameBuiltFromScratch
         get() =
@@ -37,13 +65,14 @@ object GameArbs {
                 }
             }
 
-    private val Arb.Companion.reconstitutedGame get() =
-        Arb.choice(
-            // TODO: relax the range here.
-            Arb.list(Arb.event, 0..20).map { Game.reconstitute(it) },
-            // NOTE: add cases where the events all relate to the same game. That should make the gen faster.
-            // NOTE: also add cases where the gameStarted event is first. That should make the gen faster.
-        )
+    private val Arb.Companion.reconstitutedGame
+        get() =
+            Arb.choice(
+                // TODO: relax the range here.
+                Arb.list(Arb.event, 0..20).map { Game.reconstitute(it) },
+                // NOTE: add cases where the events all relate to the same game. That should make the gen faster.
+                // NOTE: also add cases where the gameStarted event is first. That should make the gen faster.
+            )
 
     private val Arb.Companion.gameId get() = arbitrary { SomeGameId.random(it.random) }
     private val Arb.Companion.playerId get() = arbitrary { SomePlayerId.random(it.random) }
@@ -91,4 +120,9 @@ object GameArbs {
             },
         ) as Arb<T>
     }
+
+    private fun PlayerOriginatedCommand.overridePlayerId(playerId: PlayerId) =
+        when (this) {
+            is PlaceBidCommand -> copy(playerId = playerId)
+        }
 }

@@ -4,7 +4,7 @@ sealed interface GameCommand
 
 data object StartRoundCommand : GameCommand
 
-sealed interface PlayerOriginatedCommand : GameCommand {
+sealed interface PlayerOriginatedCommand {
     val playerId: PlayerId
 }
 
