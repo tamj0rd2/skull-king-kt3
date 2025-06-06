@@ -35,13 +35,22 @@ import strikt.assertions.isNotEqualTo
 
 class Invariants {
     private companion object {
-        val inProgressGameStates =
-            GameStateName.entries
-                .toSet()
-                .minus(GameStateName.NotStarted)
-                .minus(GameStateName.TrickTaking) // TODO: remove this to drive further implementation
+        fun GameStateName.isExpectedToBeTransitionable() =
+            when (this) {
+                GameStateName.TrickTaking -> false // TODO: remove this to drive further implementation
+                else -> true
+            }
 
-        fun PropertyContext.checkCoverageForInProgressGameStates() = apply { checkCoverageExists("state", inProgressGameStates) }
+        fun PropertyContext.checkCoverageForAllGameStates() =
+            apply {
+                checkCoverageExists(
+                    "state",
+                    GameStateName.entries
+                        .minus(GameStateName.NotStarted)
+                        .filter { it.isExpectedToBeTransitionable() }
+                        .toSet(),
+                )
+            }
 
         fun PropertyContext.collectState(state: GameState) = collect("state", state.name)
 
@@ -56,7 +65,7 @@ class Invariants {
                 collectState(game)
                 expectThat(game.state.players.size).isIn(2..6)
             }
-        }.checkCoverageForInProgressGameStates()
+        }.checkCoverageForAllGameStates()
     }
 
     @Test
@@ -66,7 +75,7 @@ class Invariants {
                 collectState(game)
                 expectThat(game.events.first()).isA<GameStartedEvent>()
             }
-        }.checkCoverageForInProgressGameStates()
+        }.checkCoverageForAllGameStates()
     }
 
     @Test
@@ -76,7 +85,7 @@ class Invariants {
                 collectState(game)
                 expectThat(game.events).filterIsInstance<GameStartedEvent>().count().isEqualTo(1)
             }
-        }.checkCoverageForInProgressGameStates()
+        }.checkCoverageForAllGameStates()
     }
 
     @Test
@@ -87,7 +96,7 @@ class Invariants {
                 collect("events", game.events.map { it::class.simpleName })
                 expectThat(game.events).all { get { id }.isEqualTo(game.id) }
             }
-        }.checkCoverageForInProgressGameStates()
+        }.checkCoverageForAllGameStates()
     }
 
     @Test
@@ -98,7 +107,7 @@ class Invariants {
                 collectState(initialGame)
                 expectThat(updatedGame.events.size).isEqualTo(initialGame.events.size + 1)
             }
-        }.checkCoverageForInProgressGameStates()
+        }.checkCoverageForAllGameStates()
     }
 
     @Test
@@ -109,7 +118,7 @@ class Invariants {
                 collectState(initialGame)
                 expectThat(updatedGame.state).isNotEqualTo(initialGame.state)
             }
-        }.checkCoverageForInProgressGameStates()
+        }.checkCoverageForAllGameStates()
     }
 
     @Test
@@ -123,7 +132,7 @@ class Invariants {
                 collectState(initialGame)
                 expectThat(updatedGame.state).isA<GameState.InProgress>().get { players }.isEqualTo(initialGame.state.players)
             }
-        }.checkCoverageForInProgressGameStates()
+        }.checkCoverageForAllGameStates()
     }
 
     @Test
@@ -134,7 +143,7 @@ class Invariants {
                 collectState(initialGame)
                 expectThat(updatedGame.id).isEqualTo(initialGame.id)
             }
-        }.checkCoverageForInProgressGameStates()
+        }.checkCoverageForAllGameStates()
     }
 
     @Test
@@ -145,7 +154,7 @@ class Invariants {
                 collectState(initialGame)
                 expectThat(updatedGame.events.dropLast(1)).containsExactly(initialGame.events)
             }
-        }.checkCoverageForInProgressGameStates()
+        }.checkCoverageForAllGameStates()
     }
 
     @Test
@@ -160,10 +169,8 @@ class Invariants {
                     get { state }.isEqualTo(originalGame.state)
                 }
             }
-        }.checkCoverageForInProgressGameStates()
+        }.checkCoverageForAllGameStates()
     }
-
-    // TODO: double check my tests against what the book suggests for state machines
 
     @Test
     fun `a game in the AwaitingNextRound state can only ever transition to Bidding`() {
@@ -201,6 +208,41 @@ class Invariants {
     }
 
     @Test
+    fun `successful commands cause the game to transition to the correct state`() {
+        class TestOracle(
+            startingStateName: GameStateName,
+        ) {
+            var currentStateName = startingStateName
+                private set
+
+            fun execute(command: GameCommand): TestOracle =
+                apply {
+                    if (!currentStateName.isExpectedToBeTransitionable()) return@apply
+
+                    when (command) {
+                        is StartRoundCommand,
+                        -> if (currentStateName == GameStateName.AwaitingNextRound) currentStateName = GameStateName.Bidding
+                        is PlaceBidCommand -> Unit
+                        is StartTrickCommand -> if (currentStateName == GameStateName.Bidding) currentStateName = GameStateName.TrickTaking
+                    }
+                }
+        }
+
+        propertyTest {
+            checkAll(propTestConfig, Arb.game.validOnly(), Arb.command) { initialGame, command ->
+                val initialStateName = initialGame.state.name
+                val testOracle = TestOracle(initialStateName).execute(command)
+
+                val updatedGame = initialGame.execute(command).assumeWasSuccessful()
+                collectState(initialGame.state)
+                collect(command::class.simpleName)
+
+                expectThat(updatedGame.state.name).isEqualTo(testOracle.currentStateName)
+            }.checkCoverageForAllGameStates()
+        }
+    }
+
+    @Test
     fun `the round number of a game in progress never decreases`() {
         propertyTest {
             checkAll(
@@ -216,7 +258,7 @@ class Invariants {
 
                 expectThat(updatedGameState.roundNumber).isGreaterThanOrEqualTo(initialState.roundNumber)
             }
-        }.checkCoverageForInProgressGameStates()
+        }.checkCoverageForAllGameStates()
     }
 
     @Test
@@ -236,7 +278,7 @@ class Invariants {
                 collectState(initialState)
                 expectThat(updatedGameState.roundNumber).isIn(initialState.roundNumber..initialState.roundNumber.next())
             }
-        }.checkCoverageForInProgressGameStates()
+        }.checkCoverageForAllGameStates()
     }
 
     @Test
@@ -260,7 +302,7 @@ class Invariants {
                 collectState(game)
                 val initialPlayers = (game.events.first() as GameStartedEvent).players
                 expectThat(game.events.count { it is BidPlacedEvent }).isLessThanOrEqualTo(initialPlayers.size * 10)
-            }.checkCoverageForInProgressGameStates()
+            }.checkCoverageForAllGameStates()
         }
     }
 }
