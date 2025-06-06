@@ -254,7 +254,7 @@ class Invariants {
     }
 
     @Test
-    fun `the number of bids placed placed in the game never exceeds the player count multiplied by 10`() {
+    fun `the number of bids placed in the game never exceeds the player count multiplied by 10`() {
         propertyTest {
             checkAll(propTestConfig, Arb.game.validOnly()) { game ->
                 collectState(game)
