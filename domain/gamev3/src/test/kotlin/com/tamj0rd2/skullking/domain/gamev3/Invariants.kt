@@ -35,18 +35,15 @@ import strikt.assertions.isNotEqualTo
 
 class Invariants {
     private companion object {
-        @Suppress("NO_REFLECTION_IN_CLASS_PATH")
         val inProgressGameStates =
-            GameState.InProgress::class
-                .sealedSubclasses
-                .minus(TrickTaking::class) // TODO: remove this to drive further implementation
-                .map { it.simpleName }
+            GameStateName.entries
                 .toSet()
-                .also { check(it.isNotEmpty()) }
+                .minus(GameStateName.NotStarted)
+                .minus(GameStateName.TrickTaking) // TODO: remove this to drive further implementation
 
         fun PropertyContext.checkCoverageForInProgressGameStates() = apply { checkCoverageExists("state", inProgressGameStates) }
 
-        fun PropertyContext.collectState(state: GameState) = collect("state", state::class.simpleName)
+        fun PropertyContext.collectState(state: GameState) = collect("state", state.name)
 
         fun PropertyContext.collectState(game: Game) = collectState(game.state)
     }

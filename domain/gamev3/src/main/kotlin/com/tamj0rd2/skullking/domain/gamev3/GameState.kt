@@ -3,14 +3,26 @@ package com.tamj0rd2.skullking.domain.gamev3
 import com.tamj0rd2.extensions.asFailure
 import com.tamj0rd2.extensions.asSuccess
 import com.tamj0rd2.skullking.domain.gamev3.GameErrorCode.CannotApplyEventInCurrentState
+import com.tamj0rd2.skullking.domain.gamev3.GameStateName.AwaitingNextRound
 import dev.forkhandles.result4k.Result4k
 
 typealias GameStateResult = Result4k<GameState, GameErrorCode>
 
-sealed interface GameState {
-    fun apply(event: GameEvent): GameStateResult
+enum class GameStateName {
+    NotStarted,
+    AwaitingNextRound,
+    Bidding,
+    TrickTaking,
+}
 
-    data object NotStarted : GameState {
+sealed class GameState {
+    internal abstract val name: GameStateName
+
+    abstract fun apply(event: GameEvent): GameStateResult
+
+    data object NotStarted : GameState() {
+        override val name = GameStateName.NotStarted
+
         override fun apply(event: GameEvent): GameStateResult {
             return when (event) {
                 is GameStartedEvent -> return AwaitingNextRound(
@@ -23,15 +35,17 @@ sealed interface GameState {
         }
     }
 
-    sealed interface InProgress : GameState {
-        val players: Set<PlayerId>
-        val roundNumber: RoundNumber
+    sealed class InProgress : GameState() {
+        abstract val players: Set<PlayerId>
+        abstract val roundNumber: RoundNumber
     }
 
     data class AwaitingNextRound(
         override val players: Set<PlayerId>,
         override val roundNumber: RoundNumber,
-    ) : InProgress {
+    ) : InProgress() {
+        override val name = AwaitingNextRound
+
         override fun apply(event: GameEvent): GameStateResult {
             return when (event) {
                 is RoundStartedEvent -> return Bidding(players, roundNumber).asSuccess()
@@ -47,7 +61,9 @@ sealed interface GameState {
         override val players: Set<PlayerId>,
         override val roundNumber: RoundNumber,
         val bids: Map<PlayerId, Bid> = players.associateWith { NoBid },
-    ) : InProgress {
+    ) : InProgress() {
+        override val name = GameStateName.Bidding
+
         override fun apply(event: GameEvent): GameStateResult =
             when (event) {
                 is BidPlacedEvent -> addPlayerBid(event)
@@ -77,7 +93,9 @@ sealed interface GameState {
         override val players: Set<PlayerId>,
         override val roundNumber: RoundNumber,
         val trickNumber: TrickNumber,
-    ) : InProgress {
+    ) : InProgress() {
+        override val name = GameStateName.TrickTaking
+
         override fun apply(event: GameEvent): GameStateResult = GameErrorCode.NotYetImplemented.asFailure()
     }
 }
