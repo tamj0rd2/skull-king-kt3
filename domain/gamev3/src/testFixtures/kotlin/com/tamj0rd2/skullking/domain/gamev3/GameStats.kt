@@ -12,7 +12,7 @@ object GameStats {
                     .minus(GameStateName.NotStarted)
                     .filter {
                         when (it) {
-                            // TODO: put WIP states in here to help drive development without failing lots of tests.
+                            // NOTE: put WIP states in here to help drive development without failing lots of tests.
                             else -> true
                         }
                     }.toSet(),
