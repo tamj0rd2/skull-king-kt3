@@ -9,7 +9,6 @@ import com.tamj0rd2.skullking.domain.gamev3.GameState.Bidding
 import com.tamj0rd2.skullking.domain.gamev3.PropertyTesting.assumeThat
 import com.tamj0rd2.skullking.domain.gamev3.PropertyTesting.assumeWasSuccessful
 import com.tamj0rd2.skullking.domain.gamev3.PropertyTesting.checkCoverageExists
-import com.tamj0rd2.skullking.domain.gamev3.PropertyTesting.printStatistics
 import com.tamj0rd2.skullking.domain.gamev3.PropertyTesting.propTestConfig
 import com.tamj0rd2.skullking.domain.gamev3.PropertyTesting.propertyTest
 import dev.forkhandles.result4k.orThrow
@@ -185,7 +184,7 @@ class Invariants {
             ) { initialGame, command ->
                 val updatedGame = initialGame.execute(command).assumeWasSuccessful()
                 expectThat(updatedGame.state).isA<Bidding>()
-            }.printStatistics()
+            }
         }
     }
 
