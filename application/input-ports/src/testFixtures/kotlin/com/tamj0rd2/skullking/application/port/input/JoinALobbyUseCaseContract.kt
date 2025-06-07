@@ -17,26 +17,26 @@ import io.kotest.property.exhaustive.exhaustive
 import org.junit.jupiter.api.Test
 
 interface JoinALobbyUseCaseContract : UseCaseContract {
-    val propertyTestIterations: Int get() = 1000
+    val propertyTestIterations: Int
+        get() = 1000
 
     @Test
-    fun `each player who joins the lobby can see themself in the lobby`() =
-        propertyTest {
-            checkAll(propertyTestIterations, (1..5).toList().exhaustive()) { playerCount ->
-                val gameCreator = scenario.newPlayer()
-                val thisPlayer = scenario.newPlayer()
-                val otherPlayers = scenario.newPlayers(playerCount - 1)
+    fun `each player who joins the lobby can see themself in the lobby`() = propertyTest {
+        checkAll(propertyTestIterations, (1..5).toList().exhaustive()) { playerCount ->
+            val gameCreator = scenario.newPlayer()
+            val thisPlayer = scenario.newPlayer()
+            val otherPlayers = scenario.newPlayers(playerCount - 1)
 
-                Given {
-                    gameCreator.`creates a lobby`()
-                    gameCreator.invites(otherPlayers + thisPlayer)
-                }
-
-                When { thisPlayer.`accepts the lobby invite`() }
-
-                Then { thisPlayer.`sees them self in the lobby`() }
+            Given {
+                gameCreator.`creates a lobby`()
+                gameCreator.invites(otherPlayers + thisPlayer)
             }
+
+            When { thisPlayer.`accepts the lobby invite`() }
+
+            Then { thisPlayer.`sees them self in the lobby`() }
         }
+    }
 
     @Test
     fun `each player who joins the lobby can see the other players who have joined`() =
@@ -50,12 +50,12 @@ interface JoinALobbyUseCaseContract : UseCaseContract {
                     gameCreator.invites(otherPlayers)
                 }
 
-                When {
-                    otherPlayers.each { `accept the lobby invite`() }
-                }
+                When { otherPlayers.each { `accept the lobby invite`() } }
 
                 Then {
-                    otherPlayers.each { `sees exact players in the lobby`(gameCreator + otherPlayers) }
+                    otherPlayers.each {
+                        `sees exact players in the lobby`(gameCreator + otherPlayers)
+                    }
                 }
             }
         }
@@ -72,13 +72,9 @@ interface JoinALobbyUseCaseContract : UseCaseContract {
             playersWhoWillJoinFirst.each { `accept the lobby invite`() }
         }
 
-        When {
-            latePlayer.triesTo { `accept the lobby invite`() }
-        }
+        When { latePlayer.triesTo { `accept the lobby invite`() } }
 
-        Then {
-            latePlayer.`gets the error`(LobbyIsFull())
-        }
+        Then { latePlayer.`gets the error`(LobbyIsFull()) }
     }
 
     @Test
@@ -92,35 +88,29 @@ interface JoinALobbyUseCaseContract : UseCaseContract {
             thisPlayer.`accepts the lobby invite`()
         }
 
-        When {
-            thisPlayer.triesTo { `accept the lobby invite`() }
-        }
+        When { thisPlayer.triesTo { `accept the lobby invite`() } }
 
         Then { thisPlayer.`gets the error`(PlayerHasAlreadyJoined()) }
     }
 
     @Test
-    fun `a player cannot join a lobby where the game has already started`() =
-        propertyTest {
-            checkAll(propertyTestIterations, Arb.int(min = 1, max = MAXIMUM_PLAYER_COUNT - 1)) { playerCount ->
-                val theLobbyCreator = scenario.newPlayer()
-                val otherPlayers = scenario.newPlayers(playerCount)
-                val lateJoiningPlayer = scenario.newPlayer()
+    fun `a player cannot join a lobby where the game has already started`() = propertyTest {
+        checkAll(propertyTestIterations, Arb.int(min = 1, max = MAXIMUM_PLAYER_COUNT - 1)) {
+            playerCount ->
+            val theLobbyCreator = scenario.newPlayer()
+            val otherPlayers = scenario.newPlayers(playerCount)
+            val lateJoiningPlayer = scenario.newPlayer()
 
-                Given {
-                    theLobbyCreator.`has created a lobby`()
-                    theLobbyCreator.invites(otherPlayers + lateJoiningPlayer)
-                    otherPlayers.each { `accept the lobby invite`() }
-                    theLobbyCreator.`starts the game`()
-                }
-
-                When {
-                    lateJoiningPlayer.triesTo { `accept the lobby invite`() }
-                }
-
-                Then {
-                    lateJoiningPlayer.`gets the error`(GameHasAlreadyStarted())
-                }
+            Given {
+                theLobbyCreator.`has created a lobby`()
+                theLobbyCreator.invites(otherPlayers + lateJoiningPlayer)
+                otherPlayers.each { `accept the lobby invite`() }
+                theLobbyCreator.`starts the game`()
             }
+
+            When { lateJoiningPlayer.triesTo { `accept the lobby invite`() } }
+
+            Then { lateJoiningPlayer.`gets the error`(GameHasAlreadyStarted()) }
         }
+    }
 }

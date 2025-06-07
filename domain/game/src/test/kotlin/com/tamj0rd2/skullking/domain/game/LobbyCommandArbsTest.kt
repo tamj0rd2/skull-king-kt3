@@ -18,8 +18,7 @@ class LobbyCommandArbsTest {
     @Test
     fun `for every LobbyCommand, there is a corresponding lobby command arbitrary`() {
         val lobbyCommandNames =
-            Konsist
-                .scopeFromProduction(gameModuleName)
+            Konsist.scopeFromProduction(gameModuleName)
                 .classes()
                 .withName("LobbyCommand")
                 .single()
@@ -28,16 +27,18 @@ class LobbyCommandArbsTest {
                 .map { it.name }
 
         val lobbyCommandArbsProperties =
-            Konsist
-                .scopeFromProject(gameModuleName, "testFixtures")
+            Konsist.scopeFromProject(gameModuleName, "testFixtures")
                 .objects()
                 .withName("LobbyCommandArbs")
                 .single()
                 .properties(includeNested = false)
 
-        val expectedLobbyCommandArbNames = lobbyCommandNames.map { it.first().lowercase() + it.drop(1) + "LobbyCommandArb" }
+        val expectedLobbyCommandArbNames =
+            lobbyCommandNames.map { it.first().lowercase() + it.drop(1) + "LobbyCommandArb" }
 
-        expectThat(lobbyCommandArbsProperties).get { map { it.name } }.contains(expectedLobbyCommandArbNames)
+        expectThat(lobbyCommandArbsProperties)
+            .get { map { it.name } }
+            .contains(expectedLobbyCommandArbNames)
 
         expectThat(lobbyCommandArbsProperties)
             .get { withName("lobbyCommandArb") }
@@ -53,7 +54,8 @@ class LobbyCommandArbsTest {
     }
 
     // This ensures the validity of the arb we use for the rest of the tests
-    // TODO: could add some statistic here, for example, to show that the commands aren't always empty.
+    // TODO: could add some statistic here, for example, to show that the commands aren't always
+    // empty.
     @Test
     fun `valid lobby commands never throw`() =
         invariant(arb = validLobbyCommandsArb) { lobby, command ->
@@ -61,4 +63,6 @@ class LobbyCommandArbsTest {
         }
 }
 
-private fun Builder<String>.containsAll(subStrings: Collection<String>) = apply { subStrings.fold(this, Builder<String>::contains) }
+private fun Builder<String>.containsAll(subStrings: Collection<String>) = apply {
+    subStrings.fold(this, Builder<String>::contains)
+}

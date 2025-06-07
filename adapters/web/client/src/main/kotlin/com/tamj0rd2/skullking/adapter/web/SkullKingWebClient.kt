@@ -28,19 +28,16 @@ import com.tamj0rd2.skullking.domain.game.LobbyNotification.ACardWasPlayed
 import com.tamj0rd2.skullking.domain.game.LobbyNotification.TheGameHasStarted
 import com.tamj0rd2.skullking.domain.game.PlayerId
 import dev.forkhandles.result4k.Result4k
+import java.time.Duration
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit.MILLISECONDS
 import org.http4k.client.WebsocketClient
 import org.http4k.core.Uri
 import org.http4k.websocket.Websocket
 import org.slf4j.LoggerFactory
-import java.time.Duration
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit.MILLISECONDS
 
-class SkullKingWebClient(
-    private val baseUri: Uri,
-    private val timeoutMs: Long = 500,
-) : SkullKingUseCases,
-    AutoCloseable {
+class SkullKingWebClient(private val baseUri: Uri, private val timeoutMs: Long = 500) :
+    SkullKingUseCases, AutoCloseable {
     private lateinit var ws: Websocket
 
     override fun close() {
@@ -58,9 +55,7 @@ class SkullKingWebClient(
         val message = ws.waitForMessage<LobbyCreatedMessage>()
         check(message.lobbyId != LobbyId.NONE) { "got a zero lobbyId" }
 
-        return CreateNewLobbyOutput(
-            lobbyId = message.lobbyId,
-        )
+        return CreateNewLobbyOutput(lobbyId = message.lobbyId)
     }
 
     override fun invoke(command: JoinALobbyCommand): Result4k<JoinALobbyOutput, LobbyErrorCode> {
@@ -94,9 +89,12 @@ class SkullKingWebClient(
     }
 
     private inline fun <reified T : LobbyNotification> Websocket.waitForLobbyNotification(): T =
-        waitForMessage<LobbyNotificationMessage> { it.lobbyNotification is T }.lobbyNotification as T
+        waitForMessage<LobbyNotificationMessage> { it.lobbyNotification is T }.lobbyNotification
+            as T
 
-    private inline fun <reified T : MessageToClient> Websocket.waitForMessage(crossinline matcher: (T) -> Boolean = { true }): T {
+    private inline fun <reified T : MessageToClient> Websocket.waitForMessage(
+        crossinline matcher: (T) -> Boolean = { true }
+    ): T {
         val latch = CountDownLatch(1)
         var failureReason: LobbyErrorCode? = null
         var wantedMessage: T? = null
@@ -122,10 +120,12 @@ class SkullKingWebClient(
         latch.await(timeoutMs, MILLISECONDS)
         failureReason?.let { throw it }
 
-        check(allSeenMessages.isNotEmpty()) { "did not receive any messages within the given timeout." }
+        check(allSeenMessages.isNotEmpty()) {
+            "did not receive any messages within the given timeout."
+        }
         checkNotNull(wantedMessage) {
             "did not receive the ${T::class.java.simpleName} message within the given timeout. Messages:\n${allSeenMessages.joinToString(
-                "\n- ",
+                "\n- "
             )}"
         }
         return wantedMessage as T

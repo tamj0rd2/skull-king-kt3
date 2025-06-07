@@ -6,9 +6,7 @@ import com.tamj0rd2.skullking.application.port.output.LobbyRepositoryContract
 import org.junit.platform.commons.annotation.Testable
 
 @Testable
-class LobbyRepositoryEsdbAdapterTest :
-    LobbyRepositoryContract,
-    EventStoreContract {
+class LobbyRepositoryEsdbAdapterTest : LobbyRepositoryContract, EventStoreContract {
     private companion object {
         val eventStore = EventStoreEsdbAdapter.forLobbyEvents()
     }

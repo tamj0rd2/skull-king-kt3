@@ -38,19 +38,13 @@ import org.http4k.lens.BiDiWsMessageLens
 import org.http4k.websocket.WsMessage
 
 sealed interface MessageToClient {
-    data class LobbyCreatedMessage(
-        val lobbyId: LobbyId,
-    ) : MessageToClient
+    data class LobbyCreatedMessage(val lobbyId: LobbyId) : MessageToClient
 
     data object JoinAcknowledgedMessage : MessageToClient
 
-    data class LobbyNotificationMessage(
-        val lobbyNotification: LobbyNotification,
-    ) : MessageToClient
+    data class LobbyNotificationMessage(val lobbyNotification: LobbyNotification) : MessageToClient
 
-    data class ErrorMessage(
-        val error: LobbyErrorCode,
-    ) : MessageToClient
+    data class ErrorMessage(val error: LobbyErrorCode) : MessageToClient
 }
 
 val messageToClient =
@@ -62,17 +56,18 @@ val messageToClient =
 private object JLobbyCreatedMessage : JAny<LobbyCreatedMessage>() {
     private val lobbyId by str(JLobbyId, LobbyCreatedMessage::lobbyId)
 
-    override fun JsonNodeObject.deserializeOrThrow() =
-        LobbyCreatedMessage(
-            lobbyId = +lobbyId,
-        )
+    override fun JsonNodeObject.deserializeOrThrow() = LobbyCreatedMessage(lobbyId = +lobbyId)
 }
 
 private object JMessageToClient : JSealed<MessageToClient>() {
     private val config =
         listOf(
             Triple(LobbyCreatedMessage::class, "game-created", JLobbyCreatedMessage),
-            Triple(JoinAcknowledgedMessage::class, "join-acknowledged", JSingleton(JoinAcknowledgedMessage)),
+            Triple(
+                JoinAcknowledgedMessage::class,
+                "join-acknowledged",
+                JSingleton(JoinAcknowledgedMessage),
+            ),
             Triple(LobbyNotificationMessage::class, "game-update", JLobbyNotificationMessage),
             Triple(ErrorMessage::class, "error-message", JErrorMessage),
         )
@@ -82,15 +77,19 @@ private object JMessageToClient : JSealed<MessageToClient>() {
 
     override fun extractTypeName(obj: MessageToClient): String {
         val configForThisObj = config.firstOrNull { (clazz, _, _) -> clazz == obj::class }
-        checkNotNull(configForThisObj) { "Configure parsing for message to client ${obj::class.java.simpleName}" }
+        checkNotNull(configForThisObj) {
+            "Configure parsing for message to client ${obj::class.java.simpleName}"
+        }
         return configForThisObj.second
     }
 }
 
 private object JLobbyNotificationMessage : JAny<LobbyNotificationMessage>() {
-    private val lobbyNotification by obj(JLobbyNotification, LobbyNotificationMessage::lobbyNotification)
+    private val lobbyNotification by
+        obj(JLobbyNotification, LobbyNotificationMessage::lobbyNotification)
 
-    override fun JsonNodeObject.deserializeOrThrow() = LobbyNotificationMessage(lobbyNotification = +lobbyNotification)
+    override fun JsonNodeObject.deserializeOrThrow() =
+        LobbyNotificationMessage(lobbyNotification = +lobbyNotification)
 }
 
 private object JLobbyNotification : JSealed<LobbyNotification>() {
@@ -110,7 +109,9 @@ private object JLobbyNotification : JSealed<LobbyNotification>() {
 
     override fun extractTypeName(obj: LobbyNotification): String {
         val configForThisObj = config.firstOrNull { (clazz, _, _) -> clazz == obj::class }
-        checkNotNull(configForThisObj) { "Configure parsing for lobby notification type ${obj::class.java.simpleName}" }
+        checkNotNull(configForThisObj) {
+            "Configure parsing for lobby notification type ${obj::class.java.simpleName}"
+        }
         return configForThisObj.second
     }
 }
@@ -126,10 +127,7 @@ private object JCardDealt : JAny<CardsWereDealt>() {
     private val recipient by str(JPlayerId) { recipient.playerId }
 
     override fun JsonNodeObject.deserializeOrThrow() =
-        CardsWereDealt(
-            cards = +cards,
-            recipient = Someone(+recipient),
-        )
+        CardsWereDealt(cards = +cards, recipient = Someone(+recipient))
 }
 
 private object JBidPlaced : JAny<ABidWasPlaced>() {
@@ -155,19 +153,13 @@ private object JPlayedCard : JAny<PlayedCard>() {
     private val card by obj(JSingleton(Card), PlayedCard::card)
 
     override fun JsonNodeObject.deserializeOrThrow() =
-        PlayedCard(
-            card = +card,
-            playedBy = +playedBy,
-        )
+        PlayedCard(card = +card, playedBy = +playedBy)
 }
 
 private object JTrickEnded : JAny<TheTrickHasEnded>() {
     private val winner by obj(JPlayerId, TheTrickHasEnded::winner)
 
-    override fun JsonNodeObject.deserializeOrThrow() =
-        TheTrickHasEnded(
-            winner = +winner,
-        )
+    override fun JsonNodeObject.deserializeOrThrow() = TheTrickHasEnded(winner = +winner)
 }
 
 private object JErrorMessage : JAny<ErrorMessage>() {
@@ -190,6 +182,6 @@ private object JErrorMessage : JAny<ErrorMessage>() {
                 "player-already-joined" -> PlayerHasAlreadyJoined()
                 "game-already-started" -> GameHasAlreadyStarted()
                 else -> error("unknown error code - $reason")
-            },
+            }
         )
 }

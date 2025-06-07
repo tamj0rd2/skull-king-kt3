@@ -5,9 +5,7 @@ import dev.forkhandles.values.Value
 import dev.forkhandles.values.between
 
 @JvmInline
-value class RoundNumber private constructor(
-    override val value: Int,
-) : Value<Int> {
+value class RoundNumber private constructor(override val value: Int) : Value<Int> {
     companion object : IntValueFactory<RoundNumber>(::RoundNumber, (1..10).between) {
         val none = RoundNumber(0)
     }

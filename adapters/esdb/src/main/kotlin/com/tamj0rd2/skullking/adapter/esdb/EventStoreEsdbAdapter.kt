@@ -24,15 +24,16 @@ import com.tamj0rd2.skullking.domain.game.LobbyId
 import com.tamj0rd2.skullking.domain.game.Version
 import com.tamj0rd2.skullking.serialization.json.JLobbyEvent
 import com.ubertob.kondor.json.JSealed
-import org.slf4j.LoggerFactory
 import java.util.concurrent.ExecutionException
+import org.slf4j.LoggerFactory
 
 class EventStoreEsdbAdapter<ID : AggregateId, E : Event<ID>>(
     private val streamNameProvider: StreamNameProvider<ID>,
     private val converter: JSealed<E>,
     private val subscriptionStreamName: String,
     private val subscriptionGroup: String = "subscriptions",
-    clientSettings: EventStoreDBClientSettings = EventStoreDBConnectionString.parseOrThrow("esdb://localhost:2113?tls=false"),
+    clientSettings: EventStoreDBClientSettings =
+        EventStoreDBConnectionString.parseOrThrow("esdb://localhost:2113?tls=false"),
 ) : EventStore<ID, E> {
     data class StreamNameProvider<ID>(
         private val prefix: String,
@@ -44,35 +45,34 @@ class EventStoreEsdbAdapter<ID : AggregateId, E : Event<ID>>(
     private val logger = LoggerFactory.getLogger(this::class.java)
     private val subscribers = mutableListOf<EventStoreSubscriber<ID, E>>()
     private val client = EventStoreDBClient.create(clientSettings)
-    private val subscriptionClient = EventStoreDBPersistentSubscriptionsClient.create(clientSettings)
+    private val subscriptionClient =
+        EventStoreDBPersistentSubscriptionsClient.create(clientSettings)
 
     init {
         startPersistentSubscription()
     }
 
-    override fun read(entityId: ID): Collection<E> = readEvents(entityId, ReadStreamOptions.get().forwards())
+    override fun read(entityId: ID): Collection<E> =
+        readEvents(entityId, ReadStreamOptions.get().forwards())
 
-    override fun read(
-        entityId: ID,
-        upToAndIncludingVersion: Version,
-    ): Collection<E> = readEvents(entityId, ReadStreamOptions.get().forwards().maxCount(upToAndIncludingVersion.value.toLong()))
+    override fun read(entityId: ID, upToAndIncludingVersion: Version): Collection<E> =
+        readEvents(
+            entityId,
+            ReadStreamOptions.get().forwards().maxCount(upToAndIncludingVersion.value.toLong()),
+        )
 
     override fun subscribe(subscriber: EventStoreSubscriber<ID, E>) {
         subscribers.add(subscriber)
     }
 
-    override fun append(
-        entityId: ID,
-        expectedVersion: Version,
-        events: Collection<E>,
-    ) {
+    override fun append(entityId: ID, expectedVersion: Version, events: Collection<E>) {
         val eventData =
             events.map {
-                EventDataBuilder
-                    .json(
+                EventDataBuilder.json(
                         converter.extractTypeName(it),
                         converter.toJson(it).toByteArray(Charsets.UTF_8),
-                    ).build()
+                    )
+                    .build()
             }
 
         try {
@@ -82,7 +82,8 @@ class EventStoreEsdbAdapter<ID : AggregateId, E : Event<ID>>(
 
             val eventsWrittenInTheMeantime = read(entityId).drop(expectedVersion.value)
 
-            // attempting to write exactly the same events that have already been written. Idempotence!
+            // attempting to write exactly the same events that have already been written.
+            // Idempotence!
             if (eventsWrittenInTheMeantime == events) return
 
             throw EventStore.concurrentModificationException(
@@ -92,29 +93,21 @@ class EventStoreEsdbAdapter<ID : AggregateId, E : Event<ID>>(
         }
     }
 
-    private fun writeEvents(
-        entityId: ID,
-        expectedVersion: Version,
-        eventData: List<EventData>,
-    ) {
+    private fun writeEvents(entityId: ID, expectedVersion: Version, eventData: List<EventData>) {
         client
             .appendToStream(
                 entityId.toStreamName(),
                 AppendToStreamOptions.get().expectedRevision(expectedVersion.asExpectedRevision()),
                 eventData.iterator(),
-            ).get()
+            )
+            .get()
     }
 
-    private fun readEvents(
-        entityId: ID,
-        readStreamOptions: ReadStreamOptions?,
-    ): List<E> =
+    private fun readEvents(entityId: ID, readStreamOptions: ReadStreamOptions?): List<E> =
         try {
-            client
-                .readStream(entityId.toStreamName(), readStreamOptions)
-                .get()
-                .events
-                .map { converter.fromJson(it.dataAsString()).orThrow() }
+            client.readStream(entityId.toStreamName(), readStreamOptions).get().events.map {
+                converter.fromJson(it.dataAsString()).orThrow()
+            }
         } catch (e: ExecutionException) {
             if (e.cause is StreamNotFoundException) {
                 emptyList()
@@ -130,7 +123,8 @@ class EventStoreEsdbAdapter<ID : AggregateId, E : Event<ID>>(
                     subscriptionStreamName,
                     subscriptionGroup,
                     CreatePersistentSubscriptionToStreamOptions.get().resolveLinkTos(),
-                ).get()
+                )
+                .get()
         } catch (e: ExecutionException) {
             // the next call will tell me whether something failed.
         }
@@ -155,7 +149,8 @@ class EventStoreEsdbAdapter<ID : AggregateId, E : Event<ID>>(
                         retryCount: Int,
                         resolvedEvent: ResolvedEvent,
                     ) {
-                        // TODO: I shouldn't need to deserialize the entire payload. I could just use event.entityId, as long as I had
+                        // TODO: I shouldn't need to deserialize the entire payload. I could just
+                        // use event.entityId, as long as I had
                         //  a way to deserialize just the ID.
                         val event = converter.fromJson(resolvedEvent.dataAsString()).orThrow()
                         val version = resolvedEvent.asVersion()
@@ -163,7 +158,8 @@ class EventStoreEsdbAdapter<ID : AggregateId, E : Event<ID>>(
                         subscription.ack(resolvedEvent)
                     }
                 },
-            ).get()
+            )
+            .get()
     }
 
     private fun ID.toStreamName() = streamNameProvider.streamNameFor(this)
@@ -188,10 +184,7 @@ class EventStoreEsdbAdapter<ID : AggregateId, E : Event<ID>>(
         fun forLobbyEvents() =
             EventStoreEsdbAdapter(
                 streamNameProvider =
-                    StreamNameProvider(
-                        prefix = "lobby-events",
-                        idToString = LobbyId::show,
-                    ),
+                    StreamNameProvider(prefix = "lobby-events", idToString = LobbyId::show),
                 converter = JLobbyEvent,
                 // TODO: make this part of StreamNameProvider, since it's possible to derive it.
                 subscriptionStreamName = "\$ce-lobby",

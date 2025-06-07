@@ -25,58 +25,54 @@ import strikt.assertions.size
 @Timeout(10)
 class LobbyTests {
     @Test
-    fun `lobbies always start with a LobbyCreated event`() =
-        invariant { lobby ->
-            expectThat(lobby.allEvents).first().isA<LobbyCreatedEvent>()
-        }
+    fun `lobbies always start with a LobbyCreated event`() = invariant { lobby ->
+        expectThat(lobby.allEvents).first().isA<LobbyCreatedEvent>()
+    }
 
     @Test
-    fun `lobbies always have a single LobbyCreated event`() =
-        invariant { lobby ->
-            expectThat(lobby.allEvents).one { isA<LobbyCreatedEvent>() }
-        }
+    fun `lobbies always have a single LobbyCreated event`() = invariant { lobby ->
+        expectThat(lobby.allEvents).one { isA<LobbyCreatedEvent>() }
+    }
 
     @Test
     fun `all events within a lobby relate to that specific lobby`() =
-        // specifying the iterations because 1000 iterations * 100 events is just too many to run the tests in a reasonable timeframe.
+        // specifying the iterations because 1000 iterations * 100 events is just too many to run
+        // the tests in a reasonable timeframe.
         invariant(iterations = 200) { lobby ->
             expectThat(lobby.allEvents).all { get { this.aggregateId }.isEqualTo(lobby.id) }
         }
 
     @Test
-    fun `lobbies can never have more than 6 players`() =
-        invariant { lobby ->
-            expectThat(lobby.state.players).size.isLessThanOrEqualTo(MAXIMUM_PLAYER_COUNT)
-        }
+    fun `lobbies can never have more than 6 players`() = invariant { lobby ->
+        expectThat(lobby.state.players).size.isLessThanOrEqualTo(MAXIMUM_PLAYER_COUNT)
+    }
 
     @Test
-    fun `the players in the lobby are always unique`() =
-        invariant { lobby ->
-            expectThat(lobby.state.players).doesNotContainAnyDuplicateValues()
-        }
+    fun `the players in the lobby are always unique`() = invariant { lobby ->
+        expectThat(lobby.state.players).doesNotContainAnyDuplicateValues()
+    }
 
     @Test
-    fun `the players in the lobby always have a non-zero id`() =
-        invariant { lobby ->
-            expectThat(lobby.state.players).all { isNotEqualTo(PlayerId.NONE) }
-        }
+    fun `the players in the lobby always have a non-zero id`() = invariant { lobby ->
+        expectThat(lobby.state.players).all { isNotEqualTo(PlayerId.NONE) }
+    }
 
     @Test
-    fun `a lobby can be restored using its history of events`() =
-        invariant { lobby ->
-            val restoredLobby = Lobby.from(lobby.allEvents)
-            expectThat(restoredLobby) {
-                get { allEvents }.isEqualTo(lobby.allEvents)
-                get { state }.isEqualTo(lobby.state)
-            }
+    fun `a lobby can be restored using its history of events`() = invariant { lobby ->
+        val restoredLobby = Lobby.from(lobby.allEvents)
+        expectThat(restoredLobby) {
+            get { allEvents }.isEqualTo(lobby.allEvents)
+            get { state }.isEqualTo(lobby.state)
         }
+    }
 
     @Test
     fun `a lobby that has been restored using a history of events has a loaded version corresponding to the number of events`() {
         example {
             val lobby = Lobby.new(PlayerId.random())
             lobby.execute(LobbyCommand.AddPlayer(PlayerId.random()))
-            expectThat(lobby.newEventsSinceLobbyWasLoaded).hasSize(2) // the inherent game created event + the add player event.
+            expectThat(lobby.newEventsSinceLobbyWasLoaded)
+                .hasSize(2) // the inherent game created event + the add player event.
 
             val restoredLobby = Lobby.from(lobby.allEvents)
             expectThat(restoredLobby.loadedAtVersion).isEqualTo(Version.of(2))
@@ -90,9 +86,7 @@ class LobbyTests {
 
     @Test
     fun `lobbies that were not restored from a history of events don't have a loaded version`() {
-        invariant { lobby ->
-            expectThat(lobby.loadedAtVersion).isEqualTo(Version.NONE)
-        }
+        invariant { lobby -> expectThat(lobby.loadedAtVersion).isEqualTo(Version.NONE) }
     }
 
     // TODO: this seems like it should be an invariant of a Hand model.
@@ -103,15 +97,13 @@ class LobbyTests {
     }
 }
 
-internal fun invariant(
-    iterations: Int = 1000,
-    checkInvariant: (Lobby) -> Unit,
-) = invariant(iterations) { lobby, command ->
-    // I don't care whether the command succeeds.
-    // I just want to ensure the invariants are always upheld regardless.
-    lobby.execute(command)
-    checkInvariant(lobby)
-}
+internal fun invariant(iterations: Int = 1000, checkInvariant: (Lobby) -> Unit) =
+    invariant(iterations) { lobby, command ->
+        // I don't care whether the command succeeds.
+        // I just want to ensure the invariants are always upheld regardless.
+        lobby.execute(command)
+        checkInvariant(lobby)
+    }
 
 internal fun invariant(
     iterations: Int = 1000,
@@ -120,15 +112,12 @@ internal fun invariant(
 ) = propertyTest {
     arb.checkAll(iterations) { lobbyCommands ->
         val lobby = Lobby.new(PlayerId.random())
-        lobbyCommands.forEach { command ->
-            checkInvariant(lobby, command)
-        }
+        lobbyCommands.forEach { command -> checkInvariant(lobby, command) }
     }
 }
 
 internal fun example(block: () -> Unit) = block()
 
-private fun <T> Assertion.Builder<List<T>>.doesNotContainAnyDuplicateValues() =
-    apply {
-        containsExactlyInAnyOrder(subject.toSet())
-    }
+private fun <T> Assertion.Builder<List<T>>.doesNotContainAnyDuplicateValues() = apply {
+    containsExactlyInAnyOrder(subject.toSet())
+}

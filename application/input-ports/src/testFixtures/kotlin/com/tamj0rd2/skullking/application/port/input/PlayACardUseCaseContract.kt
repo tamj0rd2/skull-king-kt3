@@ -10,7 +10,8 @@ import com.tamj0rd2.skullking.domain.game.Card
 import org.junit.jupiter.api.Test
 
 interface PlayACardUseCaseContract : UseCaseContract {
-    val propertyTestIterations: Int get() = 1000
+    val propertyTestIterations: Int
+        get() = 1000
 
     @Test
     fun `can play a card once all bids have been placed`() {
@@ -28,13 +29,9 @@ interface PlayACardUseCaseContract : UseCaseContract {
             player2.`places a bid`(Bid.of(0))
         }
 
-        When {
-            player1.`plays a card in their hand`()
-        }
+        When { player1.`plays a card in their hand`() }
 
-        Then {
-            thePlayers.each { `see a card`(Card, playedBy = player1.id) }
-        }
+        Then { thePlayers.each { `see a card`(Card, playedBy = player1.id) } }
     }
 
     @Test
@@ -53,13 +50,9 @@ interface PlayACardUseCaseContract : UseCaseContract {
             player2.`places a bid`(Bid.of(0))
         }
 
-        When {
-            thePlayers.each { `play a card in their hand`() }
-        }
+        When { thePlayers.each { `play a card in their hand`() } }
 
-        Then {
-            thePlayers.each { `see that the trick winner has been chosen`() }
-        }
+        Then { thePlayers.each { `see that the trick winner has been chosen`() } }
     }
 
     // TODO: business rule - when a card is played, that player's hand size decreases by 1.

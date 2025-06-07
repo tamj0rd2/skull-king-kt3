@@ -18,21 +18,21 @@ import com.tamj0rd2.skullking.application.service.StartGameService
 import com.tamj0rd2.skullking.domain.game.LobbyEvent
 import com.tamj0rd2.skullking.domain.game.LobbyId
 
-class SkullKingApplication private constructor(
+class SkullKingApplication
+private constructor(
     private val createNewLobbyUseCase: CreateNewLobbyUseCase,
     private val joinALobbyUseCase: JoinALobbyUseCase,
     private val startGameUseCase: StartGameUseCase,
     private val placeABidUseCase: PlaceABidUseCase,
     private val playACardUseCase: PlayACardUseCase,
-) : SkullKingUseCases,
+) :
+    SkullKingUseCases,
     CreateNewLobbyUseCase by createNewLobbyUseCase,
     JoinALobbyUseCase by joinALobbyUseCase,
     PlaceABidUseCase by placeABidUseCase,
     StartGameUseCase by startGameUseCase,
     PlayACardUseCase by playACardUseCase {
-    data class OutputPorts(
-        val lobbyEventStore: EventStore<LobbyId, LobbyEvent>,
-    ) {
+    data class OutputPorts(val lobbyEventStore: EventStore<LobbyId, LobbyEvent>) {
         companion object
     }
 
@@ -44,7 +44,7 @@ class SkullKingApplication private constructor(
                 SendLobbyNotificationsService(
                     lobbyRepository = lobbyRepository,
                     lobbyNotifier = lobbyNotifier,
-                ),
+                )
             )
 
             return SkullKingApplication(
@@ -58,18 +58,9 @@ class SkullKingApplication private constructor(
                         lobbyRepository = lobbyRepository,
                         lobbyNotifier = lobbyNotifier,
                     ),
-                startGameUseCase =
-                    StartGameService(
-                        lobbyRepository = lobbyRepository,
-                    ),
-                placeABidUseCase =
-                    PlaceABidService(
-                        lobbyRepository = lobbyRepository,
-                    ),
-                playACardUseCase =
-                    PlayACardService(
-                        lobbyRepository = lobbyRepository,
-                    ),
+                startGameUseCase = StartGameService(lobbyRepository = lobbyRepository),
+                placeABidUseCase = PlaceABidService(lobbyRepository = lobbyRepository),
+                playACardUseCase = PlayACardService(lobbyRepository = lobbyRepository),
             )
         }
     }

@@ -33,167 +33,192 @@ class Invariants {
     @Test
     fun `a game in progress always has 2-6 players`() {
         propertyTest {
-            checkAll(propTestConfig, Arb.game.validOnly()) { game ->
-                assumeThat(game.state is GameState.InProgress)
-                collectState(game)
-                expectThat(game.state.players.size).isIn(2..6)
+                checkAll(propTestConfig, Arb.game.validOnly()) { game ->
+                    assumeThat(game.state is GameState.InProgress)
+                    collectState(game)
+                    expectThat(game.state.players.size).isIn(2..6)
+                }
             }
-        }.checkCoverageForAllGameStates()
+            .checkCoverageForAllGameStates()
     }
 
     @Test
     fun `a game always start with a GameStarted event`() {
         propertyTest {
-            checkAll(propTestConfig, Arb.game.validOnly()) { game ->
-                collectState(game)
-                expectThat(game.events.first()).isA<GameStartedEvent>()
+                checkAll(propTestConfig, Arb.game.validOnly()) { game ->
+                    collectState(game)
+                    expectThat(game.events.first()).isA<GameStartedEvent>()
+                }
             }
-        }.checkCoverageForAllGameStates()
+            .checkCoverageForAllGameStates()
     }
 
     @Test
     fun `a game only ever has 1 GameStarted event`() {
         propertyTest {
-            checkAll(propTestConfig, Arb.game.validOnly()) { game ->
-                collectState(game)
-                expectThat(game.events).filterIsInstance<GameStartedEvent>().count().isEqualTo(1)
+                checkAll(propTestConfig, Arb.game.validOnly()) { game ->
+                    collectState(game)
+                    expectThat(game.events)
+                        .filterIsInstance<GameStartedEvent>()
+                        .count()
+                        .isEqualTo(1)
+                }
             }
-        }.checkCoverageForAllGameStates()
+            .checkCoverageForAllGameStates()
     }
 
     @Test
     fun `each event in a game is related to that specific game`() {
         propertyTest {
-            checkAll(propTestConfig, Arb.game.validOnly()) { game ->
-                collectState(game)
-                collect("events", game.events.map { it::class.simpleName })
-                expectThat(game.events).all { get { id }.isEqualTo(game.id) }
+                checkAll(propTestConfig, Arb.game.validOnly()) { game ->
+                    collectState(game)
+                    collect("events", game.events.map { it::class.simpleName })
+                    expectThat(game.events).all { get { id }.isEqualTo(game.id) }
+                }
             }
-        }.checkCoverageForAllGameStates()
+            .checkCoverageForAllGameStates()
     }
 
     @Test
     fun `each successful command results in 1 new event being emitted`() {
         propertyTest {
-            checkAll(propTestConfig, Arb.game.validOnly(), Arb.command) { initialGame, command ->
-                val updatedGame = initialGame.execute(command).assumeWasSuccessful()
-                collectState(initialGame)
-                expectThat(updatedGame.events.size).isEqualTo(initialGame.events.size + 1)
+                checkAll(propTestConfig, Arb.game.validOnly(), Arb.command) { initialGame, command
+                    ->
+                    val updatedGame = initialGame.execute(command).assumeWasSuccessful()
+                    collectState(initialGame)
+                    expectThat(updatedGame.events.size).isEqualTo(initialGame.events.size + 1)
+                }
             }
-        }.checkCoverageForAllGameStates()
+            .checkCoverageForAllGameStates()
     }
 
     @Test
     fun `each successful command results in a state change`() {
         propertyTest {
-            checkAll(propTestConfig, Arb.game.validOnly(), Arb.command) { initialGame, command ->
-                val updatedGame = initialGame.execute(command).assumeWasSuccessful()
-                collectState(initialGame)
-                expectThat(updatedGame.state).isNotEqualTo(initialGame.state)
+                checkAll(propTestConfig, Arb.game.validOnly(), Arb.command) { initialGame, command
+                    ->
+                    val updatedGame = initialGame.execute(command).assumeWasSuccessful()
+                    collectState(initialGame)
+                    expectThat(updatedGame.state).isNotEqualTo(initialGame.state)
+                }
             }
-        }.checkCoverageForAllGameStates()
+            .checkCoverageForAllGameStates()
     }
 
     @Test
     fun `successful commands never change the players in the game`() {
         propertyTest {
-            checkAll(propTestConfig, Arb.game.validOnly(), Arb.command) { initialGame, command ->
-                // TODO: when I introduce a completed state, I should also check this here.
-                assumeThat(initialGame.state is GameState.InProgress)
+                checkAll(propTestConfig, Arb.game.validOnly(), Arb.command) { initialGame, command
+                    ->
+                    // TODO: when I introduce a completed state, I should also check this here.
+                    assumeThat(initialGame.state is GameState.InProgress)
 
-                val updatedGame = initialGame.execute(command).assumeWasSuccessful()
-                collectState(initialGame)
-                expectThat(updatedGame.state).isA<GameState.InProgress>().get { players }.isEqualTo(initialGame.state.players)
+                    val updatedGame = initialGame.execute(command).assumeWasSuccessful()
+                    collectState(initialGame)
+                    expectThat(updatedGame.state)
+                        .isA<GameState.InProgress>()
+                        .get { players }
+                        .isEqualTo(initialGame.state.players)
+                }
             }
-        }.checkCoverageForAllGameStates()
+            .checkCoverageForAllGameStates()
     }
 
     @Test
     fun `successful commands never change the game's ID`() {
         propertyTest {
-            checkAll(propTestConfig, Arb.game.validOnly(), Arb.command) { initialGame, command ->
-                val updatedGame = initialGame.execute(command).assumeWasSuccessful()
-                collectState(initialGame)
-                expectThat(updatedGame.id).isEqualTo(initialGame.id)
+                checkAll(propTestConfig, Arb.game.validOnly(), Arb.command) { initialGame, command
+                    ->
+                    val updatedGame = initialGame.execute(command).assumeWasSuccessful()
+                    collectState(initialGame)
+                    expectThat(updatedGame.id).isEqualTo(initialGame.id)
+                }
             }
-        }.checkCoverageForAllGameStates()
+            .checkCoverageForAllGameStates()
     }
 
     @Test
     fun `successful commands never cause existing events to be changed or removed`() {
         propertyTest {
-            checkAll(propTestConfig, Arb.game.validOnly(), Arb.command) { initialGame, command ->
-                val updatedGame = initialGame.execute(command).assumeWasSuccessful()
-                collectState(initialGame)
-                expectThat(updatedGame.events.dropLast(1)).containsExactly(initialGame.events)
+                checkAll(propTestConfig, Arb.game.validOnly(), Arb.command) { initialGame, command
+                    ->
+                    val updatedGame = initialGame.execute(command).assumeWasSuccessful()
+                    collectState(initialGame)
+                    expectThat(updatedGame.events.dropLast(1)).containsExactly(initialGame.events)
+                }
             }
-        }.checkCoverageForAllGameStates()
+            .checkCoverageForAllGameStates()
     }
 
     @Test
     fun `a game reconstituted from events has the same identity, state and events as the game it was reconstituted from`() {
         propertyTest {
-            checkAll(propTestConfig, Arb.game.validOnly()) { originalGame ->
-                collectState(originalGame)
-                expectThat(Game.reconstitute(originalGame.events).orThrow()) {
-                    isEqualTo(originalGame)
-                    get { id }.isEqualTo(originalGame.id)
-                    get { events }.isEqualTo(originalGame.events)
-                    get { state }.isEqualTo(originalGame.state)
+                checkAll(propTestConfig, Arb.game.validOnly()) { originalGame ->
+                    collectState(originalGame)
+                    expectThat(Game.reconstitute(originalGame.events).orThrow()) {
+                        isEqualTo(originalGame)
+                        get { id }.isEqualTo(originalGame.id)
+                        get { events }.isEqualTo(originalGame.events)
+                        get { state }.isEqualTo(originalGame.state)
+                    }
                 }
             }
-        }.checkCoverageForAllGameStates()
+            .checkCoverageForAllGameStates()
     }
 
     @Test
     fun `the round number of a game in progress never decreases`() {
         propertyTest {
-            checkAll(
-                propTestConfig,
-                Arb.game.validOnly().filter { it.state is GameState.InProgress },
-                Arb.command,
-            ) { initialGame, command ->
-                val initialState = initialGame.state as GameState.InProgress
-                val updatedGameState = initialGame.execute(command).assumeWasSuccessful().state
-                assumeThat(updatedGameState is GameState.InProgress)
-                collectState(initialState)
-                collectCommand(command)
+                checkAll(
+                    propTestConfig,
+                    Arb.game.validOnly().filter { it.state is GameState.InProgress },
+                    Arb.command,
+                ) { initialGame, command ->
+                    val initialState = initialGame.state as GameState.InProgress
+                    val updatedGameState = initialGame.execute(command).assumeWasSuccessful().state
+                    assumeThat(updatedGameState is GameState.InProgress)
+                    collectState(initialState)
+                    collectCommand(command)
 
-                expectThat(updatedGameState.roundNumber).isGreaterThanOrEqualTo(initialState.roundNumber)
+                    expectThat(updatedGameState.roundNumber)
+                        .isGreaterThanOrEqualTo(initialState.roundNumber)
+                }
             }
-        }.checkCoverageForAllGameStates()
+            .checkCoverageForAllGameStates()
     }
 
     @Test
     fun `the round number of a game in progress only ever increases by 1 at most`() {
         propertyTest {
-            checkAll(
-                propTestConfig,
-                // TODO: I'm using gameWithValidPlayers as a shortcut, otherwise the test would take way too long to run.
-                //  check this in the book.
-                Arb.game.validOnly().filter { it.state is GameState.InProgress },
-                Arb.command,
-            ) { initialGame, command ->
-                val initialState = initialGame.state as GameState.InProgress
-                val updatedGameState = initialGame.execute(command).assumeWasSuccessful().state
-                assumeThat(updatedGameState is GameState.InProgress)
+                checkAll(
+                    propTestConfig,
+                    // TODO: I'm using gameWithValidPlayers as a shortcut, otherwise the test would
+                    // take way too long to run.
+                    //  check this in the book.
+                    Arb.game.validOnly().filter { it.state is GameState.InProgress },
+                    Arb.command,
+                ) { initialGame, command ->
+                    val initialState = initialGame.state as GameState.InProgress
+                    val updatedGameState = initialGame.execute(command).assumeWasSuccessful().state
+                    assumeThat(updatedGameState is GameState.InProgress)
 
-                collectState(initialState)
-                expectThat(updatedGameState.roundNumber).isIn(initialState.roundNumber..initialState.roundNumber.next())
+                    collectState(initialState)
+                    expectThat(updatedGameState.roundNumber)
+                        .isIn(initialState.roundNumber..initialState.roundNumber.next())
+                }
             }
-        }.checkCoverageForAllGameStates()
+            .checkCoverageForAllGameStates()
     }
 
     @Test
     fun `bids only include those by players in the game`() {
         propertyTest {
-            checkAll(
-                propTestConfig,
-                Arb.game.validOnly().filter { it.state is Bidding },
-            ) { game ->
+            checkAll(propTestConfig, Arb.game.validOnly().filter { it.state is Bidding }) { game ->
                 val state = game.state as Bidding
                 expectThat(state.bids.keys).all { isContainedIn(state.players) }
-                expectThat(game.events.filterIsInstance<BidPlacedEvent>()).all { get { playerId }.isContainedIn(state.players) }
+                expectThat(game.events.filterIsInstance<BidPlacedEvent>()).all {
+                    get { playerId }.isContainedIn(state.players)
+                }
             }
         }
     }
@@ -202,10 +227,12 @@ class Invariants {
     fun `the number of bids placed in the game never exceeds the player count multiplied by 10`() {
         propertyTest {
             checkAll(propTestConfig, Arb.game.validOnly()) { game ->
-                collectState(game)
-                val initialPlayers = (game.events.first() as GameStartedEvent).players
-                expectThat(game.events.count { it is BidPlacedEvent }).isLessThanOrEqualTo(initialPlayers.size * 10)
-            }.checkCoverageForAllGameStates()
+                    collectState(game)
+                    val initialPlayers = (game.events.first() as GameStartedEvent).players
+                    expectThat(game.events.count { it is BidPlacedEvent })
+                        .isLessThanOrEqualTo(initialPlayers.size * 10)
+                }
+                .checkCoverageForAllGameStates()
         }
     }
 }

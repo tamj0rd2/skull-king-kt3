@@ -1,7 +1,3 @@
-plugins {
-    id("buildlogic.kotlin-library-conventions")
-}
+plugins { id("buildlogic.kotlin-library-conventions") }
 
-dependencies {
-    implementation(libs.result4k)
-}
+dependencies { implementation(libs.result4k) }

@@ -12,7 +12,8 @@ import io.kotest.property.exhaustive.exhaustive
 import org.junit.jupiter.api.Test
 
 interface CreateNewLobbyUseCaseContract : UseCaseContract {
-    val propertyTestIterations: Int get() = 1000
+    val propertyTestIterations: Int
+        get() = 1000
 
     @Test
     fun `the player who created the lobby automatically joins the lobby`() {
@@ -37,7 +38,8 @@ interface CreateNewLobbyUseCaseContract : UseCaseContract {
     @Test
     fun `the player who created the lobby can see all players who joined after them`() =
         propertyTest {
-            checkAll(propertyTestIterations, (1..5).toList().exhaustive()) { additionalPlayerCount ->
+            checkAll(propertyTestIterations, (1..5).toList().exhaustive()) { additionalPlayerCount
+                ->
                 val theLobbyCreator = scenario.newPlayer()
                 val otherPlayers = scenario.newPlayers(additionalPlayerCount)
 
@@ -46,13 +48,9 @@ interface CreateNewLobbyUseCaseContract : UseCaseContract {
                     theLobbyCreator.invites(otherPlayers)
                 }
 
-                When {
-                    otherPlayers.each { `accept the lobby invite`() }
-                }
+                When { otherPlayers.each { `accept the lobby invite`() } }
 
-                Then {
-                    theLobbyCreator.`sees each invited player in the lobby`()
-                }
+                Then { theLobbyCreator.`sees each invited player in the lobby`() }
             }
         }
 }

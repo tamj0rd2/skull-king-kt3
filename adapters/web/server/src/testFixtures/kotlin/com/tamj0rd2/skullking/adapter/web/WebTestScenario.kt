@@ -7,9 +7,8 @@ import com.tamj0rd2.skullking.application.usingTestDoublesByDefault
 import org.http4k.core.Uri
 
 class WebTestScenario(
-    webServer: WebServer = WebServer(outputPorts = OutputPorts.usingTestDoublesByDefault()),
-) : TestScenario,
-    AutoCloseable {
+    webServer: WebServer = WebServer(outputPorts = OutputPorts.usingTestDoublesByDefault())
+) : TestScenario, AutoCloseable {
     private val server = webServer.start()
 
     override fun close() {
@@ -20,7 +19,8 @@ class WebTestScenario(
     private val clients = mutableListOf<SkullKingWebClient>()
 
     override fun newPlayer(): PlayerRole {
-        val webClient = SkullKingWebClient(Uri.of("ws://localhost:${server.port()}")).also { clients.add(it) }
+        val webClient =
+            SkullKingWebClient(Uri.of("ws://localhost:${server.port()}")).also { clients.add(it) }
         return PlayerRole(webClient)
     }
 }

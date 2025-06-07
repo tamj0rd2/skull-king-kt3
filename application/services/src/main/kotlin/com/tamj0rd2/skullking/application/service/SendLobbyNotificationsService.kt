@@ -10,10 +10,7 @@ class SendLobbyNotificationsService(
     private val lobbyRepository: LobbyRepository,
     private val lobbyNotifier: LobbyNotifier,
 ) : EventStoreSubscriber<LobbyId, LobbyEvent> {
-    override fun onEventReceived(
-        entityId: LobbyId,
-        version: Version,
-    ) {
+    override fun onEventReceived(entityId: LobbyId, version: Version) {
         val lobby = lobbyRepository.load(entityId, version)
         val notifications = lobby.state.notifications
         // TODO: rename this to send

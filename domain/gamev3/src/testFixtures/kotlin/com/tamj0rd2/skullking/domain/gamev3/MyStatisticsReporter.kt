@@ -13,41 +13,32 @@ import kotlin.math.max
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalKotest::class)
-class MyStatisticsReporter(
-    private val stream: PrintStream,
-) {
-    fun print(context: PropertyContext) =
-        runBlocking {
-            val iterations = context.attempts()
+class MyStatisticsReporter(private val stream: PrintStream) {
+    fun print(context: PropertyContext) = runBlocking {
+        val iterations = context.attempts()
 
-            val statistics = context.statistics()
-            if (statistics.isEmpty()) {
-                stream.println("No statistics recorded.")
-                return@runBlocking
-            }
-
-            statistics.forEach { (label, stats) ->
-                stream.println()
-                stream.println(header(iterations = iterations, label = label))
-                stream.println()
-                stream.println(stats(stats = stats, iterations = iterations))
-            }
+        val statistics = context.statistics()
+        if (statistics.isEmpty()) {
+            stream.println("No statistics recorded.")
+            return@runBlocking
         }
 
-    private suspend fun header(
-        iterations: Int,
-        label: Label?,
-    ): String {
+        statistics.forEach { (label, stats) ->
+            stream.println()
+            stream.println(header(iterations = iterations, label = label))
+            stream.println()
+            stream.println(stats(stats = stats, iterations = iterations))
+        }
+    }
+
+    private suspend fun header(iterations: Int, label: Label?): String {
         val testName = coroutineContext[TestNameContextElement]?.testName
         val prefix = if (testName == null) "" else "[$testName]"
         val suffix = if (label == null) "" else "[${label.value}]"
         return "Statistics: $prefix ($iterations iterations) $suffix"
     }
 
-    private fun stats(
-        stats: Map<Any?, Int>,
-        iterations: Int,
-    ): String {
+    private fun stats(stats: Map<Any?, Int>, iterations: Int): String {
         val sorted =
             when (PropertyTesting.labelOrder) {
                 LabelOrder.Quantity -> stats.toList().sortedByDescending { it.second }

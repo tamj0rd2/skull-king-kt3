@@ -25,6 +25,5 @@ class WebServerTest :
         val webServer = WebServer(port = Main.DEFAULT_PORT)
     }
 
-    @AutoClose
-    override val scenario = WebTestScenario(webServer)
+    @AutoClose override val scenario = WebTestScenario(webServer)
 }

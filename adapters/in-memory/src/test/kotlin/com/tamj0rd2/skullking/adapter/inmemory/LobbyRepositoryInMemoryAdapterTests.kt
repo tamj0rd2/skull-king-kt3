@@ -8,9 +8,7 @@ import com.tamj0rd2.skullking.domain.game.LobbyId
 import org.junit.platform.commons.annotation.Testable
 
 @Testable
-class LobbyRepositoryInMemoryAdapterTests :
-    LobbyRepositoryContract,
-    EventStoreContract {
+class LobbyRepositoryInMemoryAdapterTests : LobbyRepositoryContract, EventStoreContract {
     override val eventStore = EventStoreInMemoryAdapter<LobbyId, LobbyEvent>()
     override val lobbyRepository: LobbyRepository = LobbyRepository(eventStore)
 }

@@ -6,14 +6,10 @@ import io.kotest.property.arbitrary.arbitrary
 import io.kotest.property.arbitrary.choice
 
 object LobbyNotificationArbs {
-    private val playerJoinedLobbyNotificationArb =
-        arbitrary {
-            val playerId = LobbyArbs.playerIdArb.bind()
-            APlayerHasJoined(playerId)
-        }
+    private val playerJoinedLobbyNotificationArb = arbitrary {
+        val playerId = LobbyArbs.playerIdArb.bind()
+        APlayerHasJoined(playerId)
+    }
 
-    val lobbyNotificationArb =
-        Arb.choice(
-            playerJoinedLobbyNotificationArb,
-        )
+    val lobbyNotificationArb = Arb.choice(playerJoinedLobbyNotificationArb)
 }

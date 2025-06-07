@@ -12,26 +12,23 @@ import strikt.assertions.isSuccess
 
 class BidTest {
     @Test
-    fun `a valid bid is from 0, up to and including 10`() =
-        propertyTest {
-            checkAll((0..10).toList().exhaustive()) { bidAmount ->
-                expectCatching { Bid.of(bidAmount) }.isSuccess()
-            }
+    fun `a valid bid is from 0, up to and including 10`() = propertyTest {
+        checkAll((0..10).toList().exhaustive()) { bidAmount ->
+            expectCatching { Bid.of(bidAmount) }.isSuccess()
         }
+    }
 
     @Test
-    fun `a bid cannot be less than 0`() =
-        propertyTest {
-            checkAll(Arb.negativeInt()) { bidAmount ->
-                expectCatching { Bid.of(bidAmount) }.isFailure()
-            }
+    fun `a bid cannot be less than 0`() = propertyTest {
+        checkAll(Arb.negativeInt()) { bidAmount ->
+            expectCatching { Bid.of(bidAmount) }.isFailure()
         }
+    }
 
     @Test
-    fun `a bid cannot be greater than 10`() =
-        propertyTest {
-            checkAll(Arb.int(min = 11)) { bidAmount ->
-                expectCatching { Bid.of(bidAmount) }.isFailure()
-            }
+    fun `a bid cannot be greater than 10`() = propertyTest {
+        checkAll(Arb.int(min = 11)) { bidAmount ->
+            expectCatching { Bid.of(bidAmount) }.isFailure()
         }
+    }
 }

@@ -11,27 +11,19 @@ import io.kotest.property.arbitrary.list
 import io.kotest.property.arbitrary.set
 
 object LobbyCommandArbs {
-    private val addPlayerLobbyCommandArb =
-        arbitrary {
-            LobbyCommand.AddPlayer(
-                playerId = playerIdArb.bind(),
-            )
-        }
+    private val addPlayerLobbyCommandArb = arbitrary {
+        LobbyCommand.AddPlayer(playerId = playerIdArb.bind())
+    }
 
-    private val startGameLobbyCommandArb =
-        arbitrary {
-            LobbyCommand.StartGame
-        }
+    private val startGameLobbyCommandArb = arbitrary { LobbyCommand.StartGame }
 
-    private val placeBidLobbyCommandArb =
-        arbitrary {
-            LobbyCommand.PlaceBid(playerIdArb.bind(), Arb.validBid.bind())
-        }
+    private val placeBidLobbyCommandArb = arbitrary {
+        LobbyCommand.PlaceBid(playerIdArb.bind(), Arb.validBid.bind())
+    }
 
-    private val playACardLobbyCommandArb =
-        arbitrary {
-            LobbyCommand.PlayACard(playerIdArb.bind(), Card)
-        }
+    private val playACardLobbyCommandArb = arbitrary {
+        LobbyCommand.PlayACard(playerIdArb.bind(), Card)
+    }
 
     private val lobbyCommandArb =
         Arb.choice(
@@ -43,38 +35,37 @@ object LobbyCommandArbs {
 
     private val possiblyInvalidLobbyCommandsArb = Arb.list(lobbyCommandArb)
 
-    val validLobbyCommandsArb =
-        arbitrary {
-            buildList {
-                val addPlayerCommands = Arb.set(addPlayerLobbyCommandArb, Lobby.MINIMUM_PLAYER_COUNT..<Lobby.MAXIMUM_PLAYER_COUNT).bind()
-                addAll(addPlayerCommands)
+    val validLobbyCommandsArb = arbitrary {
+        buildList {
+            val addPlayerCommands =
+                Arb.set(
+                        addPlayerLobbyCommandArb,
+                        Lobby.MINIMUM_PLAYER_COUNT..<Lobby.MAXIMUM_PLAYER_COUNT,
+                    )
+                    .bind()
+            addAll(addPlayerCommands)
 
-                add(startGameLobbyCommandArb.bind())
+            add(startGameLobbyCommandArb.bind())
 
-                // FIXME: this command stuff sucks now :(
-                val bidPlacedCommands =
-                    Arb
-                        .set(placeBidLobbyCommandArb, addPlayerCommands.size, addPlayerCommands.size)
-                        .bind()
-                        .zip(addPlayerCommands)
-                        .map { (a, b) -> a.copy(playerId = b.playerId) }
-                addAll(bidPlacedCommands)
+            // FIXME: this command stuff sucks now :(
+            val bidPlacedCommands =
+                Arb.set(placeBidLobbyCommandArb, addPlayerCommands.size, addPlayerCommands.size)
+                    .bind()
+                    .zip(addPlayerCommands)
+                    .map { (a, b) -> a.copy(playerId = b.playerId) }
+            addAll(bidPlacedCommands)
 
-                val playCardCommands =
-                    Arb
-                        .set(playACardLobbyCommandArb, addPlayerCommands.size, addPlayerCommands.size)
-                        .bind()
-                        .zip(addPlayerCommands)
-                        .map { (a, b) -> a.copy(playerId = b.playerId) }
-                addAll(playCardCommands)
-            }
+            val playCardCommands =
+                Arb.set(playACardLobbyCommandArb, addPlayerCommands.size, addPlayerCommands.size)
+                    .bind()
+                    .zip(addPlayerCommands)
+                    .map { (a, b) -> a.copy(playerId = b.playerId) }
+            addAll(playCardCommands)
         }
+    }
 
     val lobbyCommandsArb =
-        Arb.choose(
-            5 to validLobbyCommandsArb,
-            1 to possiblyInvalidLobbyCommandsArb,
-        )
+        Arb.choose(5 to validLobbyCommandsArb, 1 to possiblyInvalidLobbyCommandsArb)
 }
 
 fun Lobby.mustExecute(command: LobbyCommand) = execute(command).orThrow()

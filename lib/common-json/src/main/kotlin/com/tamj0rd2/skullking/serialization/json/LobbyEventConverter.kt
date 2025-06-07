@@ -34,7 +34,9 @@ object JLobbyEvent : JSealed<LobbyEvent>() {
 
     override fun extractTypeName(obj: LobbyEvent): String {
         val configForThisObj = config.firstOrNull { (clazz, _, _) -> clazz == obj::class }
-        checkNotNull(configForThisObj) { "Configure parsing for event type ${obj::class.java.simpleName}" }
+        checkNotNull(configForThisObj) {
+            "Configure parsing for event type ${obj::class.java.simpleName}"
+        }
         return configForThisObj.second
     }
 }
@@ -44,10 +46,7 @@ private object JLobbyCreated : JAny<LobbyCreatedEvent>() {
     private val createdBy by str(JPlayerId, LobbyCreatedEvent::createdBy)
 
     override fun JsonNodeObject.deserializeOrThrow() =
-        LobbyCreatedEvent(
-            aggregateId = +lobbyId,
-            createdBy = +createdBy,
-        )
+        LobbyCreatedEvent(aggregateId = +lobbyId, createdBy = +createdBy)
 }
 
 private object JPlayerJoined : JAny<PlayerJoinedEvent>() {
@@ -55,30 +54,22 @@ private object JPlayerJoined : JAny<PlayerJoinedEvent>() {
     private val lobbyId by str(JLobbyId, PlayerJoinedEvent::aggregateId)
 
     override fun JsonNodeObject.deserializeOrThrow() =
-        PlayerJoinedEvent(
-            playerId = +playerId,
-            aggregateId = +lobbyId,
-        )
+        PlayerJoinedEvent(playerId = +playerId, aggregateId = +lobbyId)
 }
 
 private object JGameStarted : JAny<GameStartedEvent>() {
     private val lobbyId by str(JLobbyId, GameStartedEvent::aggregateId)
 
-    override fun JsonNodeObject.deserializeOrThrow() =
-        GameStartedEvent(
-            aggregateId = +lobbyId,
-        )
+    override fun JsonNodeObject.deserializeOrThrow() = GameStartedEvent(aggregateId = +lobbyId)
 }
 
 private object JCardDealt : JAny<RoundStartedEvent>() {
     private val lobbyId by str(JLobbyId, RoundStartedEvent::aggregateId)
-    private val cardsDealt by obj(JMap(JPlayerId, JList(JSingleton(Card))), RoundStartedEvent::cardsDealt)
+    private val cardsDealt by
+        obj(JMap(JPlayerId, JList(JSingleton(Card))), RoundStartedEvent::cardsDealt)
 
     override fun JsonNodeObject.deserializeOrThrow() =
-        RoundStartedEvent(
-            aggregateId = +lobbyId,
-            cardsDealt = +cardsDealt,
-        )
+        RoundStartedEvent(aggregateId = +lobbyId, cardsDealt = +cardsDealt)
 }
 
 private object JBidPlaced : JAny<BidPlacedEvent>() {
@@ -87,11 +78,7 @@ private object JBidPlaced : JAny<BidPlacedEvent>() {
     private val bid by num(JBid, BidPlacedEvent::bid)
 
     override fun JsonNodeObject.deserializeOrThrow() =
-        BidPlacedEvent(
-            aggregateId = +lobbyId,
-            playerId = +playerId,
-            bid = +bid,
-        )
+        BidPlacedEvent(aggregateId = +lobbyId, playerId = +playerId, bid = +bid)
 }
 
 private object JCardPlayed : JAny<CardPlayedEvent>() {
@@ -99,9 +86,5 @@ private object JCardPlayed : JAny<CardPlayedEvent>() {
     private val playerId by str(JPlayerId, CardPlayedEvent::playerId)
 
     override fun JsonNodeObject.deserializeOrThrow() =
-        CardPlayedEvent(
-            aggregateId = +lobbyId,
-            playerId = +playerId,
-            card = Card,
-        )
+        CardPlayedEvent(aggregateId = +lobbyId, playerId = +playerId, card = Card)
 }

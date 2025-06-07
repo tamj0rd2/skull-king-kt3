@@ -8,9 +8,8 @@ import com.tamj0rd2.skullking.domain.game.LobbyId
 import com.tamj0rd2.skullking.domain.game.PlayerId
 import dev.forkhandles.result4k.Result4k
 
-internal class PlaceABidController(
-    private val placeABidUseCase: PlaceABidUseCase,
-) : MessageReceiver<PlaceABidMessage> {
+internal class PlaceABidController(private val placeABidUseCase: PlaceABidUseCase) :
+    MessageReceiver<PlaceABidMessage> {
     override fun receive(
         playerId: PlayerId,
         lobbyId: LobbyId,

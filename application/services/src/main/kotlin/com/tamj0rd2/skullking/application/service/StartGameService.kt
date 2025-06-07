@@ -10,12 +10,12 @@ import com.tamj0rd2.skullking.domain.game.LobbyErrorCode
 import dev.forkhandles.result4k.Result4k
 import dev.forkhandles.result4k.onFailure
 
-class StartGameService(
-    private val lobbyRepository: LobbyRepository,
-) : StartGameUseCase {
+class StartGameService(private val lobbyRepository: LobbyRepository) : StartGameUseCase {
     override fun invoke(command: StartGameCommand): Result4k<StartGameOutput, LobbyErrorCode> {
         val game = lobbyRepository.load(command.lobbyId)
-        game.execute(LobbyCommand.StartGame).onFailure { return it }
+        game.execute(LobbyCommand.StartGame).onFailure {
+            return it
+        }
         lobbyRepository.save(game)
         return StartGameOutput.asSuccess()
     }

@@ -12,7 +12,5 @@ interface CreateNewLobbyUseCase {
         val lobbyNotificationListener: LobbyNotificationListener,
     )
 
-    data class CreateNewLobbyOutput(
-        val lobbyId: LobbyId,
-    )
+    data class CreateNewLobbyOutput(val lobbyId: LobbyId)
 }

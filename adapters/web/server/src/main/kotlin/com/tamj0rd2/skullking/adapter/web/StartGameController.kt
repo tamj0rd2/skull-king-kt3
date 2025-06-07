@@ -8,19 +8,14 @@ import com.tamj0rd2.skullking.domain.game.LobbyId
 import com.tamj0rd2.skullking.domain.game.PlayerId
 import dev.forkhandles.result4k.Result4k
 
-internal class StartGameController(
-    private val startGameUseCase: StartGameUseCase,
-) : MessageReceiver<StartGameMessage> {
+internal class StartGameController(private val startGameUseCase: StartGameUseCase) :
+    MessageReceiver<StartGameMessage> {
     override fun receive(
         playerId: PlayerId,
         lobbyId: LobbyId,
         message: StartGameMessage,
     ): Result4k<*, LobbyErrorCode> {
-        val command =
-            StartGameCommand(
-                lobbyId = lobbyId,
-                playerId = playerId,
-            )
+        val command = StartGameCommand(lobbyId = lobbyId, playerId = playerId)
 
         return startGameUseCase.invoke(command)
     }

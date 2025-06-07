@@ -26,28 +26,33 @@ object GameArbs {
     val Arb.Companion.command
         get() =
             Arb.sealed<GameCommand>(
-                mapOf(PlayerOriginatedCommand::class to Arb.sealed<PlayerOriginatedCommand>()),
+                mapOf(PlayerOriginatedCommand::class to Arb.sealed<PlayerOriginatedCommand>())
             )
 
-    val Arb.Companion.game get() = Arb.choice(Arb.gameBuiltFromScratch, Arb.reconstitutedGame)
+    val Arb.Companion.game
+        get() = Arb.choice(Arb.gameBuiltFromScratch, Arb.reconstitutedGame)
 
-    val Arb<Game>.andACommand get() = flatMap { game -> Arb.pair(arbitrary { game }, Arb.commandDependentOnGame(game)) }
+    val Arb<Game>.andACommand
+        get() = flatMap { game -> Arb.pair(arbitrary { game }, Arb.commandDependentOnGame(game)) }
 
     private fun Arb.Companion.commandDependentOnGame(game: Game): Arb<GameCommand> {
-        val baseCommandArb = Arb.sealed<GameCommand>(mapOf(PlayerOriginatedCommand::class to Arb.sealed<PlayerOriginatedCommand>()))
+        val baseCommandArb =
+            Arb.sealed<GameCommand>(
+                mapOf(PlayerOriginatedCommand::class to Arb.sealed<PlayerOriginatedCommand>())
+            )
 
-        val arbForCommandWithMoreAccuratePlayerId =
-            arbitrary { rs ->
-                val command = baseCommandArb.bind()
-                if (game.state is InProgress && command is PlayerOriginatedCommand) {
-                    command.overridePlayerId(game.state.players.random(rs.random)) as GameCommand
-                } else {
-                    command
-                }
+        val arbForCommandWithMoreAccuratePlayerId = arbitrary { rs ->
+            val command = baseCommandArb.bind()
+            if (game.state is InProgress && command is PlayerOriginatedCommand) {
+                command.overridePlayerId(game.state.players.random(rs.random)) as GameCommand
+            } else {
+                command
             }
+        }
 
         return Arb.choose(
-            // TODO: command with playerId not in the game is an edge case, not a standard case. how can I make this clear?
+            // TODO: command with playerId not in the game is an edge case, not a standard case. how
+            // can I make this clear?
             1 to baseCommandArb,
             10 to arbForCommandWithMoreAccuratePlayerId,
         )
@@ -69,13 +74,18 @@ object GameArbs {
         get() =
             Arb.choice(
                 // TODO: relax the range here.
-                Arb.list(Arb.event, 0..20).map { Game.reconstitute(it) },
-                // NOTE: add cases where the events all relate to the same game. That should make the gen faster.
-                // NOTE: also add cases where the gameStarted event is first. That should make the gen faster.
+                Arb.list(Arb.event, 0..20).map { Game.reconstitute(it) }
+                // NOTE: add cases where the events all relate to the same game. That should make
+                // the gen faster.
+                // NOTE: also add cases where the gameStarted event is first. That should make the
+                // gen faster.
             )
 
-    private val Arb.Companion.gameId get() = arbitrary { SomeGameId.random(it.random) }
-    private val Arb.Companion.playerId get() = arbitrary { SomePlayerId.random(it.random) }
+    private val Arb.Companion.gameId
+        get() = arbitrary { SomeGameId.random(it.random) }
+
+    private val Arb.Companion.playerId
+        get() = arbitrary { SomePlayerId.random(it.random) }
 
     private val providedArbs =
         mapOf<KClass<*>, Arb<*>>(
@@ -91,22 +101,21 @@ object GameArbs {
 
     @OptIn(DelicateKotest::class)
     @Suppress("NO_REFLECTION_IN_CLASS_PATH")
-    private val Arb.Companion.event get() = Arb.sealed<GameEvent>()
+    private val Arb.Companion.event
+        get() = Arb.sealed<GameEvent>()
 
     private val Arb.Companion.gameStartedEvent
         get() =
-            Arb
-                .bind(
-                    Arb.gameId,
-                    Arb.set(Arb.playerId, 0..10),
-                    GameStartedEvent::new,
-                ).validOnly()
+            Arb.bind(Arb.gameId, Arb.set(Arb.playerId, 0..10), GameStartedEvent::new).validOnly()
 
-    fun <T> Arb<Result4k<T, *>>.validOnly(): Arb<T> = filter { it is Success }.map { it.valueOrNull()!! }
+    fun <T> Arb<Result4k<T, *>>.validOnly(): Arb<T> =
+        filter { it is Success }.map { it.valueOrNull()!! }
 
     @OptIn(DelicateKotest::class)
     @Suppress("NO_REFLECTION_IN_CLASS_PATH", "UNCHECKED_CAST")
-    private inline fun <reified T> Arb.Companion.sealed(moreProvidedArbs: Map<KClass<*>, Arb<*>> = emptyMap()): Arb<T> {
+    private inline fun <reified T> Arb.Companion.sealed(
+        moreProvidedArbs: Map<KClass<*>, Arb<*>> = emptyMap()
+    ): Arb<T> {
         val clazz = T::class
         if (!clazz.isSealed) error("Class ${clazz.simpleName} is not sealed")
 
@@ -117,7 +126,7 @@ object GameArbs {
                 subclass.objectInstance?.let { Arb.constant(it) }
                     ?: allProvidedArbs[subclass]
                     ?: Arb.bind(allProvidedArbs, subclass)
-            },
+            }
         ) as Arb<T>
     }
 

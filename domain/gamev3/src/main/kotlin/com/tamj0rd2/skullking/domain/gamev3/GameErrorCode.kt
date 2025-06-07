@@ -7,10 +7,8 @@ sealed class GameErrorCode : IllegalStateException() {
 
     data object TooManyPlayers : GameErrorCode()
 
-    data class CannotApplyEventInCurrentState(
-        val state: GameState,
-        val event: GameEvent,
-    ) : GameErrorCode()
+    data class CannotApplyEventInCurrentState(val state: GameState, val event: GameEvent) :
+        GameErrorCode()
 
     sealed class CannotReconstituteGame : GameErrorCode() {
         data object NoEvents : CannotReconstituteGame()

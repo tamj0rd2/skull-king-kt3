@@ -9,6 +9,5 @@ import org.junit.platform.commons.annotation.Testable
 class PlaceABidWebAdapterTest : PlaceABidUseCaseContract {
     override val propertyTestIterations = 10
 
-    @AutoClose
-    override val scenario: TestScenario = WebTestScenario()
+    @AutoClose override val scenario: TestScenario = WebTestScenario()
 }

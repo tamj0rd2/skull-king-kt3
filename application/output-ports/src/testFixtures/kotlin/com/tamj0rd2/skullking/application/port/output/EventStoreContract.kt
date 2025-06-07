@@ -10,6 +10,7 @@ import com.tamj0rd2.skullking.domain.game.PlayerId
 import com.tamj0rd2.skullking.domain.game.PlayerJoinedEvent
 import com.tamj0rd2.skullking.domain.game.Version
 import dev.forkhandles.values.random
+import java.time.Instant
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import strikt.api.expectThat
@@ -18,9 +19,9 @@ import strikt.assertions.isEqualTo
 import strikt.assertions.isNotEmpty
 import strikt.assertions.isNotEqualTo
 import strikt.assertions.single
-import java.time.Instant
 
-// NOTE: this test doesn't necessarily have to be about the LobbyEvent entity. It was just convenient.
+// NOTE: this test doesn't necessarily have to be about the LobbyEvent entity. It was just
+// convenient.
 interface EventStoreContract {
     val eventStore: EventStore<LobbyId, LobbyEvent>
 
@@ -46,7 +47,10 @@ interface EventStoreContract {
         eventStore.append(lobbyId, Version.NONE, eventsToAppend)
 
         eventually {
-            expectThat(subscriber.calls.filter { it.entityId == lobbyId }).single().get { version }.isEqualTo(Version.INITIAL)
+            expectThat(subscriber.calls.filter { it.entityId == lobbyId })
+                .single()
+                .get { version }
+                .isEqualTo(Version.INITIAL)
         }
     }
 
@@ -59,7 +63,11 @@ interface EventStoreContract {
     @Test
     fun `when optimistic concurrency fails, an error is thrown`() {
         val lobbyId = LobbyId.random()
-        eventStore.append(lobbyId, Version.NONE, listOf(LobbyCreatedEvent(lobbyId, PlayerId.random())))
+        eventStore.append(
+            lobbyId,
+            Version.NONE,
+            listOf(LobbyCreatedEvent(lobbyId, PlayerId.random())),
+        )
 
         val eventThatBobWantsToAppend = PlayerJoinedEvent(lobbyId, PlayerId.random())
         val eventThatSammyWantsToAppend = PlayerJoinedEvent(lobbyId, PlayerId.random())
@@ -72,7 +80,8 @@ interface EventStoreContract {
             events = listOf(eventThatBobWantsToAppend),
         )
 
-        // should fail because the latest event version has changed as a side effect of Bob committing his changes.
+        // should fail because the latest event version has changed as a side effect of Bob
+        // committing his changes.
         expectThrows<ConcurrentModificationException> {
             eventStore.append(
                 entityId = lobbyId,
@@ -81,8 +90,10 @@ interface EventStoreContract {
             )
         }
 
-        // this should work because Sammy has now used the correct expected version. In practice, the caller should
-        // re-load the events/entity, and use the updated state to decide whether the command should still be executed.
+        // this should work because Sammy has now used the correct expected version. In practice,
+        // the caller should
+        // re-load the events/entity, and use the updated state to decide whether the command should
+        // still be executed.
         eventStore.append(
             entityId = lobbyId,
             expectedVersion = Version.of(2),
@@ -94,7 +105,11 @@ interface EventStoreContract {
     @Test
     fun `writes are idempotent if trying to make exactly the same change for exactly the same version`() {
         val lobbyId = LobbyId.random()
-        eventStore.append(lobbyId, Version.NONE, listOf(LobbyCreatedEvent(lobbyId, PlayerId.random())))
+        eventStore.append(
+            lobbyId,
+            Version.NONE,
+            listOf(LobbyCreatedEvent(lobbyId, PlayerId.random())),
+        )
 
         val eventsToAppend = listOf(PlayerJoinedEvent(lobbyId, PlayerId.random()))
 
@@ -132,19 +147,15 @@ interface EventStoreContract {
         }
     }
 
-    private class SpyEventStoreSubscriber<ID : AggregateId, E : Event<ID>> : EventStoreSubscriber<ID, E> {
-        data class Call<ID>(
-            val entityId: ID,
-            val version: Version,
-        )
+    private class SpyEventStoreSubscriber<ID : AggregateId, E : Event<ID>> :
+        EventStoreSubscriber<ID, E> {
+        data class Call<ID>(val entityId: ID, val version: Version)
 
         private val _calls = mutableListOf<Call<ID>>()
-        val calls get() = _calls.toList()
+        val calls
+            get() = _calls.toList()
 
-        override fun onEventReceived(
-            entityId: ID,
-            version: Version,
-        ) {
+        override fun onEventReceived(entityId: ID, version: Version) {
             _calls.add(Call(entityId, version))
         }
     }

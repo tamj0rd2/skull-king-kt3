@@ -8,9 +8,8 @@ import com.tamj0rd2.skullking.domain.game.LobbyId
 import com.tamj0rd2.skullking.domain.game.PlayerId
 import org.http4k.core.Request
 
-internal class CreateLobbyController(
-    private val createNewLobbyUseCase: CreateNewLobbyUseCase,
-) : EstablishesAPlayerSession {
+internal class CreateLobbyController(private val createNewLobbyUseCase: CreateNewLobbyUseCase) :
+    EstablishesAPlayerSession {
     override fun establishPlayerSession(
         req: Request,
         sendAMessage: SendAMessage,

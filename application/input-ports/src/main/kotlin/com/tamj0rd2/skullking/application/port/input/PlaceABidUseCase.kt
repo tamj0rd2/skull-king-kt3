@@ -7,11 +7,7 @@ import com.tamj0rd2.skullking.domain.game.PlayerId
 import dev.forkhandles.result4k.Result4k
 
 interface PlaceABidUseCase {
-    data class PlaceABidCommand(
-        val lobbyId: LobbyId,
-        val playerId: PlayerId,
-        val bid: Bid,
-    )
+    data class PlaceABidCommand(val lobbyId: LobbyId, val playerId: PlayerId, val bid: Bid)
 
     data object PlaceABidOutput
 

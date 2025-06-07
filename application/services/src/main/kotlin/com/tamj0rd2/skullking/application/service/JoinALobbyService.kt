@@ -16,7 +16,9 @@ class JoinALobbyService(
 ) : JoinALobbyUseCase {
     override fun invoke(command: JoinALobbyCommand): Result4k<JoinALobbyOutput, LobbyErrorCode> {
         val game = lobbyRepository.load(command.lobbyId)
-        game.execute(LobbyCommand.AddPlayer(command.playerId)).onFailure { return it }
+        game.execute(LobbyCommand.AddPlayer(command.playerId)).onFailure {
+            return it
+        }
         lobbyRepository.save(game)
 
         lobbyNotifier.subscribe(game.id, command.playerId, command.lobbyNotificationListener)

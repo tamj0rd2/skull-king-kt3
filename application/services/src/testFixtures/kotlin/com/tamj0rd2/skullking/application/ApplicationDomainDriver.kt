@@ -7,6 +7,4 @@ fun SkullKingApplication.Companion.usingTestDoublesByDefault(): SkullKingApplica
     constructFromPorts(OutputPorts.usingTestDoublesByDefault())
 
 fun OutputPorts.Companion.usingTestDoublesByDefault(): OutputPorts =
-    OutputPorts(
-        lobbyEventStore = EventStoreInMemoryAdapter(),
-    )
+    OutputPorts(lobbyEventStore = EventStoreInMemoryAdapter())

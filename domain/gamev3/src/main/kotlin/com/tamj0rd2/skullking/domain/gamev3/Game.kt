@@ -9,7 +9,8 @@ import dev.forkhandles.values.random
 
 typealias GameResult = Result4k<Game, GameErrorCode>
 
-data class Game private constructor(
+data class Game
+private constructor(
     val id: GameId,
     val events: List<GameEvent> = emptyList(),
     val state: GameState = GameState.NotStarted,
@@ -23,8 +24,10 @@ data class Game private constructor(
         fun reconstitute(events: List<GameEvent>): GameResult {
             when {
                 events.isEmpty() -> return GameErrorCode.CannotReconstituteGame.NoEvents.asFailure()
-                events.first() !is GameStartedEvent -> return GameErrorCode.CannotReconstituteGame.InvalidFirstEvent.asFailure()
-                events.map { it.id }.toSet().size > 1 -> return GameErrorCode.CannotReconstituteGame.MultipleGameIds.asFailure()
+                events.first() !is GameStartedEvent ->
+                    return GameErrorCode.CannotReconstituteGame.InvalidFirstEvent.asFailure()
+                events.map { it.id }.toSet().size > 1 ->
+                    return GameErrorCode.CannotReconstituteGame.MultipleGameIds.asFailure()
             }
 
             val initial = Game((events.first() as GameStartedEvent).id)
@@ -51,8 +54,12 @@ data class Game private constructor(
 
     private fun appendEvent(event: GameEvent): GameResult {
         return copy(
-            events = events + event,
-            state = state.apply(event).onFailure { return it },
-        ).asSuccess()
+                events = events + event,
+                state =
+                    state.apply(event).onFailure {
+                        return it
+                    },
+            )
+            .asSuccess()
     }
 }

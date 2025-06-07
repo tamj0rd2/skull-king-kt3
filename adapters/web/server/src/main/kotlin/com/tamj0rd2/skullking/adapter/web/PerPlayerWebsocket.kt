@@ -5,10 +5,7 @@ import com.tamj0rd2.skullking.domain.game.PlayerId
 import org.http4k.websocket.Websocket
 import org.slf4j.LoggerFactory
 
-class PerPlayerWebsocket(
-    private val ws: Websocket,
-    playerId: PlayerId,
-) : SendAMessage {
+class PerPlayerWebsocket(private val ws: Websocket, playerId: PlayerId) : SendAMessage {
     private val logger = LoggerFactory.getLogger("server: $playerId")
 
     override fun send(message: MessageToClient) {

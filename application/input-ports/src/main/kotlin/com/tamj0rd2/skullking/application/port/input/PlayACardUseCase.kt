@@ -7,11 +7,7 @@ import com.tamj0rd2.skullking.domain.game.PlayerId
 import dev.forkhandles.result4k.Result4k
 
 interface PlayACardUseCase {
-    data class PlayACardCommand(
-        val lobbyId: LobbyId,
-        val playerId: PlayerId,
-        val card: Card,
-    )
+    data class PlayACardCommand(val lobbyId: LobbyId, val playerId: PlayerId, val card: Card)
 
     data object PlayACardOutput
 

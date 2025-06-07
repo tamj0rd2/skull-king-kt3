@@ -8,6 +8,5 @@ import org.junit.platform.commons.annotation.Testable
 class JoinLobbyWebAdapterTest : JoinALobbyUseCaseContract {
     override val propertyTestIterations = 10
 
-    @AutoClose
-    override val scenario = WebTestScenario()
+    @AutoClose override val scenario = WebTestScenario()
 }

@@ -27,12 +27,17 @@ class ArchitectureTest {
 
     @Test
     fun `the application does not depend on adapters`() {
-        Konsist.scopeFromProduction().assertArchitecture { applicationLayer.doesNotDependOn(adapterLayer) }
+        Konsist.scopeFromProduction().assertArchitecture {
+            applicationLayer.doesNotDependOn(adapterLayer)
+        }
     }
 
     @Test
     fun `use cases live in the application layer`() {
-        val scope = Konsist.scopeFromProduction().classesAndInterfacesAndObjects().withNameEndingWith("UseCase")
+        val scope =
+            Konsist.scopeFromProduction()
+                .classesAndInterfacesAndObjects()
+                .withNameEndingWith("UseCase")
         scope.assertNotEmpty()
         scope.assertTrue { it.resideInPackage("com.tamj0rd2.skullking.application..") }
     }
@@ -40,8 +45,7 @@ class ArchitectureTest {
     @Test
     fun `use case implementations live in the application layer`() {
         val scope =
-            Konsist
-                .scopeFromProduction()
+            Konsist.scopeFromProduction()
                 .classesAndInterfacesAndObjects()
                 .withoutNameEndingWith("Application", "UseCases")
                 .withParentInterface { it.hasNameEndingWith("UseCase") }

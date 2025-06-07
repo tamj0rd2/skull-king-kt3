@@ -27,10 +27,9 @@ sealed class GameState {
 
         override fun apply(event: GameEvent): GameStateResult {
             return when (event) {
-                is GameStartedEvent -> return AwaitingNextRound(
-                    players = event.players,
-                    roundNumber = RoundNumber.One,
-                ).asSuccess()
+                is GameStartedEvent ->
+                    return AwaitingNextRound(players = event.players, roundNumber = RoundNumber.One)
+                        .asSuccess()
 
                 else -> CannotApplyEventInCurrentState(this, event).asFailure()
             }
@@ -71,11 +70,8 @@ sealed class GameState {
             }
 
         private fun startTrick(): GameStateResult =
-            TrickTaking(
-                players = players,
-                roundNumber = roundNumber,
-                trickNumber = TrickNumber.One,
-            ).asSuccess()
+            TrickTaking(players = players, roundNumber = roundNumber, trickNumber = TrickNumber.One)
+                .asSuccess()
 
         private fun addPlayerBid(event: BidPlacedEvent): GameStateResult {
             when {

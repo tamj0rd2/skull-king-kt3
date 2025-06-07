@@ -5,10 +5,7 @@ import dev.forkhandles.values.Value
 import dev.forkhandles.values.minValue
 
 @JvmInline
-value class Version private constructor(
-    override val value: Int,
-) : Value<Int>,
-    Comparable<Version> {
+value class Version private constructor(override val value: Int) : Value<Int>, Comparable<Version> {
     fun next(): Version = Version.of(value + 1)
 
     fun previous(): Version = Version.of(value - 1)

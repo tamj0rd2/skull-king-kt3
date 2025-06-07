@@ -19,13 +19,9 @@ import org.http4k.websocket.WsMessage
 sealed interface MessageFromClient {
     data object StartGameMessage : MessageFromClient
 
-    data class PlaceABidMessage(
-        val bid: Bid,
-    ) : MessageFromClient
+    data class PlaceABidMessage(val bid: Bid) : MessageFromClient
 
-    data class PlayACardMessage(
-        val card: Card,
-    ) : MessageFromClient
+    data class PlayACardMessage(val card: Card) : MessageFromClient
 }
 
 val messageFromClient =

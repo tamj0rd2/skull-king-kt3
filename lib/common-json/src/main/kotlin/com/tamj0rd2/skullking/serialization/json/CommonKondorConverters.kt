@@ -25,8 +25,6 @@ object JBid : JNumRepresentable<Bid>() {
     override val render: (Bid) -> Number = { JInt.render(it.value) }
 }
 
-class JSingleton<T : Any>(
-    private val instance: T,
-) : JAny<T>() {
+class JSingleton<T : Any>(private val instance: T) : JAny<T>() {
     override fun JsonNodeObject.deserializeOrThrow() = instance
 }

@@ -7,11 +7,9 @@ import java.util.UUID
 sealed interface GameId
 
 @JvmInline
-value class SomeGameId private constructor(
-    override val value: UUID,
-) : GameId,
-    Value<UUID> {
-    companion object : UUIDValueFactory<SomeGameId>(::SomeGameId, validation = { it != UUID(0, 0) })
+value class SomeGameId private constructor(override val value: UUID) : GameId, Value<UUID> {
+    companion object :
+        UUIDValueFactory<SomeGameId>(::SomeGameId, validation = { it != UUID(0, 0) })
 }
 
 data object NoGameId : GameId

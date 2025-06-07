@@ -8,16 +8,14 @@ sealed interface GameEvent {
     val id: GameId
 }
 
-data class GameStartedEvent private constructor(
+data class GameStartedEvent
+private constructor(
     override val id: GameId,
     // TODO: should be SomePlayerId
     val players: Set<PlayerId>,
 ) : GameEvent {
     companion object {
-        fun new(
-            id: GameId,
-            players: Set<PlayerId>,
-        ): Result<GameStartedEvent, GameErrorCode> =
+        fun new(id: GameId, players: Set<PlayerId>): Result<GameStartedEvent, GameErrorCode> =
             when {
                 players.size < 2 -> GameErrorCode.NotEnoughPlayers.asFailure()
                 players.size > 6 -> GameErrorCode.TooManyPlayers.asFailure()
@@ -26,22 +24,12 @@ data class GameStartedEvent private constructor(
     }
 }
 
-data class RoundStartedEvent(
-    override val id: GameId,
-) : GameEvent
+data class RoundStartedEvent(override val id: GameId) : GameEvent
 
-data class BidPlacedEvent(
-    override val id: GameId,
-    val playerId: PlayerId,
-    val bid: SomeBid,
-) : GameEvent
+data class BidPlacedEvent(override val id: GameId, val playerId: PlayerId, val bid: SomeBid) :
+    GameEvent
 
-data class TrickStartedEvent(
-    override val id: GameId,
-) : GameEvent
+data class TrickStartedEvent(override val id: GameId) : GameEvent
 
-data class CardPlayedEvent(
-    override val id: GameId,
-    val playerId: PlayerId,
-    val card: Card,
-) : GameEvent
+data class CardPlayedEvent(override val id: GameId, val playerId: PlayerId, val card: Card) :
+    GameEvent

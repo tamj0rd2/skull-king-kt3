@@ -8,10 +8,7 @@ import dev.forkhandles.result4k.Result4k
 interface StartGameUseCase {
     operator fun invoke(command: StartGameCommand): Result4k<StartGameOutput, LobbyErrorCode>
 
-    data class StartGameCommand(
-        val lobbyId: LobbyId,
-        val playerId: PlayerId,
-    )
+    data class StartGameCommand(val lobbyId: LobbyId, val playerId: PlayerId)
 
     data object StartGameOutput
 }

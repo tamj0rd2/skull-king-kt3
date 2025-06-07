@@ -36,21 +36,30 @@ class LobbyUpdateNotifierTest {
                 Arb.list(LobbyNotificationArbs.lobbyNotificationArb),
                 LobbyArbs.lobbyIdArb,
                 LobbyArbs.lobbyIdArb,
-            ) { listenerCount, lobbyNotifications, gameUpdateForAnotherGame, thisLobbyId, anotherLobbyId ->
+            ) {
+                listenerCount,
+                lobbyNotifications,
+                gameUpdateForAnotherGame,
+                thisLobbyId,
+                anotherLobbyId ->
                 val spyListenersForThisGame =
-                    listOfSize(listenerCount, ::SpyLobbyNotificationListener)
-                        .onEach { sut.subscribe(thisLobbyId, PlayerId.random(), it) }
+                    listOfSize(listenerCount, ::SpyLobbyNotificationListener).onEach {
+                        sut.subscribe(thisLobbyId, PlayerId.random(), it)
+                    }
 
                 lobbyNotifications.forEach { sut.broadcast(thisLobbyId, listOf(it)) }
                 gameUpdateForAnotherGame.forEach { sut.broadcast(anotherLobbyId, listOf(it)) }
-                expectThat(spyListenersForThisGame).all { get { receivedUpdates }.isEqualTo(lobbyNotifications) }
+                expectThat(spyListenersForThisGame).all {
+                    get { receivedUpdates }.isEqualTo(lobbyNotifications)
+                }
             }
         }
 
     @Test
     fun `subscribers do not receive messages that weren't intended for them`() {
         val intendedPlayer = PlayerId.random()
-        val playerSpecificNotification = CardsWereDealt(listOf(Card, Card), recipient = Someone(intendedPlayer))
+        val playerSpecificNotification =
+            CardsWereDealt(listOf(Card, Card), recipient = Someone(intendedPlayer))
         val nonPlayerSpecificNotification = TheGameHasStarted
         val lobbyId = LobbyId.random()
 
@@ -61,8 +70,12 @@ class LobbyUpdateNotifierTest {
 
         sut.broadcast(lobbyId, listOf(playerSpecificNotification, nonPlayerSpecificNotification))
 
-        expectThat(intendedSubscriber).get { receivedUpdates }.isEqualTo(listOf(playerSpecificNotification, nonPlayerSpecificNotification))
-        expectThat(unintendedSubscriber).get { receivedUpdates }.isEqualTo(listOf(nonPlayerSpecificNotification))
+        expectThat(intendedSubscriber)
+            .get { receivedUpdates }
+            .isEqualTo(listOf(playerSpecificNotification, nonPlayerSpecificNotification))
+        expectThat(unintendedSubscriber)
+            .get { receivedUpdates }
+            .isEqualTo(listOf(nonPlayerSpecificNotification))
     }
 
     @Test
@@ -74,11 +87,14 @@ class LobbyUpdateNotifierTest {
                 LobbyArbs.lobbyIdArb,
             ) { listenerCount, lobbyNotifications, lobbyId ->
                 val alreadySubscribedListeners =
-                    listOfSize(listenerCount, ::SpyLobbyNotificationListener)
-                        .onEach { sut.subscribe(lobbyId, PlayerId.random(), it) }
+                    listOfSize(listenerCount, ::SpyLobbyNotificationListener).onEach {
+                        sut.subscribe(lobbyId, PlayerId.random(), it)
+                    }
 
                 lobbyNotifications.forEach { sut.broadcast(lobbyId, listOf(it)) }
-                expectThat(alreadySubscribedListeners).all { get { receivedUpdates }.isEqualTo(lobbyNotifications) }
+                expectThat(alreadySubscribedListeners).all {
+                    get { receivedUpdates }.isEqualTo(lobbyNotifications)
+                }
 
                 val lateSubscriber = SpyLobbyNotificationListener()
                 sut.subscribe(lobbyId, PlayerId.random(), lateSubscriber)
@@ -88,7 +104,8 @@ class LobbyUpdateNotifierTest {
 
     @Test
     fun `when a listener subscribes late, they receive all updates already broadcast, except notifications sent to specific players`() {
-        val playerSpecificNotification = CardsWereDealt(listOf(Card, Card), recipient = Someone(PlayerId.random()))
+        val playerSpecificNotification =
+            CardsWereDealt(listOf(Card, Card), recipient = Someone(PlayerId.random()))
         val nonPlayerSpecificNotification = TheGameHasStarted
         val lobbyId = LobbyId.random()
 
@@ -96,12 +113,15 @@ class LobbyUpdateNotifierTest {
 
         val lateSubscriber = SpyLobbyNotificationListener()
         sut.subscribe(lobbyId, PlayerId.random(), lateSubscriber)
-        expectThat(lateSubscriber).get { receivedUpdates }.isEqualTo(listOf(nonPlayerSpecificNotification))
+        expectThat(lateSubscriber)
+            .get { receivedUpdates }
+            .isEqualTo(listOf(nonPlayerSpecificNotification))
     }
 
     private class SpyLobbyNotificationListener : LobbyNotificationListener {
         private val _receivedUpdates = mutableListOf<LobbyNotification>()
-        val receivedUpdates get() = _receivedUpdates.toList()
+        val receivedUpdates
+            get() = _receivedUpdates.toList()
 
         override fun receive(updates: List<LobbyNotification>) {
             _receivedUpdates += updates

@@ -12,7 +12,8 @@ import io.kotest.property.arbitrary.single
 import org.junit.jupiter.api.Test
 
 interface PlaceABidUseCaseContract : UseCaseContract {
-    val propertyTestIterations: Int get() = 1000
+    val propertyTestIterations: Int
+        get() = 1000
 
     @Test
     fun `when a player bids, other players can see that they have bid, but not what it is`() {
@@ -26,13 +27,9 @@ interface PlaceABidUseCaseContract : UseCaseContract {
             gameCreator.`starts the game`()
         }
 
-        When {
-            gameCreator.`places a bid`(randomBid())
-        }
+        When { gameCreator.`places a bid`(randomBid()) }
 
-        Then {
-            anotherPlayer.`sees that a bid has been placed by`(gameCreator.id)
-        }
+        Then { anotherPlayer.`sees that a bid has been placed by`(gameCreator.id) }
     }
 
     @Test

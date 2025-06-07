@@ -15,8 +15,6 @@ class CreateNewLobbyService(
         lobbyRepository.save(lobby)
         lobbyNotifier.subscribe(lobby.id, command.playerId, command.lobbyNotificationListener)
 
-        return CreateNewLobbyOutput(
-            lobbyId = lobby.id,
-        )
+        return CreateNewLobbyOutput(lobbyId = lobby.id)
     }
 }

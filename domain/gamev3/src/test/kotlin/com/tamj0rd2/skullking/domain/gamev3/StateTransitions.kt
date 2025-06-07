@@ -38,15 +38,14 @@ class StateTransitions {
         propertyTest {
             checkAll(
                 propTestConfig,
-                // TODO: can we filter while the arbs are being generated rather than after? might need to write my own arb
-                Arb.game
-                    .validOnly()
-                    .filter { it.state is Bidding }
-                    .andACommand,
+                // TODO: can we filter while the arbs are being generated rather than after? might
+                // need to write my own arb
+                Arb.game.validOnly().filter { it.state is Bidding }.andACommand,
             ) { (initialGame, command) ->
                 val updatedGame = initialGame.execute(command).assumeWasSuccessful()
                 collectCommand(command)
-                expectThat(updatedGame.state.name).isContainedIn(setOf(GameStateName.Bidding, GameStateName.TrickTaking))
+                expectThat(updatedGame.state.name)
+                    .isContainedIn(setOf(GameStateName.Bidding, GameStateName.TrickTaking))
             }
         }
     }

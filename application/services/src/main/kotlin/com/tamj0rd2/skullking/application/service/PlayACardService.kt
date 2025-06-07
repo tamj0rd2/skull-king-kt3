@@ -10,9 +10,7 @@ import com.tamj0rd2.skullking.domain.game.LobbyErrorCode
 import dev.forkhandles.result4k.Result4k
 import dev.forkhandles.result4k.orThrow
 
-class PlayACardService(
-    private val lobbyRepository: LobbyRepository,
-) : PlayACardUseCase {
+class PlayACardService(private val lobbyRepository: LobbyRepository) : PlayACardUseCase {
     override fun invoke(command: PlayACardCommand): Result4k<PlayACardOutput, LobbyErrorCode> {
         val lobby = lobbyRepository.load(command.lobbyId)
         lobby.execute(LobbyCommand.PlayACard(command.playerId, command.card)).orThrow()

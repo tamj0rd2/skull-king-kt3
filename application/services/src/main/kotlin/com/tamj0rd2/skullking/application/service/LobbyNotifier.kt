@@ -10,22 +10,16 @@ import com.tamj0rd2.skullking.domain.game.PlayerId
 class LobbyNotifier {
     private val notifiers = mutableMapOf<LobbyId, LobbySpecificNotifier>()
 
-    fun subscribe(
-        lobbyId: LobbyId,
-        playerId: PlayerId,
-        listener: LobbyNotificationListener,
-    ) {
+    fun subscribe(lobbyId: LobbyId, playerId: PlayerId, listener: LobbyNotificationListener) {
         getNotifierForLobby(lobbyId).addListenerAndSendMissedUpdates(playerId, listener)
     }
 
-    fun broadcast(
-        lobbyId: LobbyId,
-        updates: List<LobbyNotification>,
-    ) {
+    fun broadcast(lobbyId: LobbyId, updates: List<LobbyNotification>) {
         getNotifierForLobby(lobbyId).send(updates)
     }
 
-    private fun getNotifierForLobby(lobbyId: LobbyId) = notifiers[lobbyId] ?: LobbySpecificNotifier().also { notifiers[lobbyId] = it }
+    private fun getNotifierForLobby(lobbyId: LobbyId) =
+        notifiers[lobbyId] ?: LobbySpecificNotifier().also { notifiers[lobbyId] = it }
 
     private class LobbySpecificNotifier {
         private val listeners = mutableMapOf<PlayerId, LobbyNotificationListener>()
@@ -53,12 +47,11 @@ class LobbyNotifier {
             }
         }
 
-        private fun List<LobbyNotification>.intendedFor(playerId: PlayerId) =
-            filter {
-                when (val recipient = it.recipient) {
-                    Everyone -> true
-                    is Someone -> recipient.playerId == playerId
-                }
+        private fun List<LobbyNotification>.intendedFor(playerId: PlayerId) = filter {
+            when (val recipient = it.recipient) {
+                Everyone -> true
+                is Someone -> recipient.playerId == playerId
             }
+        }
     }
 }

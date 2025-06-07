@@ -28,6 +28,7 @@ import com.tamj0rd2.skullking.domain.game.PlayerId
 import com.tamj0rd2.skullking.domain.game.RoundNumber
 import dev.forkhandles.result4k.orThrow
 import dev.forkhandles.values.random
+import java.time.Instant
 import strikt.api.Assertion.Builder
 import strikt.api.expectThat
 import strikt.assertions.all
@@ -41,11 +42,8 @@ import strikt.assertions.isNotEqualTo
 import strikt.assertions.isNotNull
 import strikt.assertions.isNull
 import strikt.assertions.one
-import java.time.Instant
 
-class PlayerRole(
-    private val driver: SkullKingUseCases,
-) : LobbyNotificationListener {
+class PlayerRole(private val driver: SkullKingUseCases) : LobbyNotificationListener {
     val id = PlayerId.random()
 
     override fun toString(): String = id.toString()
@@ -61,13 +59,7 @@ class PlayerRole(
     fun `has created a lobby`() = `creates a lobby`()
 
     fun `creates a lobby`(): LobbyId {
-        val output =
-            driver(
-                CreateNewLobbyCommand(
-                    playerId = id,
-                    lobbyNotificationListener = this,
-                ),
-            )
+        val output = driver(CreateNewLobbyCommand(playerId = id, lobbyNotificationListener = this))
 
         expectThat(output.lobbyId).isNotEqualTo(LobbyId.NONE)
         this.lobbyId = output.lobbyId
@@ -80,11 +72,7 @@ class PlayerRole(
         expectThat(lobbyId).isNotEqualTo(LobbyId.NONE)
 
         val command =
-            JoinALobbyCommand(
-                playerId = id,
-                lobbyId = lobbyId,
-                lobbyNotificationListener = this,
-            )
+            JoinALobbyCommand(playerId = id, lobbyId = lobbyId, lobbyNotificationListener = this)
 
         driver.invoke(command).orThrow()
     }
@@ -100,15 +88,17 @@ class PlayerRole(
         expectThat(latestErrorCode).isNull()
 
         try {
-            @Suppress("UNUSED_EXPRESSION")
-            block()
+            @Suppress("UNUSED_EXPRESSION") block()
         } catch (e: LobbyErrorCode) {
             latestErrorCode = e
         }
     }
 
     fun `gets the error`(expectedErrorCode: LobbyErrorCode) {
-        expectThat(latestErrorCode).describedAs("latestErrorCode").isNotNull().isA(expectedErrorCode::class.java)
+        expectThat(latestErrorCode)
+            .describedAs("latestErrorCode")
+            .isNotNull()
+            .isA(expectedErrorCode::class.java)
         latestErrorCode = null
     }
 
@@ -136,9 +126,7 @@ class PlayerRole(
     }
 
     fun hasLobbyStateWhere(assertion: Builder<PlayerLobbyState>.() -> Unit) {
-        eventually {
-            expectThat(this).get { state }.assertion()
-        }
+        eventually { expectThat(this).get { state }.assertion() }
     }
 
     override fun receive(updates: List<LobbyNotification>) {
@@ -181,18 +169,11 @@ class PlayerRole(
     }
 
     fun `sees that a bid has been placed by`(playerId: PlayerId) {
-        hasLobbyStateWhere {
-            bids.isNotEmpty().hasEntry(playerId, null)
-        }
+        hasLobbyStateWhere { bids.isNotEmpty().hasEntry(playerId, null) }
     }
 
-    fun `see a bid`(
-        bid: Bid,
-        placedBy: PlayerId,
-    ) {
-        hasLobbyStateWhere {
-            bids.isNotEmpty().hasEntry(placedBy, bid)
-        }
+    fun `see a bid`(bid: Bid, placedBy: PlayerId) {
+        hasLobbyStateWhere { bids.isNotEmpty().hasEntry(placedBy, bid) }
     }
 
     fun `plays a card in their hand`() = `play a card in their hand`()
@@ -202,15 +183,10 @@ class PlayerRole(
     }
 
     fun `see that the trick winner has been chosen`() {
-        hasLobbyStateWhere {
-            trickWinner.isNotNull()
-        }
+        hasLobbyStateWhere { trickWinner.isNotNull() }
     }
 
-    fun `see a card`(
-        card: Card,
-        playedBy: PlayerId,
-    ) {
+    fun `see a card`(card: Card, playedBy: PlayerId) {
         hasLobbyStateWhere {
             cardsInTrick.isNotEmpty().one {
                 get { this.playedBy }.isEqualTo(playedBy)
@@ -228,12 +204,23 @@ class PlayerRole(
         val trickWinner: PlayerId? = null,
     ) {
         companion object {
-            val Builder<PlayerLobbyState>.roundNumber get() = get { roundNumber }.describedAs("round number")
-            val Builder<PlayerLobbyState>.hand get() = get { hand }.describedAs("hand")
-            val Builder<PlayerLobbyState>.players get() = get { players }.describedAs("players")
-            val Builder<PlayerLobbyState>.bids get() = get { bids }.describedAs("bids")
-            val Builder<PlayerLobbyState>.cardsInTrick get() = get { cardsInTrick }
-            val Builder<PlayerLobbyState>.trickWinner get() = get { trickWinner }
+            val Builder<PlayerLobbyState>.roundNumber
+                get() = get { roundNumber }.describedAs("round number")
+
+            val Builder<PlayerLobbyState>.hand
+                get() = get { hand }.describedAs("hand")
+
+            val Builder<PlayerLobbyState>.players
+                get() = get { players }.describedAs("players")
+
+            val Builder<PlayerLobbyState>.bids
+                get() = get { bids }.describedAs("bids")
+
+            val Builder<PlayerLobbyState>.cardsInTrick
+                get() = get { cardsInTrick }
+
+            val Builder<PlayerLobbyState>.trickWinner
+                get() = get { trickWinner }
         }
     }
 
@@ -260,6 +247,7 @@ class PlayerRole(
                     it::class.java == clazz -> pass(actual = clazz)
                     else -> fail(actual = it.javaClass)
                 }
-            } as Builder<T>
+            }
+                as Builder<T>
     }
 }

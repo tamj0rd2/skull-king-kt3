@@ -10,8 +10,7 @@ enum class RoundNumber {
     Seven,
     Eight,
     Nine,
-    Ten,
-    ;
+    Ten;
 
     fun next(): RoundNumber =
         when (this) {

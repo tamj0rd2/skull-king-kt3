@@ -19,7 +19,8 @@ import strikt.assertions.hasSize
 import strikt.assertions.isEqualTo
 
 interface StartGameUseCaseContract : UseCaseContract {
-    val propertyTestIterations: Int get() = 1000
+    val propertyTestIterations: Int
+        get() = 1000
 
     @Test
     fun `starting the game begins round 1`() {
@@ -34,39 +35,34 @@ interface StartGameUseCaseContract : UseCaseContract {
                     otherPlayers.each { `accept the lobby invite`() }
                 }
 
-                When {
-                    gameCreator.`starts the game`()
-                }
+                When { gameCreator.`starts the game`() }
 
                 Then {
-                    (gameCreator + otherPlayers).each { hasLobbyStateWhere { roundNumber.isEqualTo(RoundNumber.of(1)) } }
+                    (gameCreator + otherPlayers).each {
+                        hasLobbyStateWhere { roundNumber.isEqualTo(RoundNumber.of(1)) }
+                    }
                 }
             }
         }
     }
 
     @Test
-    fun `each player is dealt 1 card`() =
-        propertyTest {
-            checkAll(propertyTestIterations, Arb.validPlayerCountToStartAGame) { playerCount ->
-                val gameCreator = scenario.newPlayer()
-                val otherPlayers = scenario.newPlayers(playerCount - 1)
+    fun `each player is dealt 1 card`() = propertyTest {
+        checkAll(propertyTestIterations, Arb.validPlayerCountToStartAGame) { playerCount ->
+            val gameCreator = scenario.newPlayer()
+            val otherPlayers = scenario.newPlayers(playerCount - 1)
 
-                Given {
-                    gameCreator.`has created a lobby`()
-                    gameCreator.invites(otherPlayers)
-                    otherPlayers.each { `accept the lobby invite`() }
-                }
-
-                When {
-                    gameCreator.`starts the game`()
-                }
-
-                Then {
-                    (gameCreator + otherPlayers).each { hasLobbyStateWhere { hand.hasSize(1) } }
-                }
+            Given {
+                gameCreator.`has created a lobby`()
+                gameCreator.invites(otherPlayers)
+                otherPlayers.each { `accept the lobby invite`() }
             }
+
+            When { gameCreator.`starts the game`() }
+
+            Then { (gameCreator + otherPlayers).each { hasLobbyStateWhere { hand.hasSize(1) } } }
         }
+    }
 
     @Test
     @Disabled
@@ -78,16 +74,10 @@ interface StartGameUseCaseContract : UseCaseContract {
     fun `a game cannot be started with less than 2 players`() {
         val gameCreator = scenario.newPlayer()
 
-        Given {
-            gameCreator.`has created a lobby`()
-        }
+        Given { gameCreator.`has created a lobby`() }
 
-        When {
-            gameCreator.triesTo { `starts the game`() }
-        }
+        When { gameCreator.triesTo { `starts the game`() } }
 
-        Then {
-            gameCreator.`gets the error`(TooFewPlayers())
-        }
+        Then { gameCreator.`gets the error`(TooFewPlayers()) }
     }
 }
