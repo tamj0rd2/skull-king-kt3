@@ -254,7 +254,7 @@ class Invariants {
                 val updatedGameState = initialGame.execute(command).assumeWasSuccessful().state
                 assumeThat(updatedGameState is GameState.InProgress)
                 collectState(initialState)
-                collect("command", command::class.simpleName)
+                collectCommand(command)
 
                 expectThat(updatedGameState.roundNumber).isGreaterThanOrEqualTo(initialState.roundNumber)
             }
