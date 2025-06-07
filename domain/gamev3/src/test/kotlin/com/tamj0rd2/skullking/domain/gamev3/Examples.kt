@@ -12,36 +12,36 @@ import strikt.assertions.isA
 import strikt.assertions.isEqualTo
 
 class Examples {
-    @Test
-    fun `playing a 2 player game from start to finish`() {
-        val player1 = SomePlayerId.random()
-        val player2 = SomePlayerId.random()
+  @Test
+  fun `playing a 2 player game from start to finish`() {
+    val player1 = SomePlayerId.random()
+    val player2 = SomePlayerId.random()
 
-        Game.new(setOf(player1, player2))
-            .flatMap { it.execute(StartRoundCommand) }
-            .flatMap { it.execute(PlaceBidCommand(player1, SomeBid.One)) }
-            .flatMap { it.execute(PlaceBidCommand(player2, SomeBid.Zero)) }
-            .peek {
-                expectThat(it.state).isA<GameState.Bidding>().and {
-                    get { bids }.getValue(player1).isEqualTo(SomeBid.One)
-                    get { bids }.getValue(player2).isEqualTo(SomeBid.Zero)
-                }
-            }
-            .flatMap { it.execute(StartTrickCommand) }
-            .peek {
-                expectThat(it.state).isA<GameState.TrickTaking>().and {
-                    get { roundNumber }.isEqualTo(RoundNumber.One)
-                    get { trickNumber }.isEqualTo(TrickNumber.One)
-                }
-            }
-            .flatMap { it.execute(PlayCardCommand(player1, CardA)) }
-            .flatMap { it.execute(PlayCardCommand(player2, CardB)) }
-            .peek {
-                expectThat(it.state).isA<GameState.TrickTaking>().and {
-                    get { playedCards }
-                        .isEqualTo(listOf(CardA.playedBy(player1), CardB.playedBy(player2)))
-                }
-            }
-            .orThrow()
-    }
+    Game.new(setOf(player1, player2))
+        .flatMap { it.execute(StartRoundCommand) }
+        .flatMap { it.execute(PlaceBidCommand(player1, SomeBid.One)) }
+        .flatMap { it.execute(PlaceBidCommand(player2, SomeBid.Zero)) }
+        .peek {
+          expectThat(it.state).isA<GameState.Bidding>().and {
+            get { bids }.getValue(player1).isEqualTo(SomeBid.One)
+            get { bids }.getValue(player2).isEqualTo(SomeBid.Zero)
+          }
+        }
+        .flatMap { it.execute(StartTrickCommand) }
+        .peek {
+          expectThat(it.state).isA<GameState.TrickTaking>().and {
+            get { roundNumber }.isEqualTo(RoundNumber.One)
+            get { trickNumber }.isEqualTo(TrickNumber.One)
+          }
+        }
+        .flatMap { it.execute(PlayCardCommand(player1, CardA)) }
+        .flatMap { it.execute(PlayCardCommand(player2, CardB)) }
+        .peek {
+          expectThat(it.state)
+              .isA<GameState.TrickTaking>()
+              .get { playedCards }
+              .isEqualTo(listOf(CardA.playedBy(player1), CardB.playedBy(player2)))
+        }
+        .orThrow()
+  }
 }
