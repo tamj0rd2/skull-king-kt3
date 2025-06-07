@@ -2,10 +2,9 @@
 setup:
 	git config core.hooksPath ./githooks
 
-#(trace, debug, info, warn, error
-@PHONY: format
+.PHONY: format
 format:
-	@ktlint -F -l error >/dev/null 2>&1 || true
+	@git ls-files --cached --others --exclude-standard "*.kt" "*.kts" | xargs ktfmt --kotlinlang-style -F
 
 @PHONY:
 start-docker:

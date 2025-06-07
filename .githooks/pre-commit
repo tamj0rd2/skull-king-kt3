@@ -5,7 +5,8 @@ set -eo pipefail
 # Redirect output to stderr.
 exec 1>&2
 
-which 'ktlint' >/dev/null || brew install ktlint
+which 'ktfmt' >/dev/null || { echo "ktfmt not found. Install it first."; exit 1; }
+
 
 files_to_format="$(git diff --name-only --cached --relative -- '*.kt' '*.kts')"
 if [[ -z "$files_to_format" ]]; then
@@ -30,10 +31,18 @@ on_exit() {
 }
 trap 'on_exit' EXIT
 
-# if formatting fails, don't fail the commit
-echo "$files_to_format" | tr '\n' '\0' | ktlint -F --relative --patterns-from-stdin=''
+# Format each file individually with ktfmt
+# ktfmt doesn't accept stdin pattern input like ktlint does
+while IFS= read -r file; do
+  # Only process files that exist (in case they were deleted)
+  if [[ -f "$file" ]]; then
+    ktfmt -F "$file"
+  fi
+done <<< "$files_to_format"
 
 # Stage the formatted files so they can be committed
 while IFS= read -r file; do
-  git add "$file"
+  if [[ -f "$file" ]]; then
+    git add "$file"
+  fi
 done <<< "$files_to_format"
