@@ -1,19 +1,18 @@
 package com.tamj0rd2.skullking.domain.gamev3
 
-import com.tamj0rd2.skullking.domain.gamev3.GameArbs.andACommand
 import com.tamj0rd2.skullking.domain.gamev3.GameArbs.command
 import com.tamj0rd2.skullking.domain.gamev3.GameArbs.game
 import com.tamj0rd2.skullking.domain.gamev3.GameArbs.validOnly
-import com.tamj0rd2.skullking.domain.gamev3.GameState.AwaitingNextRound
 import com.tamj0rd2.skullking.domain.gamev3.GameState.Bidding
+import com.tamj0rd2.skullking.domain.gamev3.GameStats.checkCoverageForAllGameStates
+import com.tamj0rd2.skullking.domain.gamev3.GameStats.collectCommand
+import com.tamj0rd2.skullking.domain.gamev3.GameStats.collectState
 import com.tamj0rd2.skullking.domain.gamev3.PropertyTesting.assumeThat
 import com.tamj0rd2.skullking.domain.gamev3.PropertyTesting.assumeWasSuccessful
-import com.tamj0rd2.skullking.domain.gamev3.PropertyTesting.checkCoverageExists
 import com.tamj0rd2.skullking.domain.gamev3.PropertyTesting.propTestConfig
 import com.tamj0rd2.skullking.domain.gamev3.PropertyTesting.propertyTest
 import dev.forkhandles.result4k.orThrow
 import io.kotest.property.Arb
-import io.kotest.property.PropertyContext
 import io.kotest.property.arbitrary.filter
 import io.kotest.property.checkAll
 import org.junit.jupiter.api.Test
@@ -31,34 +30,6 @@ import strikt.assertions.isLessThanOrEqualTo
 import strikt.assertions.isNotEqualTo
 
 class Invariants {
-    private companion object {
-        fun GameStateName.isExpectedToBeTransitionable() =
-            when (this) {
-                GameStateName.TrickTaking -> false // TODO: remove this to drive further implementation
-                else -> true
-            }
-
-        fun PropertyContext.checkCoverageForAllGameStates() =
-            apply {
-                checkCoverageExists(
-                    "state",
-                    GameStateName.entries
-                        .minus(GameStateName.NotStarted)
-                        .filter { it.isExpectedToBeTransitionable() }
-                        .toSet(),
-                )
-            }
-
-        fun PropertyContext.collectState(state: GameState) = collect("state", state.name)
-
-        fun PropertyContext.collectState(game: Game) = collectState(game.state)
-
-        fun PropertyContext.collectCommand(command: GameCommand) = collect("command", command::class.simpleName)
-
-        fun PropertyContext.checkCoverageForCommands() =
-            collect(GameCommand::class.sealedSubclasses.filter { it.isFinal }.map { it.simpleName })
-    }
-
     @Test
     fun `a game in progress always has 2-6 players`() {
         propertyTest {
@@ -172,74 +143,6 @@ class Invariants {
                 }
             }
         }.checkCoverageForAllGameStates()
-    }
-
-    @Test
-    fun `a game in the AwaitingNextRound state can only ever transition to Bidding`() {
-        propertyTest {
-            checkAll(
-                propTestConfig,
-                Arb.game.validOnly().filter { it.state is AwaitingNextRound },
-                Arb.command,
-            ) { initialGame, command ->
-                val updatedGame = initialGame.execute(command).assumeWasSuccessful()
-                expectThat(updatedGame.state).isA<Bidding>()
-            }
-        }
-    }
-
-    @Test
-    fun `a game in the Bidding state can only ever transition to TrickTaking`() {
-        propertyTest {
-            checkAll(
-                propTestConfig,
-                // TODO: can we filter while the arbs are being generated rather than after? might need to write my own arb
-                Arb.game
-                    .validOnly()
-                    .filter { it.state is Bidding }
-                    .andACommand,
-            ) { (initialGame, command) ->
-                val updatedGame = initialGame.execute(command).assumeWasSuccessful()
-                collectCommand(command)
-                expectThat(updatedGame.state.name).isContainedIn(setOf(GameStateName.Bidding, GameStateName.TrickTaking))
-            }
-        }
-    }
-
-    @Test
-    fun `successful commands cause the game to transition to the correct state`() {
-        class TestOracle(
-            startingStateName: GameStateName,
-        ) {
-            var currentStateName = startingStateName
-                private set
-
-            fun execute(command: GameCommand): TestOracle =
-                apply {
-                    if (!currentStateName.isExpectedToBeTransitionable()) return@apply
-
-                    when (command) {
-                        is StartRoundCommand,
-                        -> if (currentStateName == GameStateName.AwaitingNextRound) currentStateName = GameStateName.Bidding
-
-                        is PlaceBidCommand -> Unit
-                        is StartTrickCommand -> if (currentStateName == GameStateName.Bidding) currentStateName = GameStateName.TrickTaking
-                    }
-                }
-        }
-
-        propertyTest {
-            checkAll(propTestConfig, Arb.game.validOnly(), Arb.command) { initialGame, command ->
-                val initialStateName = initialGame.state.name
-                val testOracle = TestOracle(initialStateName).execute(command)
-
-                val updatedGame = initialGame.execute(command).assumeWasSuccessful()
-                collectState(initialGame.state)
-                collectCommand(command)
-
-                expectThat(updatedGame.state.name).isEqualTo(testOracle.currentStateName)
-            }.checkCoverageForAllGameStates()
-        }
     }
 
     @Test
