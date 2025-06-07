@@ -40,7 +40,7 @@ object GameArbs {
             arbitrary { rs ->
                 val command = baseCommandArb.bind()
                 if (game.state is InProgress && command is PlayerOriginatedCommand) {
-                    command.overridePlayerId(game.state.players.random(rs.random))
+                    command.overridePlayerId(game.state.players.random(rs.random)) as GameCommand
                 } else {
                     command
                 }
@@ -124,5 +124,6 @@ object GameArbs {
     private fun PlayerOriginatedCommand.overridePlayerId(playerId: PlayerId) =
         when (this) {
             is PlaceBidCommand -> copy(playerId = playerId)
+            is PlayCardCommand -> copy(playerId = playerId)
         }
 }

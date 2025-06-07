@@ -4,20 +4,18 @@ import com.tamj0rd2.skullking.domain.gamev3.PropertyTesting.checkCoverageExists
 import io.kotest.property.PropertyContext
 
 object GameStats {
-    fun GameStateName.isExpectedToBeTransitionable() =
-        when (this) {
-            GameStateName.TrickTaking -> false // TODO: remove this to drive further implementation
-            else -> true
-        }
-
     fun PropertyContext.checkCoverageForAllGameStates() =
         apply {
             checkCoverageExists(
                 "state",
                 GameStateName.entries
                     .minus(GameStateName.NotStarted)
-                    .filter { it.isExpectedToBeTransitionable() }
-                    .toSet(),
+                    .filter {
+                        when (it) {
+                            // TODO: put WIP states in here to help drive development without failing lots of tests.
+                            else -> true
+                        }
+                    }.toSet(),
             )
         }
 

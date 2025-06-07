@@ -4,7 +4,9 @@ import com.tamj0rd2.extensions.asFailure
 import com.tamj0rd2.extensions.asSuccess
 import com.tamj0rd2.skullking.domain.gamev3.GameErrorCode.CannotApplyEventInCurrentState
 import com.tamj0rd2.skullking.domain.gamev3.GameStateName.AwaitingNextRound
+import com.tamj0rd2.skullking.domain.gamev3.PlayedCard.Companion.playedBy
 import dev.forkhandles.result4k.Result4k
+import dev.forkhandles.result4k.Success
 
 typealias GameStateResult = Result4k<GameState, GameErrorCode>
 
@@ -49,10 +51,7 @@ sealed class GameState {
         override fun apply(event: GameEvent): GameStateResult {
             return when (event) {
                 is RoundStartedEvent -> return Bidding(players, roundNumber).asSuccess()
-                is BidPlacedEvent,
-                is GameStartedEvent,
-                is TrickStartedEvent,
-                -> CannotApplyEventInCurrentState(this, event).asFailure()
+                else -> CannotApplyEventInCurrentState(this, event).asFailure()
             }
         }
     }
@@ -68,9 +67,7 @@ sealed class GameState {
             when (event) {
                 is BidPlacedEvent -> addPlayerBid(event)
                 is TrickStartedEvent -> startTrick()
-                is GameStartedEvent,
-                is RoundStartedEvent,
-                -> CannotApplyEventInCurrentState(this, event).asFailure()
+                else -> CannotApplyEventInCurrentState(this, event).asFailure()
             }
 
         private fun startTrick(): GameStateResult =
@@ -93,9 +90,17 @@ sealed class GameState {
         override val players: Set<PlayerId>,
         override val roundNumber: RoundNumber,
         val trickNumber: TrickNumber,
+        val playedCards: List<PlayedCard> = emptyList(),
     ) : InProgress() {
         override val name = GameStateName.TrickTaking
 
-        override fun apply(event: GameEvent): GameStateResult = GameErrorCode.NotYetImplemented.asFailure()
+        override fun apply(event: GameEvent): GameStateResult =
+            when (event) {
+                is CardPlayedEvent -> addPlayedCard(event)
+                else -> CannotApplyEventInCurrentState(this, event).asFailure()
+            }
+
+        private fun addPlayedCard(event: CardPlayedEvent): Success<TrickTaking> =
+            copy(playedCards = playedCards + event.card.playedBy(event.playerId)).asSuccess()
     }
 }

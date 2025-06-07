@@ -1,5 +1,6 @@
 package com.tamj0rd2.skullking.domain.gamev3
 
+import com.tamj0rd2.skullking.domain.gamev3.PlayedCard.Companion.playedBy
 import dev.forkhandles.result4k.flatMap
 import dev.forkhandles.result4k.orThrow
 import dev.forkhandles.result4k.peek
@@ -31,6 +32,12 @@ class Examples {
                 expectThat(it.state).isA<GameState.TrickTaking>().and {
                     get { roundNumber }.isEqualTo(RoundNumber.One)
                     get { trickNumber }.isEqualTo(TrickNumber.One)
+                }
+            }.flatMap { it.execute(PlayCardCommand(player1, CardA)) }
+            .flatMap { it.execute(PlayCardCommand(player2, CardB)) }
+            .peek {
+                expectThat(it.state).isA<GameState.TrickTaking>().and {
+                    get { playedCards }.isEqualTo(listOf(CardA.playedBy(player1), CardB.playedBy(player2)))
                 }
             }.orThrow()
     }

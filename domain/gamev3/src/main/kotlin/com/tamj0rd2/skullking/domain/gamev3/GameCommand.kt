@@ -15,3 +15,9 @@ data class PlaceBidCommand(
     PlayerOriginatedCommand
 
 data object StartTrickCommand : GameCommand
+
+data class PlayCardCommand(
+    override val playerId: PlayerId,
+    val card: Card,
+) : GameCommand,
+    PlayerOriginatedCommand
