@@ -8,7 +8,7 @@ import strikt.assertions.getValue
 import strikt.assertions.isA
 import strikt.assertions.isEqualTo
 
-class Example {
+class Examples {
     @Test
     fun `playing a 2 player game from start to finish`() {
         val player1 = SomePlayerId.random()
