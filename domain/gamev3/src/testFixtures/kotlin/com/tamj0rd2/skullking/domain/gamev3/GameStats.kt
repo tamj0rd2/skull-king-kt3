@@ -24,7 +24,4 @@ object GameStats {
     fun PropertyContext.collectState(game: Game) = collectState(game.state)
 
     fun PropertyContext.collectCommand(command: GameCommand) = collect("command", command::class.simpleName)
-
-    fun PropertyContext.checkCoverageForCommands() =
-        collect(GameCommand::class.sealedSubclasses.filter { it.isFinal }.map { it.simpleName })
 }
