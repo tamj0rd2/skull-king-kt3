@@ -1,5 +1,8 @@
 package com.tamj0rd2.skullking.domain.gamev3
 
+import com.tamj0rd2.skullking.domain.gamev3.NumberedCard.CardValue
+import com.tamj0rd2.skullking.domain.gamev3.NumberedCard.Suit.Black
+import com.tamj0rd2.skullking.domain.gamev3.NumberedCard.Suit.Red
 import com.tamj0rd2.skullking.domain.gamev3.PlayedCard.Companion.playedBy
 import dev.forkhandles.result4k.flatMap
 import dev.forkhandles.result4k.orThrow
@@ -34,13 +37,18 @@ class Examples {
                     get { trickNumber }.isEqualTo(TrickNumber.One)
                 }
             }
-            .flatMap { it.execute(PlayCardCommand(player1, CardA)) }
-            .flatMap { it.execute(PlayCardCommand(player2, CardB)) }
+            .flatMap { it.execute(PlayCardCommand(player1, NumberedCard(Black, CardValue.One))) }
+            .flatMap { it.execute(PlayCardCommand(player2, NumberedCard(Red, CardValue.Ten))) }
             .peek {
                 expectThat(it.state)
                     .isA<GameState.TrickTaking>()
                     .get { playedCards }
-                    .isEqualTo(listOf(CardA.playedBy(player1), CardB.playedBy(player2)))
+                    .isEqualTo(
+                        listOf(
+                            NumberedCard(Black, CardValue.One).playedBy(player1),
+                            NumberedCard(Red, CardValue.Ten).playedBy(player2),
+                        )
+                    )
             }
             .orThrow()
     }
