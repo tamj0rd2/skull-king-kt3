@@ -1,6 +1,6 @@
 plugins { id("buildlogic.kotlin-library-conventions") }
 
 dependencies {
-  implementation(libs.bundles.json)
-  implementation(project(":domain:game"))
+    implementation(libs.bundles.json)
+    implementation(project(":domain:game"))
 }

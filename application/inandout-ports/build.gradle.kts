@@ -7,16 +7,16 @@ private fun DependencyHandlerScope.forImplementation(
     transitive: Boolean = false,
     alsoUseForTesting: Boolean = false,
 ) {
-  if (transitive) api(dependency) else implementation(dependency)
-  if (alsoUseForTesting) forTesting(dependency)
+    if (transitive) api(dependency) else implementation(dependency)
+    if (alsoUseForTesting) forTesting(dependency)
 }
 
 private fun DependencyHandlerScope.forTesting(dependency: Any) {
-  testImplementation(dependency)
-  testFixturesImplementation(dependency)
+    testImplementation(dependency)
+    testFixturesImplementation(dependency)
 
-  if (dependency is ProjectDependency) {
-    testImplementation(testFixtures(dependency))
-    testFixturesImplementation(testFixtures(dependency))
-  }
+    if (dependency is ProjectDependency) {
+        testImplementation(testFixtures(dependency))
+        testFixturesImplementation(testFixtures(dependency))
+    }
 }

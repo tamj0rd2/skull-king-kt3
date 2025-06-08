@@ -8,60 +8,60 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 val libs = the<org.gradle.accessors.dm.LibrariesForLibs>()
 
 plugins {
-  // Apply the org.jetbrains.kotlin.jvm Plugin to add support for Kotlin.
-  id("org.jetbrains.kotlin.jvm")
-  `java-test-fixtures`
-  id("org.gradle.test-retry")
+    // Apply the org.jetbrains.kotlin.jvm Plugin to add support for Kotlin.
+    id("org.jetbrains.kotlin.jvm")
+    `java-test-fixtures`
+    id("org.gradle.test-retry")
 }
 
 repositories {
-  // Use Maven Central for resolving dependencies.
-  mavenCentral()
+    // Use Maven Central for resolving dependencies.
+    mavenCentral()
 }
 
 dependencies {
-  components {
-    withModule<KillKotestAssertionsWithFire>("io.kotest:kotest-assertions-shared")
-    withModule<KillKotestAssertionsWithFire>("io.kotest:kotest-assertions-core")
-  }
+    components {
+        withModule<KillKotestAssertionsWithFire>("io.kotest:kotest-assertions-shared")
+        withModule<KillKotestAssertionsWithFire>("io.kotest:kotest-assertions-core")
+    }
 
-  implementation(platform(libs.http4k.bom))
-  implementation(libs.result4k)
-  testFixturesApi(libs.strikt.core)
-  testFixturesApi(libs.bundles.junit)
-  testFixturesApi(libs.kotest.property)
-  compileOnly("org.jetbrains:annotations:23.0.0")
+    implementation(platform(libs.http4k.bom))
+    implementation(libs.result4k)
+    testFixturesApi(libs.strikt.core)
+    testFixturesApi(libs.bundles.junit)
+    testFixturesApi(libs.kotest.property)
+    compileOnly("org.jetbrains:annotations:23.0.0")
 }
 
 // Apply a specific Java toolchain to ease working on different environments.
 java { toolchain { languageVersion = JavaLanguageVersion.of(21) } }
 
 tasks.named<Test>("test") {
-  useJUnitPlatform()
-  systemProperty("junit.jupiter.execution.parallel.enabled", "true")
-  systemProperty("junit.jupiter.execution.parallel.mode.default", "concurrent")
-  systemProperty("junit.jupiter.execution.parallel.mode.classes.default", "concurrent")
-  systemProperty("junit.jupiter.execution.timeout.test.method.default", "2s")
-  systemProperty("junit.jupiter.execution.timeout.mode", "disabled_on_debug")
+    useJUnitPlatform()
+    systemProperty("junit.jupiter.execution.parallel.enabled", "true")
+    systemProperty("junit.jupiter.execution.parallel.mode.default", "concurrent")
+    systemProperty("junit.jupiter.execution.parallel.mode.classes.default", "concurrent")
+    systemProperty("junit.jupiter.execution.timeout.test.method.default", "2s")
+    systemProperty("junit.jupiter.execution.timeout.mode", "disabled_on_debug")
 }
 
 tasks.withType(KotlinCompile::class).all {
-  compilerOptions {
-    freeCompilerArgs.addAll(
-        "-Xnullability-annotations=@org.jspecify.annotations:strict",
-        "-Xemit-jvm-type-annotations",
-        "-Xconsistent-data-class-copy-visibility",
-    )
-    javaParameters = true
-  }
+    compilerOptions {
+        freeCompilerArgs.addAll(
+            "-Xnullability-annotations=@org.jspecify.annotations:strict",
+            "-Xemit-jvm-type-annotations",
+            "-Xconsistent-data-class-copy-visibility",
+        )
+        javaParameters = true
+    }
 }
 
 class KillKotestAssertionsWithFire : ComponentMetadataRule {
-  override fun execute(context: ComponentMetadataContext) {
-    context.details.withVariant("jvmApiElements-published") {
-      withDependencies {
-        removeAll { it.group == "io.kotest" && it.module.name.contains("assertions") }
-      }
+    override fun execute(context: ComponentMetadataContext) {
+        context.details.withVariant("jvmApiElements-published") {
+            withDependencies {
+                removeAll { it.group == "io.kotest" && it.module.name.contains("assertions") }
+            }
+        }
     }
-  }
 }

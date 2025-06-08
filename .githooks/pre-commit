@@ -36,7 +36,7 @@ trap 'on_exit' EXIT
 while IFS= read -r file; do
   # Only process files that exist (in case they were deleted)
   if [[ -f "$file" ]]; then
-    ktfmt -F "$file"
+    ktfmt --kotlinlang-style -F "$file"
   fi
 done <<< "$files_to_format"
 

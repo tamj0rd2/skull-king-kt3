@@ -1,8 +1,8 @@
 plugins { id("buildlogic.kotlin-library-conventions") }
 
 dependencies {
-  forImplementation(project(":domain:game"))
-  forImplementation(project(":application:output-ports"), alsoUseForTesting = true)
+    forImplementation(project(":domain:game"))
+    forImplementation(project(":application:output-ports"), alsoUseForTesting = true)
 }
 
 private fun DependencyHandlerScope.forImplementation(
@@ -10,16 +10,16 @@ private fun DependencyHandlerScope.forImplementation(
     transitive: Boolean = false,
     alsoUseForTesting: Boolean = false,
 ) {
-  if (transitive) api(dependency) else implementation(dependency)
-  if (alsoUseForTesting) forTesting(dependency)
+    if (transitive) api(dependency) else implementation(dependency)
+    if (alsoUseForTesting) forTesting(dependency)
 }
 
 private fun DependencyHandlerScope.forTesting(dependency: Any) {
-  testImplementation(dependency)
-  testFixturesImplementation(dependency)
+    testImplementation(dependency)
+    testFixturesImplementation(dependency)
 
-  if (dependency is ProjectDependency) {
-    testImplementation(testFixtures(dependency))
-    testFixturesImplementation(testFixtures(dependency))
-  }
+    if (dependency is ProjectDependency) {
+        testImplementation(testFixtures(dependency))
+        testFixturesImplementation(testFixtures(dependency))
+    }
 }
