@@ -1,3 +1,3 @@
 plugins { id("buildlogic.kotlin-application-conventions") }
 
-dependencies {}
+dependencies { testImplementation(libs.konsist) }
