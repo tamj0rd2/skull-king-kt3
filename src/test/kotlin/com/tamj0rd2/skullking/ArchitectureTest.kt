@@ -24,7 +24,7 @@ class ArchitectureTest {
         }
     }
 
-    val domainLayerAllowList = listOf("com.tamj0rd2.skullking")
+    val domainLayerAllowList = listOf("java.", "com.tamj0rd2.skullking.", "dev.forkhandles.values.")
 
     @Test
     fun `the domain layer only uses allowed libraries`() {

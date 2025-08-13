@@ -1,9 +1,7 @@
 package com.tamj0rd2.skullking
 
 import org.junit.jupiter.api.Test
-import org.junit.platform.commons.annotation.Testable
 
-@Testable
 interface EndToEndTestContract {
     fun createPlayerActor(): Player
 
