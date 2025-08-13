@@ -6,6 +6,6 @@ import com.tamj0rd2.skullking.application.ports.input.CreateGameUseCase
 
 class CreateGameService : CreateGameUseCase {
     override fun execute(input: CreateGameInput): CreateGameOutput {
-        TODO("Not yet implemented")
+        return CreateGameOutput
     }
 }
