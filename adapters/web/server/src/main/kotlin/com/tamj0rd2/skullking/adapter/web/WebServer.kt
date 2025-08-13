@@ -17,8 +17,8 @@ import dev.forkhandles.result4k.failureOrNull
 import java.net.ServerSocket
 import org.http4k.core.Request
 import org.http4k.lens.Header
+import org.http4k.routing.websocket.bind
 import org.http4k.routing.websockets
-import org.http4k.routing.ws.bind
 import org.http4k.server.Undertow
 import org.http4k.server.asServer
 import org.http4k.websocket.WsHandler

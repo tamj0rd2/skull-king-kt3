@@ -6,7 +6,7 @@ import com.tamj0rd2.skullking.domain.game.PlayerId
 import com.tamj0rd2.skullking.domain.game.PlayerId.Companion
 import com.ubertob.kondor.json.JAny
 import com.ubertob.kondor.json.JInt
-import com.ubertob.kondor.json.JNumRepresentable
+import com.ubertob.kondor.json.JIntRepresentable
 import com.ubertob.kondor.json.JStringRepresentable
 import com.ubertob.kondor.json.jsonnode.JsonNodeObject
 
@@ -20,9 +20,9 @@ object JLobbyId : JStringRepresentable<LobbyId>() {
     override val render: (LobbyId) -> String = LobbyId.Companion::show
 }
 
-object JBid : JNumRepresentable<Bid>() {
-    override val cons: (Number) -> Bid = { Bid.of(JInt.cons(it)) }
-    override val render: (Bid) -> Number = { JInt.render(it.value) }
+object JBid : JIntRepresentable<Bid>() {
+    override val cons: (Int) -> Bid = { Bid.of(JInt.cons(it)) }
+    override val render: (Bid) -> Int = { JInt.render(it.value) }
 }
 
 class JSingleton<T : Any>(private val instance: T) : JAny<T>() {
