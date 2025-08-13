@@ -5,6 +5,6 @@ import com.tamj0rd2.skullking.createOutputPortsForTesting
 import org.junit.platform.commons.annotation.Testable
 
 @Testable
-class CreateGamesServiceTest : CreateGameUseCaseTest {
+class CreateGamesServiceTest : CreateGameUseCaseContract {
     override val application = Application.create(createOutputPortsForTesting())
 }

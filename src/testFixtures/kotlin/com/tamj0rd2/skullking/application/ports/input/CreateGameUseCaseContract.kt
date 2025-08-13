@@ -6,7 +6,7 @@ import strikt.api.expectThat
 import strikt.assertions.isEqualTo
 import strikt.assertions.single
 
-interface CreateGameUseCaseTest {
+interface CreateGameUseCaseContract {
     val application: Application
 
     @Test
