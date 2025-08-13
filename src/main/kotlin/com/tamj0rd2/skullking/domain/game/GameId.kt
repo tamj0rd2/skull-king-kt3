@@ -1,4 +1,4 @@
-package com.tamj0rd2.skullking.domain
+package com.tamj0rd2.skullking.domain.game
 
 import dev.forkhandles.values.UUIDValueFactory
 import dev.forkhandles.values.Value

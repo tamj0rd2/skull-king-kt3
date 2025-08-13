@@ -13,9 +13,9 @@ data class Application(
     val viewGamesUseCase: ViewGamesUseCase,
 ) {
     companion object {
-        fun create() =
+        fun create(outputPorts: OutputPorts) =
             Application(
-                createGameUseCase = CreateGameService(),
+                createGameUseCase = CreateGameService(outputPorts.saveGamePort),
                 joinGameUseCase = JoinGameService(),
                 viewGamesUseCase = ViewGamesService(),
             )
