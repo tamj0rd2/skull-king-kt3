@@ -3,7 +3,7 @@
 
 [versions]
 forkhandles = "2.22.4.0"
-kotlin-gradle-plugin = "2.1.21"
+kotlin-gradle-plugin = "2.2.0"
 http4k = "6.15.1.0"
 kotest = "5.9.1"
 

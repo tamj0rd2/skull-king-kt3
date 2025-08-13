@@ -11,19 +11,3 @@ plugins {
 }
 
 rootProject.name = "skull-king"
-
-include(
-    ":adapters:esdb",
-    ":adapters:in-memory",
-    ":adapters:web:api",
-    ":adapters:web:client",
-    ":adapters:web:server",
-    ":application:inandout-ports",
-    ":application:input-ports",
-    ":application:output-ports",
-    ":application:services",
-    ":domain:game",
-    ":domain:gamev3",
-    ":lib:forkhandles-extensions",
-    ":lib:common-json",
-)
