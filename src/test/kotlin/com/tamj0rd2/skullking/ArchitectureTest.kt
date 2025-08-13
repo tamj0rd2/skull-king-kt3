@@ -24,13 +24,7 @@ class ArchitectureTest {
         }
     }
 
-    @Test
-    // write a test that proves that the domain layer does not depend on any external libraries
-    fun `domain layer does not depend on external libraries`() {
-        Konsist.scopeFromProject().files.withPackage(domainPackage)
-    }
-
-    val domainLayerAllowList = listOf<String>()
+    val domainLayerAllowList = listOf("com.tamj0rd2.skullking")
 
     @Test
     fun `the domain layer only uses allowed libraries`() {
