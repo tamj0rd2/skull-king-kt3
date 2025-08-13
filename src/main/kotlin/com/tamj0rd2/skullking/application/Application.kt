@@ -17,7 +17,7 @@ data class Application(
             Application(
                 createGameUseCase = CreateGameService(outputPorts.saveGamePort),
                 joinGameUseCase = JoinGameService(),
-                viewGamesUseCase = ViewGamesService(),
+                viewGamesUseCase = ViewGamesService(outputPorts.loadAllGamesPort),
             )
     }
 }
