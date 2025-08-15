@@ -6,5 +6,5 @@ import com.tamj0rd2.skullking.application.OutputPorts
 fun createOutputPortsForTesting(): OutputPorts {
     val gameRepository = InMemoryGameRepository()
 
-    return OutputPorts(saveGamePort = gameRepository, loadAllGamesPort = gameRepository)
+    return OutputPorts(saveGamePort = gameRepository)
 }

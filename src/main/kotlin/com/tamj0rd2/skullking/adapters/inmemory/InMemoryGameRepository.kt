@@ -14,8 +14,4 @@ class InMemoryGameRepository() : GameRepository {
     override fun load(gameId: GameId): Game? {
         return games[gameId]
     }
-
-    override fun loadAll(): List<Game> {
-        return games.values.toList()
-    }
 }

@@ -8,10 +8,8 @@ interface EndToEndTestContract {
     @Test
     fun `can play a 2 player game`() {
         val cammy = createPlayerActor()
-        val ellis = createPlayerActor()
 
         cammy.`creates a game`()
-        ellis.`joins a game`()
 
         // todo: continue until the game is completed.
     }

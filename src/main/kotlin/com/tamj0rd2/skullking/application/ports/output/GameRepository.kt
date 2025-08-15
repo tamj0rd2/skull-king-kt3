@@ -3,7 +3,7 @@ package com.tamj0rd2.skullking.application.ports.output
 import com.tamj0rd2.skullking.domain.game.Game
 import com.tamj0rd2.skullking.domain.game.GameId
 
-interface GameRepository : SaveGamePort, LoadGamePort, LoadAllGamesPort
+interface GameRepository : SaveGamePort, LoadGamePort
 
 interface SaveGamePort {
     fun save(game: Game)
@@ -11,8 +11,4 @@ interface SaveGamePort {
 
 interface LoadGamePort {
     fun load(gameId: GameId): Game?
-}
-
-interface LoadAllGamesPort {
-    fun loadAll(): List<Game>
 }

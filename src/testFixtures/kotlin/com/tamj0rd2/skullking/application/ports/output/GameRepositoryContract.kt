@@ -5,7 +5,6 @@ import com.tamj0rd2.skullking.domain.game.GameId
 import dev.forkhandles.values.random
 import org.junit.jupiter.api.Test
 import strikt.api.expectThat
-import strikt.assertions.contains
 import strikt.assertions.isEqualTo
 
 interface GameRepositoryContract {
@@ -19,8 +18,5 @@ interface GameRepositoryContract {
 
         val loadedGame = gameRepository.load(game.id)
         expectThat(loadedGame).isEqualTo(game)
-
-        val allGames = gameRepository.loadAll()
-        expectThat(allGames.map { it.id }).contains(game.id)
     }
 }
