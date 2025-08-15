@@ -17,3 +17,5 @@ To make OTEL work, set these environment variables before running the applicatio
         - even better for now, just check that Cammy sees that the game is not empty
             - starting even simpler - cammy is creating a game. for now, let's just check that game is available in the
               list of games.
+          - now, check to make sure the game was created by cammy
+              - implement findAll

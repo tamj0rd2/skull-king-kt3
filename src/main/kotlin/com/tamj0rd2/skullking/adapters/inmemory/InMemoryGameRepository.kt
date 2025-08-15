@@ -16,6 +16,6 @@ class InMemoryGameRepository() : GameRepository {
     }
 
     override fun findAll(): List<Game> {
-        TODO("Not yet implemented")
+        return games.values.toList()
     }
 }
