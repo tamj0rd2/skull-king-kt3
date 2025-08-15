@@ -2,6 +2,7 @@ package com.tamj0rd2.skullking.application.ports.output
 
 import com.tamj0rd2.skullking.domain.game.Game
 import com.tamj0rd2.skullking.domain.game.GameId
+import com.tamj0rd2.skullking.domain.game.PlayerId
 import dev.forkhandles.values.random
 import org.junit.jupiter.api.Test
 import strikt.api.expectThat
@@ -14,7 +15,7 @@ interface GameRepositoryContract {
 
     @Test
     fun `can save and load a game`() {
-        val game = Game.new(GameId.random())
+        val game = Game.new(GameId.random(), PlayerId("test-player"))
         gameRepository.save(game)
 
         val loadedGame = gameRepository.load(game.id)

@@ -5,7 +5,8 @@ import com.tamj0rd2.skullking.application.ports.input.CreateGameInput
 import com.tamj0rd2.skullking.application.ports.input.ViewGamesInput
 import com.tamj0rd2.skullking.domain.game.PlayerId
 import strikt.api.expectThat
-import strikt.assertions.single
+import strikt.assertions.isEqualTo
+import strikt.assertions.withSingle
 
 class Player(val id: PlayerId, val application: Application) {
     fun `creates a game`() {
@@ -14,6 +15,6 @@ class Player(val id: PlayerId, val application: Application) {
 
     fun `sees that the game has been created`() {
         val games = application.viewGamesUseCase.execute(ViewGamesInput).games
-        expectThat(games).single()
+        expectThat(games).withSingle { get { host }.isEqualTo(id) }
     }
 }

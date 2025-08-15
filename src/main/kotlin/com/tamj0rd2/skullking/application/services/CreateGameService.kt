@@ -10,7 +10,7 @@ import dev.forkhandles.values.random
 
 class CreateGameService(private val saveGamePort: SaveGamePort) : CreateGameUseCase {
     override fun execute(input: CreateGameInput): CreateGameOutput {
-        val game = Game.new(GameId.random())
+        val game = Game.new(GameId.random(), input.playerId)
         saveGamePort.save(game)
         return CreateGameOutput(game.id)
     }
