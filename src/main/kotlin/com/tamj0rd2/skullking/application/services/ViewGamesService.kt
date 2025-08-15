@@ -8,7 +8,7 @@ import com.tamj0rd2.skullking.application.ports.output.FindGamesPort
 
 class ViewGamesService(private val findGamesPort: FindGamesPort) : ViewGamesUseCase {
     override fun execute(input: ViewGamesInput): ViewGamesOutput {
-        val games = findGamesPort.findAll().map { GameListItem(host = it.creator) }
+        val games = findGamesPort.findAll().map { GameListItem(id = it.id, host = it.creator) }
         return ViewGamesOutput(games = games)
     }
 }
