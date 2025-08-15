@@ -9,7 +9,7 @@ import strikt.assertions.single
 
 class Player(val id: PlayerId, val application: Application) {
     fun `creates a game`() {
-        application.createGameUseCase.execute(CreateGameInput)
+        application.createGameUseCase.execute(CreateGameInput(id))
     }
 
     fun `sees that the game has been created`() {
