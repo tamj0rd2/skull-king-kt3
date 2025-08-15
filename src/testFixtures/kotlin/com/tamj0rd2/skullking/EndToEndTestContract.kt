@@ -10,6 +10,7 @@ interface EndToEndTestContract {
         val cammy = createPlayerActor("Cammy")
 
         cammy.`creates a game`()
+        cammy.`sees that the game has been created`()
 
         // todo: continue until the game is completed.
     }

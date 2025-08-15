@@ -14,4 +14,8 @@ class InMemoryGameRepository() : GameRepository {
     override fun load(gameId: GameId): Game? {
         return games[gameId]
     }
+
+    override fun findAll(): List<Game> {
+        TODO("Not yet implemented")
+    }
 }
