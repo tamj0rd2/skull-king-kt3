@@ -12,4 +12,5 @@ To make OTEL work, set these environment variables before running the applicatio
 ### Mikado
 
 - I wanted to write a test to prove that when Ellis joins the game, Cammy can see himself and Ellis in the game.
-    - check that when Ellis joins the game, he can seem himself.
+    - check that when Ellis joins the game, he can seem himself and cammy.
+        - when player joins the game, I actually need to persist them in the game state
