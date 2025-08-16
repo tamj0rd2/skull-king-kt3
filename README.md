@@ -11,9 +11,4 @@ To make OTEL work, set these environment variables before running the applicatio
 
 ### Mikado
 
-- I wanted to write a test to prove that when Ellis joins the game, Cammy can see himself and Ellis in the game.
-    - check that when Ellis joins the game, he can seem himself and cammy.
-        - when player joins, I need it to act like a catchup subscription so that they also receive relevant
-          notifications from before they joined
-            - actually, doing a catchup subscription right now is too hard. just figure out the messages to catchup on
-              in the application layer.
+- introduce use case for notifying players. atm, information can easily be lost. use outbox etc.

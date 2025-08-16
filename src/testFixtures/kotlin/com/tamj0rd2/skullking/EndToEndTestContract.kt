@@ -14,9 +14,10 @@ interface EndToEndTestContract {
         cammy.`sees that the game has been created`()
         cammy.`joins a game`()
         cammy.`sees players in the game`(cammy)
+
         ellis.`joins a game`()
         ellis.`sees players in the game`(cammy, ellis)
-
+        cammy.`sees players in the game`(cammy, ellis)
         // todo: continue until the game is completed.
     }
 }
