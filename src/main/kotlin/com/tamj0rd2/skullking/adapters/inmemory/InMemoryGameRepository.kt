@@ -9,7 +9,10 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 class InMemoryGameRepository() : GameRepository {
-    private val games = mutableMapOf<GameId, Game>()
+    private val events = mutableListOf<GameEvent>()
+    private val games
+        get() = events.groupBy { it.gameId }.mapValues { (_, events) -> Game.reconstitute(events) }
+
     private val eventSubscribers = mutableSetOf<GameEventSubscriber>()
     private val outbox = mutableListOf<GameEvent>()
 
@@ -25,7 +28,7 @@ class InMemoryGameRepository() : GameRepository {
     }
 
     override fun save(game: Game) {
-        games[game.id] = game
+        events.addAll(game.newEvents)
         // todo: write a test that proves only new events are sent
         outbox.addAll(game.events)
     }

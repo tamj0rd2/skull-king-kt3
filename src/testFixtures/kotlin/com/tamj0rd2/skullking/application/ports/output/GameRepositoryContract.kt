@@ -11,6 +11,7 @@ import strikt.api.expectThat
 import strikt.assertions.contains
 import strikt.assertions.isEqualTo
 import strikt.assertions.isGreaterThan
+import strikt.assertions.isNotNull
 
 interface GameRepositoryContract {
 
@@ -22,7 +23,10 @@ interface GameRepositoryContract {
         gameRepository.save(game)
 
         val loadedGame = gameRepository.load(game.id)
-        expectThat(loadedGame).isEqualTo(game)
+        expectThat(loadedGame).isNotNull().and {
+            get { id }.isEqualTo(game.id)
+            get { events }.isEqualTo(game.events)
+        }
 
         val allGames = gameRepository.findAll()
         expectThat(allGames.map { it.id }).contains(game.id)
