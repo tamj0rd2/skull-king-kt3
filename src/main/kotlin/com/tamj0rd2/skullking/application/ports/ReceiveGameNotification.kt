@@ -5,7 +5,7 @@ import com.tamj0rd2.skullking.domain.game.PlayerId
 interface GameNotifier : SubscribeToGameNotificationsPort, SendGameNotificationPort
 
 fun interface SubscribeToGameNotificationsPort {
-    fun subscribe(receiveGameNotification: ReceiveGameNotification)
+    fun subscribe(receiver: ReceiveGameNotification)
 }
 
 fun interface SendGameNotificationPort {

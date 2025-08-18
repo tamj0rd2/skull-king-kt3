@@ -10,10 +10,10 @@ import com.tamj0rd2.skullking.domain.game.PlayerId
 import com.tamj0rd2.skullking.testsupport.eventually
 import java.util.concurrent.CopyOnWriteArrayList
 import strikt.api.expectThat
+import strikt.assertions.contains
 import strikt.assertions.containsExactlyInAnyOrder
 import strikt.assertions.isEqualTo
 import strikt.assertions.isNotEmpty
-import strikt.assertions.isNotEqualTo
 import strikt.assertions.withSingle
 
 class Player(val id: PlayerId, val application: Application) : ReceiveGameNotification {
@@ -31,7 +31,7 @@ class Player(val id: PlayerId, val application: Application) : ReceiveGameNotifi
     }
 
     fun `joins a game`() {
-        val stateBeforeJoining = gameState
+        gameState
 
         val game = application.viewGamesUseCase.execute(ViewGamesInput).games.single()
         application.joinGameUseCase.execute(
@@ -39,7 +39,7 @@ class Player(val id: PlayerId, val application: Application) : ReceiveGameNotifi
         )
 
         // todo: this output sucks. I actually want to try hamkrest again.
-        eventually { expectThat(gameState).isNotEqualTo(stateBeforeJoining) }
+        eventually { expectThat(gameState.players).contains(id) }
     }
 
     fun `sees players in the game`(vararg expectedPlayers: Player) {
@@ -53,7 +53,7 @@ class Player(val id: PlayerId, val application: Application) : ReceiveGameNotifi
         receivedNotifications.add(gameNotification)
     }
 
-    private data class GameState(val players: Set<PlayerId> = emptySet()) {
+    private data class GameState(val players: List<PlayerId> = emptyList()) {
         fun apply(notification: GameNotification): GameState {
             return when (notification) {
                 is GameNotification.PlayerJoined -> copy(players = players + notification.playerId)

@@ -29,8 +29,7 @@ class InMemoryGameRepository() : GameRepository {
 
     override fun save(game: Game) {
         events.addAll(game.newEvents)
-        // todo: write a test that proves only new events are sent
-        outbox.addAll(game.events)
+        outbox.addAll(game.newEvents)
     }
 
     override fun load(gameId: GameId): Game? {
