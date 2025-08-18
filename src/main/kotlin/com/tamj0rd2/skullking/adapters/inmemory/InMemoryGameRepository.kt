@@ -44,7 +44,8 @@ class InMemoryGameRepository() : GameRepository {
 
     private fun processOutbox() {
         try {
-            outbox.forEach { event -> eventSubscribers.forEach { it.notify(event) } }
+            val event = outbox.removeFirstOrNull() ?: return
+            eventSubscribers.forEach { it.notify(event) }
         } catch (t: Throwable) {
             t.printStackTrace()
             throw t

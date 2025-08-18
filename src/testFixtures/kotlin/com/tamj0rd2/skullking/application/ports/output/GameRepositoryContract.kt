@@ -3,6 +3,7 @@ package com.tamj0rd2.skullking.application.ports.output
 import com.tamj0rd2.skullking.domain.game.Game
 import com.tamj0rd2.skullking.domain.game.GameId
 import com.tamj0rd2.skullking.domain.game.PlayerId
+import com.tamj0rd2.skullking.testsupport.eventually
 import dev.forkhandles.values.random
 import org.junit.jupiter.api.Test
 import strikt.api.expectThat
@@ -23,5 +24,16 @@ interface GameRepositoryContract {
 
         val allGames = gameRepository.findAll()
         expectThat(allGames.map { it.id }).contains(game.id)
+    }
+
+    @Test
+    fun `when a game is saved, new events are emitted`() {
+        val game =
+            Game.new(GameId.random(), PlayerId("test-player")).addPlayer(PlayerId("test-player"))
+        val subscriber = SpyGameEventSubscriber()
+        gameRepository.subscribe(subscriber)
+
+        gameRepository.save(game)
+        eventually { expectThat(subscriber.events).isEqualTo(game.newEvents) }
     }
 }
