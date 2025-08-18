@@ -9,11 +9,12 @@ class SendGameNotificationsService(private val sendGameNotificationPort: SendGam
     GameEventSubscriber {
 
     override fun notify(event: GameEvent) {
-        sendGameNotificationPort.send(event.toGameNotification())
+        event.toGameNotification()?.let(sendGameNotificationPort::send)
     }
 
-    private fun GameEvent.toGameNotification(): GameNotification.PlayerJoined =
+    private fun GameEvent.toGameNotification(): GameNotification? =
         when (this) {
+            is GameEvent.GameCreated -> null
             is GameEvent.PlayerJoined -> GameNotification.PlayerJoined(this.playerId)
         }
 }

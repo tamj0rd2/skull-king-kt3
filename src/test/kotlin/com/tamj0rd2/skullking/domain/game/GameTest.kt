@@ -4,9 +4,7 @@ import dev.forkhandles.values.random
 import org.junit.jupiter.api.Test
 import strikt.api.expectThat
 import strikt.assertions.containsExactlyInAnyOrder
-import strikt.assertions.isA
 import strikt.assertions.isEqualTo
-import strikt.assertions.withSingle
 
 class GameTest {
     @Test
@@ -19,9 +17,12 @@ class GameTest {
         expectThat(gameAfterPlayerJoins) {
             get { players }.containsExactlyInAnyOrder(playerToJoin)
             get { events }
-                .withSingle {
-                    isA<GameEvent.PlayerJoined>().get { playerId }.isEqualTo(playerToJoin)
-                }
+                .isEqualTo(
+                    listOf(
+                        GameEvent.GameCreated(gameId = game.id, createdBy = playerToJoin),
+                        GameEvent.PlayerJoined(gameId = game.id, playerId = playerToJoin),
+                    )
+                )
         }
     }
 }
