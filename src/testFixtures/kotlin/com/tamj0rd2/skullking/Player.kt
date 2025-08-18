@@ -7,15 +7,18 @@ import com.tamj0rd2.skullking.application.ports.input.CreateGameInput
 import com.tamj0rd2.skullking.application.ports.input.JoinGameInput
 import com.tamj0rd2.skullking.application.ports.input.ViewGamesInput
 import com.tamj0rd2.skullking.domain.game.PlayerId
+import java.util.concurrent.CopyOnWriteArrayList
 import strikt.api.expectThat
 import strikt.assertions.containsExactlyInAnyOrder
 import strikt.assertions.isEqualTo
 import strikt.assertions.isNotEmpty
-import strikt.assertions.isNotNull
+import strikt.assertions.isNotEqualTo
 import strikt.assertions.withSingle
 
 class Player(val id: PlayerId, val application: Application) : ReceiveGameNotification {
-    private var gameState: GameState? = null
+    private val receivedNotifications = CopyOnWriteArrayList<GameNotification>()
+    private val gameState
+        get() = receivedNotifications.fold(GameState(), GameState::apply)
 
     fun `creates a game`() {
         application.createGameUseCase.execute(CreateGameInput(id))
@@ -27,24 +30,26 @@ class Player(val id: PlayerId, val application: Application) : ReceiveGameNotifi
     }
 
     fun `joins a game`() {
-        gameState = GameState()
+        val stateBeforeJoining = gameState
 
         val game = application.viewGamesUseCase.execute(ViewGamesInput).games.single()
         application.joinGameUseCase.execute(
             JoinGameInput(game.id, receiveGameNotification = this, playerId = id)
         )
+
+        // todo: this output sucks. I actually want to try hamkrest again.
+        eventually { expectThat(gameState).isNotEqualTo(stateBeforeJoining) }
     }
 
     fun `sees players in the game`(vararg expectedPlayers: Player) {
         expectThat(gameState)
-            .isNotNull()
             .get { players }
             .isNotEmpty()
             .containsExactlyInAnyOrder(expectedPlayers.map { it.id })
     }
 
     override fun receive(gameNotification: GameNotification) {
-        gameState = gameState!!.apply(gameNotification)
+        receivedNotifications.add(gameNotification)
     }
 
     private data class GameState(val players: Set<PlayerId> = emptySet()) {
@@ -53,5 +58,27 @@ class Player(val id: PlayerId, val application: Application) : ReceiveGameNotifi
                 is GameNotification.PlayerJoined -> copy(players = players + notification.playerId)
             }
         }
+    }
+
+    fun eventually(action: () -> Unit) {
+        val timeoutMillis = 1_000L
+        val pollIntervalMillis = 25L
+        val deadline = System.currentTimeMillis() + timeoutMillis
+        var lastFailure: AssertionError? = null
+
+        while (System.currentTimeMillis() < deadline) {
+            try {
+                action()
+                return
+            } catch (e: AssertionError) {
+                lastFailure = e
+                Thread.sleep(pollIntervalMillis)
+            }
+        }
+
+        throw AssertionError(
+            "Action did not succeed within ${timeoutMillis}ms. Last failure: ${lastFailure?.message}",
+            lastFailure,
+        )
     }
 }

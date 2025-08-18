@@ -12,3 +12,4 @@ To make OTEL work, set these environment variables before running the applicatio
 ### Mikado
 
 - introduce use case for notifying players. atm, information can easily be lost. use outbox etc.
+    - send notifications as a result of saving the game

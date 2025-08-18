@@ -1,14 +1,33 @@
 package com.tamj0rd2.skullking.adapters.inmemory
 
+import com.tamj0rd2.skullking.application.ports.output.GameEventSubscriber
 import com.tamj0rd2.skullking.application.ports.output.GameRepository
 import com.tamj0rd2.skullking.domain.game.Game
+import com.tamj0rd2.skullking.domain.game.GameEvent
 import com.tamj0rd2.skullking.domain.game.GameId
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 class InMemoryGameRepository() : GameRepository {
     private val games = mutableMapOf<GameId, Game>()
+    private val eventSubscribers = mutableSetOf<GameEventSubscriber>()
+    private val outbox = mutableListOf<GameEvent>()
+
+    private val scheduler =
+        Executors.newScheduledThreadPool(
+            1,
+            Thread.ofVirtual().name("inmem-game-scheduler-", 0).factory(),
+        )
+
+    init {
+        // passing a lambda rather than a reference actually improves the stack trace
+        scheduler.scheduleAtFixedRate({ processOutbox() }, 0, 1, TimeUnit.MILLISECONDS)
+    }
 
     override fun save(game: Game) {
         games[game.id] = game
+        // todo: write a test that proves only new events are sent
+        outbox.addAll(game.events)
     }
 
     override fun load(gameId: GameId): Game? {
@@ -17,5 +36,18 @@ class InMemoryGameRepository() : GameRepository {
 
     override fun findAll(): List<Game> {
         return games.values.toList()
+    }
+
+    override fun subscribe(subscriber: GameEventSubscriber) {
+        eventSubscribers.add(subscriber)
+    }
+
+    private fun processOutbox() {
+        try {
+            outbox.forEach { event -> eventSubscribers.forEach { it.notify(event) } }
+        } catch (t: Throwable) {
+            t.printStackTrace()
+            throw t
+        }
     }
 }

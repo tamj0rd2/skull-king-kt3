@@ -14,5 +14,6 @@ fun createOutputPortsForTesting(): OutputPorts {
         loadGamePort = gameRepository,
         subscribeToGameNotificationsPort = gameNotifier,
         sendGameNotificationPort = gameNotifier,
+        subscribeToGameEventsPort = gameRepository,
     )
 }
