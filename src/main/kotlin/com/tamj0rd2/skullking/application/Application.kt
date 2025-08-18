@@ -5,6 +5,7 @@ import com.tamj0rd2.skullking.application.ports.input.JoinGameUseCase
 import com.tamj0rd2.skullking.application.ports.input.ViewGamesUseCase
 import com.tamj0rd2.skullking.application.services.CreateGameService
 import com.tamj0rd2.skullking.application.services.JoinGameService
+import com.tamj0rd2.skullking.application.services.SendGameNotificationsService
 import com.tamj0rd2.skullking.application.services.ViewGamesService
 
 data class Application(
@@ -13,19 +14,22 @@ data class Application(
     val joinGameUseCase: JoinGameUseCase,
 ) {
     companion object {
-        fun create(outputPorts: OutputPorts) =
-            Application(
+        fun create(outputPorts: OutputPorts): Application {
+            outputPorts.subscribeToGameEventsPort.subscribe(
+                SendGameNotificationsService(outputPorts.sendGameNotificationPort)
+            )
+
+            return Application(
                 createGameUseCase = CreateGameService(outputPorts.saveGamePort),
                 viewGamesUseCase = ViewGamesService(outputPorts.findGamesPort),
                 joinGameUseCase =
                     JoinGameService(
-                            saveGamePort = outputPorts.saveGamePort,
-                            loadGamePort = outputPorts.loadGamePort,
-                            subscribeToGameNotificationsPort =
-                                outputPorts.subscribeToGameNotificationsPort,
-                            sendGameNotificationPort = outputPorts.sendGameNotificationPort,
-                        )
-                        .also { outputPorts.subscribeToGameEventsPort.subscribe(it) },
+                        saveGamePort = outputPorts.saveGamePort,
+                        loadGamePort = outputPorts.loadGamePort,
+                        subscribeToGameNotificationsPort =
+                            outputPorts.subscribeToGameNotificationsPort,
+                    ),
             )
+        }
     }
 }
