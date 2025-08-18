@@ -1,6 +1,7 @@
 package com.tamj0rd2.skullking.application.ports.output
 
 import com.tamj0rd2.skullking.domain.game.Game
+import com.tamj0rd2.skullking.domain.game.GameEvent
 import com.tamj0rd2.skullking.domain.game.GameId
 import com.tamj0rd2.skullking.domain.game.PlayerId
 import com.tamj0rd2.skullking.testsupport.eventually
@@ -9,6 +10,7 @@ import org.junit.jupiter.api.Test
 import strikt.api.expectThat
 import strikt.assertions.contains
 import strikt.assertions.isEqualTo
+import strikt.assertions.isGreaterThan
 
 interface GameRepositoryContract {
 
@@ -35,5 +37,27 @@ interface GameRepositoryContract {
 
         gameRepository.save(game)
         eventually { expectThat(subscriber.events).isEqualTo(game.newEvents) }
+    }
+
+    @Test
+    fun `if notifying of a game event fails, it will be retried to achieve at least once delivery`() {
+        val subscriber =
+            object : GameEventSubscriber {
+                var callCount = 0
+
+                override fun notify(event: GameEvent) {
+                    callCount++
+                    if (callCount == 1) {
+                        throw RuntimeException("Simulated failure")
+                    }
+                    println("success")
+                }
+            }
+        gameRepository.subscribe(subscriber)
+
+        val game = Game.new(GameId.random(), PlayerId("test-player"))
+        gameRepository.save(game)
+
+        eventually { expectThat(subscriber.callCount).isGreaterThan(1) }
     }
 }

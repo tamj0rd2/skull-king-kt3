@@ -43,12 +43,13 @@ class InMemoryGameRepository() : GameRepository {
     }
 
     private fun processOutbox() {
+        val event = outbox.removeFirstOrNull() ?: return
+
         try {
-            val event = outbox.removeFirstOrNull() ?: return
             eventSubscribers.forEach { it.notify(event) }
         } catch (t: Throwable) {
             t.printStackTrace()
-            throw t
+            outbox.addFirst(event)
         }
     }
 }
