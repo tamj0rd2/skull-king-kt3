@@ -7,6 +7,7 @@ import com.tamj0rd2.skullking.application.ports.input.CreateGameInput
 import com.tamj0rd2.skullking.application.ports.input.JoinGameInput
 import com.tamj0rd2.skullking.application.ports.input.ViewGamesInput
 import com.tamj0rd2.skullking.domain.game.PlayerId
+import com.tamj0rd2.skullking.testsupport.eventually
 import java.util.concurrent.CopyOnWriteArrayList
 import strikt.api.expectThat
 import strikt.assertions.containsExactlyInAnyOrder
@@ -58,27 +59,5 @@ class Player(val id: PlayerId, val application: Application) : ReceiveGameNotifi
                 is GameNotification.PlayerJoined -> copy(players = players + notification.playerId)
             }
         }
-    }
-
-    fun eventually(action: () -> Unit) {
-        val timeoutMillis = 1_000L
-        val pollIntervalMillis = 25L
-        val deadline = System.currentTimeMillis() + timeoutMillis
-        var lastFailure: AssertionError? = null
-
-        while (System.currentTimeMillis() < deadline) {
-            try {
-                action()
-                return
-            } catch (e: AssertionError) {
-                lastFailure = e
-                Thread.sleep(pollIntervalMillis)
-            }
-        }
-
-        throw AssertionError(
-            "Action did not succeed within ${timeoutMillis}ms. Last failure: ${lastFailure?.message}",
-            lastFailure,
-        )
     }
 }
