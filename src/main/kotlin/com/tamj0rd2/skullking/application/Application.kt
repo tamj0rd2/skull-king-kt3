@@ -14,7 +14,7 @@ data class Application(
     val joinGameUseCase: JoinGameUseCase,
 ) {
     companion object {
-        fun create(outputPorts: OutputPorts): Application {
+        fun createFrom(outputPorts: OutputPorts): Application {
             outputPorts.subscribeToGameEventsPort.subscribe(
                 SendGameNotificationsService(outputPorts.sendGameNotificationPort)
             )

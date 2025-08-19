@@ -11,7 +11,7 @@ import org.junit.platform.commons.annotation.Testable
 @Testable
 @Execution(value = ExecutionMode.SAME_THREAD)
 class ApplicationEndToEndTest : EndToEndTestContract {
-    private val application = Application.create(OutputPorts.inMemory())
+    private val application = Application.createFrom(OutputPorts.inMemory())
 
     override fun createPlayerActor(name: String): Player {
         return Player(PlayerId.of(name), application)
