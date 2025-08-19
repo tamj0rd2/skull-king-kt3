@@ -1,8 +1,7 @@
-package com.tamj0rd2.skullking.application.ports.input
+package com.tamj0rd2.skullking.application
 
 import com.tamj0rd2.skullking.EndToEndTestContract
 import com.tamj0rd2.skullking.Player
-import com.tamj0rd2.skullking.application.Application
 import com.tamj0rd2.skullking.createOutputPortsForTesting
 import com.tamj0rd2.skullking.domain.game.PlayerId
 import org.junit.jupiter.api.parallel.Execution
