@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Skull King - Bidding Complete (Modern)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100vh;
+            color: #e4e4e7;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: radial-gradient(circle at 25% 25%, rgba(56, 189, 248, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 75% 75%, rgba(168, 85, 247, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .game-container {
+            display: grid;
+            grid-template-columns: 1fr 320px;
+            grid-template-rows: auto 1fr;
+            height: 100vh;
+            position: relative;
+            z-index: 1;
+        }
+
+        .game-header {
+            grid-column: 1 / -1;
+            background: rgba(15, 23, 42, 0.8);
+            border-bottom: 1px solid rgba(51, 65, 85, 0.6);
+            padding: 16px 24px;
+            backdrop-filter: blur(20px);
+        }
+
+        .round-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .round-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #f8fafc;
+        }
+
+        .round-details {
+            display: flex;
+            gap: 24px;
+            color: #94a3b8;
+            font-size: 0.875rem;
+        }
+
+        .main-play-area {
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .cards-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 24px;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #cbd5e1;
+            text-align: center;
+        }
+
+        .hand {
+            display: flex;
+            gap: 8px;
+            padding: 20px;
+        }
+
+        .card {
+            width: 80px;
+            height: 120px;
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            transition: transform 0.2s ease;
+            position: relative;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+        }
+
+        .card-top {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .card-number {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #1f2937;
+        }
+
+        .card-suit {
+            font-size: 1.5rem;
+            margin-top: 4px;
+        }
+
+        .card-center {
+            font-size: 2rem;
+        }
+
+        .card-bottom {
+            transform: rotate(180deg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .red-suit {
+            color: #dc2626;
+        }
+
+        .black-suit {
+            color: #1f2937;
+        }
+
+        .bid-results-section {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(51, 65, 85, 0.6);
+            border-radius: 12px;
+            padding: 24px;
+            backdrop-filter: blur(20px);
+        }
+
+        .bid-results-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #f8fafc;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .bid-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .bid-item {
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(71, 85, 105, 0.4);
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .bid-player {
+            font-size: 0.875rem;
+            color: #94a3b8;
+            margin-bottom: 4px;
+        }
+
+        .bid-amount {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #3b82f6;
+        }
+
+        .bid-total {
+            background: rgba(59, 130, 246, 0.2);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .total-label {
+            font-size: 0.875rem;
+            color: #94a3b8;
+            margin-bottom: 4px;
+        }
+
+        .total-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #3b82f6;
+        }
+
+        .start-round-button {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .start-round-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 25px rgba(34, 197, 94, 0.4);
+        }
+
+        .sidebar {
+            background: rgba(15, 23, 42, 0.9);
+            border-left: 1px solid rgba(51, 65, 85, 0.6);
+            padding: 24px;
+            backdrop-filter: blur(20px);
+            overflow-y: auto;
+        }
+
+        .sidebar-section {
+            margin-bottom: 32px;
+        }
+
+        .sidebar-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #f8fafc;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(51, 65, 85, 0.6);
+        }
+
+        .players-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .player-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(71, 85, 105, 0.4);
+            border-radius: 8px;
+        }
+
+        .player-name {
+            font-weight: 500;
+            color: #e4e4e7;
+        }
+
+        .player-bid {
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 700;
+            background: rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .scoreboard-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+        }
+
+        .scoreboard-table th {
+            background: rgba(30, 41, 59, 0.8);
+            color: #cbd5e1;
+            padding: 8px 4px;
+            text-align: center;
+            font-weight: 600;
+            border: 1px solid rgba(71, 85, 105, 0.4);
+        }
+
+        .scoreboard-table td {
+            padding: 6px 4px;
+            text-align: center;
+            border: 1px solid rgba(71, 85, 105, 0.4);
+            background: rgba(15, 23, 42, 0.6);
+            color: #e4e4e7;
+        }
+
+        .player-row {
+            font-weight: 500;
+        }
+
+        .current-round {
+            background: rgba(59, 130, 246, 0.2) !important;
+            color: #3b82f6;
+            font-weight: 600;
+        }
+
+        .total-score {
+            font-weight: 700;
+            color: #3b82f6;
+        }
+
+        .countdown {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 16px;
+            color: #94a3b8;
+            font-size: 0.875rem;
+        }
+
+        .countdown-timer {
+            font-weight: 600;
+            color: #fb923c;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .pulse {
+            animation: pulse 1s ease-in-out infinite;
+        }
+
+        @media (max-width: 1024px) {
+            .game-container {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto 1fr;
+            }
+
+            .sidebar {
+                border-left: none;
+                border-top: 1px solid rgba(51, 65, 85, 0.6);
+                max-height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="game-container">
+    <div class="game-header">
+        <div class="round-info">
+            <h1 class="round-title">Round 5 - All Bids Complete</h1>
+            <div class="round-details">
+                <span>Cards Dealt: 5</span>
+                <span>Total Bids: 18</span>
+                <span>Ready to start trick-taking</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-play-area">
+        <div class="cards-section">
+            <h2 class="section-title">Your Hand</h2>
+            <div class="hand">
+                <div class="card">
+                    <div class="card-top">
+                        <div class="card-number red-suit">K</div>
+                        <div class="card-suit red-suit">♥</div>
+                    </div>
+                    <div class="card-center red-suit">♥</div>
+                    <div class="card-bottom">
+                        <div class="card-number red-suit">K</div>
+                        <div class="card-suit red-suit">♥</div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-top">
+                        <div class="card-number black-suit">10</div>
+                        <div class="card-suit black-suit">♠</div>
+                    </div>
+                    <div class="card-center black-suit">♠</div>
+                    <div class="card-bottom">
+                        <div class="card-number black-suit">10</div>
+                        <div class="card-suit black-suit">♠</div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-top">
+                        <div class="card-number red-suit">7</div>
+                        <div class="card-suit red-suit">♦</div>
+                    </div>
+                    <div class="card-center red-suit">♦</div>
+                    <div class="card-bottom">
+                        <div class="card-number red-suit">7</div>
+                        <div class="card-suit red-suit">♦</div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-top">
+                        <div class="card-number black-suit">3</div>
+                        <div class="card-suit black-suit">♣</div>
+                    </div>
+                    <div class="card-center black-suit">♣</div>
+                    <div class="card-bottom">
+                        <div class="card-number black-suit">3</div>
+                        <div class="card-suit black-suit">♣</div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-top">
+                        <div class="card-number red-suit">A</div>
+                        <div class="card-suit red-suit">♥</div>
+                    </div>
+                    <div class="card-center red-suit">♥</div>
+                    <div class="card-bottom">
+                        <div class="card-number red-suit">A</div>
+                        <div class="card-suit red-suit">♥</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bid-results-section">
+            <h3 class="bid-results-title">Round 5 Bid Summary</h3>
+
+            <div class="bid-summary">
+                <div class="bid-item">
+                    <div class="bid-player">ProPlayer99 (You)</div>
+                    <div class="bid-amount">2</div>
+                </div>
+                <div class="bid-item">
+                    <div class="bid-player">CardMaster</div>
+                    <div class="bid-amount">3</div>
+                </div>
+                <div class="bid-item">
+                    <div class="bid-player">SkullHunter</div>
+                    <div class="bid-amount">4</div>
+                </div>
+                <div class="bid-item">
+                    <div class="bid-player">TrickTaker</div>
+                    <div class="bid-amount">2</div>
+                </div>
+                <div class="bid-item">
+                    <div class="bid-player">GameWizard</div>
+                    <div class="bid-amount">3</div>
+                </div>
+                <div class="bid-item">
+                    <div class="bid-player">CardSharp</div>
+                    <div class="bid-amount">4</div>
+                </div>
+            </div>
+
+            <div class="bid-total">
+                <div class="total-label">Total Bids vs Available Tricks</div>
+                <div class="total-value">18 bids for 5 tricks</div>
+            </div>
+
+            <button class="start-round-button">
+                <span>🎯</span>
+                Start Trick-Taking Phase
+            </button>
+
+            <div class="countdown">
+                <span>Starting automatically in:</span>
+                <span class="countdown-timer pulse">5</span>
+                <span>seconds</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="sidebar">
+        <div class="sidebar-section">
+            <h3 class="sidebar-title">Players & Bids</h3>
+            <div class="players-list">
+                <div class="player-item">
+                    <span class="player-name">ProPlayer99 (You)</span>
+                    <span class="player-bid">Bid: 2</span>
+                </div>
+                <div class="player-item">
+                    <span class="player-name">CardMaster</span>
+                    <span class="player-bid">Bid: 3</span>
+                </div>
+                <div class="player-item">
+                    <span class="player-name">SkullHunter</span>
+                    <span class="player-bid">Bid: 4</span>
+                </div>
+                <div class="player-item">
+                    <span class="player-name">TrickTaker</span>
+                    <span class="player-bid">Bid: 2</span>
+                </div>
+                <div class="player-item">
+                    <span class="player-name">GameWizard</span>
+                    <span class="player-bid">Bid: 3</span>
+                </div>
+                <div class="player-item">
+                    <span class="player-name">CardSharp</span>
+                    <span class="player-bid">Bid: 4</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar-section">
+            <h3 class="sidebar-title">Scoreboard</h3>
+            <table class="scoreboard-table">
+                <thead>
+                <tr>
+                    <th>Player</th>
+                    <th>R1</th>
+                    <th>R2</th>
+                    <th>R3</th>
+                    <th>R4</th>
+                    <th>R5</th>
+                    <th>Total</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td class="player-row">ProPlayer99</td>
+                    <td>30</td>
+                    <td>50</td>
+                    <td>20</td>
+                    <td>60</td>
+                    <td class="current-round">B:2</td>
+                    <td class="total-score">160</td>
+                </tr>
+                <tr>
+                    <td class="player-row">CardMaster</td>
+                    <td>20</td>
+                    <td>40</td>
+                    <td>50</td>
+                    <td>30</td>
+                    <td class="current-round">B:3</td>
+                    <td class="total-score">140</td>
+                </tr>
+                <tr>
+                    <td class="player-row">SkullHunter</td>
+                    <td>50</td>
+                    <td>30</td>
+                    <td>40</td>
+                    <td>50</td>
+                    <td class="current-round">B:4</td>
+                    <td class="total-score">170</td>
+                </tr>
+                <tr>
+                    <td class="player-row">TrickTaker</td>
+                    <td>40</td>
+                    <td>20</td>
+                    <td>30</td>
+                    <td>40</td>
+                    <td class="current-round">B:2</td>
+                    <td class="total-score">130</td>
+                </tr>
+                <tr>
+                    <td class="player-row">GameWizard</td>
+                    <td>30</td>
+                    <td>60</td>
+                    <td>30</td>
+                    <td>20</td>
+                    <td class="current-round">B:3</td>
+                    <td class="total-score">140</td>
+                </tr>
+                <tr>
+                    <td class="player-row">CardSharp</td>
+                    <td>20</td>
+                    <td>30</td>
+                    <td>60</td>
+                    <td>40</td>
+                    <td class="current-round">B:4</td>
+                    <td class="total-score">150</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+</html>

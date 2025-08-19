@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Skull King - Trick Complete Round 9 - Modern</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100vh;
+            color: #e4e4e7;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: radial-gradient(circle at 25% 25%, rgba(56, 189, 248, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 75% 75%, rgba(168, 85, 247, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .game-container {
+            display: grid;
+            grid-template-columns: 1fr 320px;
+            grid-template-rows: auto 1fr;
+            height: 100vh;
+            position: relative;
+            z-index: 1;
+        }
+
+        .game-header {
+            grid-column: 1 / -1;
+            background: rgba(15, 23, 42, 0.8);
+            border-bottom: 1px solid rgba(51, 65, 85, 0.6);
+            padding: 16px 24px;
+            backdrop-filter: blur(20px);
+        }
+
+        .round-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .round-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #f8fafc;
+        }
+
+        .round-details {
+            display: flex;
+            gap: 24px;
+            color: #94a3b8;
+            font-size: 0.875rem;
+            align-items: center;
+        }
+
+        .trump-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            background: rgba(168, 85, 247, 0.2);
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            border-radius: 6px;
+            color: #c084fc;
+            font-weight: 600;
+        }
+
+        .main-play-area {
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .trick-complete-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 24px;
+            min-height: 400px;
+        }
+
+        .trick-result {
+            text-align: center;
+            padding: 24px;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(51, 65, 85, 0.4);
+            border-radius: 16px;
+            backdrop-filter: blur(20px);
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .trick-winner {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #22c55e;
+            margin-bottom: 8px;
+        }
+
+        .trick-summary {
+            font-size: 1rem;
+            color: #cbd5e1;
+            margin-bottom: 24px;
+        }
+
+        .winning-card {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 24px;
+        }
+
+        .card {
+            width: 100px;
+            height: 150px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            box-shadow: 0 6px 20px rgba(34, 197, 94, 0.4);
+            transition: all 0.2s ease;
+            position: relative;
+            border: 3px solid #22c55e;
+        }
+
+        .card.special-card {
+            background: linear-gradient(135deg, #1f2937, #374151);
+            color: #f9fafb;
+            border-color: #22c55e;
+        }
+
+        .card.winning-card {
+            background: white;
+            animation: pulse-winner 2s infinite;
+        }
+
+        @keyframes pulse-winner {
+            0%, 100% {
+                box-shadow: 0 6px 20px rgba(34, 197, 94, 0.4);
+            }
+            50% {
+                box-shadow: 0 8px 25px rgba(34, 197, 94, 0.6);
+            }
+        }
+
+        .card-top {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .card-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #1f2937;
+        }
+
+        .card-suit {
+            font-size: 1.8rem;
+            margin-top: 4px;
+        }
+
+        .card-center {
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+
+        .card-bottom {
+            transform: rotate(180deg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .red-suit {
+            color: #dc2626;
+        }
+
+        .black-suit {
+            color: #1f2937;
+        }
+
+        .blue-suit {
+            color: #2563eb;
+        }
+
+        .yellow-suit {
+            color: #eab308;
+        }
+
+        .special-text {
+            color: #f9fafb;
+            font-size: 0.8rem;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .trick-cards-summary {
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(71, 85, 105, 0.4);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .summary-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #f8fafc;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .played-cards-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+        }
+
+        .played-card-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px;
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 8px;
+            border: 1px solid rgba(51, 65, 85, 0.4);
+        }
+
+        .played-card-item.winner {
+            border-color: #22c55e;
+            background: rgba(34, 197, 94, 0.1);
+        }
+
+        .mini-card {
+            width: 32px;
+            height: 48px;
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 600;
+            border: 1px solid #e2e8f0;
+        }
+
+        .mini-card.special {
+            background: linear-gradient(135deg, #1f2937, #374151);
+            color: #f9fafb;
+            border-color: #fbbf24;
+        }
+
+        .mini-card.normal {
+            background: white;
+            color: #1f2937;
+        }
+
+        .played-card-info {
+            flex: 1;
+        }
+
+        .played-player-name {
+            font-weight: 500;
+            color: #e4e4e7;
+            font-size: 0.875rem;
+        }
+
+        .played-card-desc {
+            font-size: 0.75rem;
+            color: #94a3b8;
+        }
+
+        .play-order-badge {
+            background: #3b82f6;
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .next-actions {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+        }
+
+        .action-button {
+            padding: 12px 24px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 1rem;
+        }
+
+        .primary-button {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .primary-button:hover {
+            background: #2563eb;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .secondary-button {
+            background: rgba(71, 85, 105, 0.6);
+            color: #e4e4e7;
+            border: 1px solid rgba(71, 85, 105, 0.8);
+        }
+
+        .secondary-button:hover {
+            background: rgba(71, 85, 105, 0.8);
+        }
+
+        .sidebar {
+            background: rgba(15, 23, 42, 0.9);
+            border-left: 1px solid rgba(51, 65, 85, 0.6);
+            padding: 24px;
+            backdrop-filter: blur(20px);
+            overflow-y: auto;
+        }
+
+        .sidebar-section {
+            margin-bottom: 32px;
+        }
+
+        .sidebar-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #f8fafc;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(51, 65, 85, 0.6);
+        }
+
+        .players-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .player-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(71, 85, 105, 0.4);
+            border-radius: 8px;
+        }
+
+        .player-item.trick-winner {
+            border-color: #22c55e;
+            background: rgba(34, 197, 94, 0.1);
+        }
+
+        .player-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .player-name {
+            font-weight: 500;
+            color: #e4e4e7;
+        }
+
+        .player-stats {
+            font-size: 0.75rem;
+            color: #94a3b8;
+        }
+
+        .player-bid-info {
+            display: flex;
+            flex-direction: column;
+            align-items: end;
+            gap: 4px;
+        }
+
+        .player-bid {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background: rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .player-tricks {
+            font-size: 0.75rem;
+            color: #94a3b8;
+        }
+
+        .trick-complete-badge {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 20px;
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+
+        .round-progress {
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(71, 85, 105, 0.4);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 20px;
+        }
+
+        .progress-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #cbd5e1;
+            margin-bottom: 8px;
+        }
+
+        .progress-text {
+            font-size: 0.75rem;
+            color: #94a3b8;
+        }
+
+        @media (max-width: 1024px) {
+            .game-container {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto 1fr;
+            }
+
+            .sidebar {
+                border-left: none;
+                border-top: 1px solid rgba(51, 65, 85, 0.6);
+                max-height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="game-container">
+    <div class="game-header">
+        <div class="round-info">
+            <h1 class="round-title">Round 9 - Trick 3 Complete</h1>
+            <div class="round-details">
+                <div class="trump-indicator">
+                    <span>Trump:</span>
+                    <span style="color: #dc2626;">♥</span>
+                </div>
+                <span>Next trick starts soon</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-play-area">
+        <div class="trick-complete-area">
+            <div class="trick-result">
+                <div class="trick-winner">GameWizard wins the trick!</div>
+                <div class="trick-summary">
+                    Scary Mary played as Pirate beats all other cards
+                </div>
+
+                <div class="winning-card">
+                    <div class="card special-card winning-card">
+                        <div class="card-top">
+                            <div class="special-text">SCARY</div>
+                        </div>
+                        <div class="card-center">👻</div>
+                        <div class="card-bottom">
+                            <div class="special-text">MARY</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="trick-cards-summary">
+                    <h4 class="summary-title">All Cards Played This Trick</h4>
+                    <div class="played-cards-list">
+                        <div class="played-card-item">
+                            <div class="play-order-badge">1</div>
+                            <div class="mini-card normal blue-suit">
+                                <div>11</div>
+                                <div>♦</div>
+                            </div>
+                            <div class="played-card-info">
+                                <div class="played-player-name">SkullHunter</div>
+                                <div class="played-card-desc">Blue 11 (Lead)</div>
+                            </div>
+                        </div>
+
+                        <div class="played-card-item winner">
+                            <div class="play-order-badge">2</div>
+                            <div class="mini-card special">
+                                <div style="font-size: 0.5rem;">👻</div>
+                            </div>
+                            <div class="played-card-info">
+                                <div class="played-player-name">GameWizard</div>
+                                <div class="played-card-desc">Scary Mary (Pirate)</div>
+                            </div>
+                        </div>
+
+                        <div class="played-card-item">
+                            <div class="play-order-badge">3</div>
+                            <div class="mini-card normal blue-suit">
+                                <div>8</div>
+                                <div>♦</div>
+                            </div>
+                            <div class="played-card-info">
+                                <div class="played-player-name">CardSharp</div>
+                                <div class="played-card-desc">Blue 8</div>
+                            </div>
+                        </div>
+
+                        <div class="played-card-item">
+                            <div class="play-order-badge">4</div>
+                            <div class="mini-card normal red-suit">
+                                <div>6</div>
+                                <div>♥</div>
+                            </div>
+                            <div class="played-card-info">
+                                <div class="played-player-name">TrickTaker</div>
+                                <div class="played-card-desc">Red 6 (Trump)</div>
+                            </div>
+                        </div>
+
+                        <div class="played-card-item">
+                            <div class="play-order-badge">5</div>
+                            <div class="mini-card special">
+                                <div style="font-size: 0.5rem;">🏃</div>
+                            </div>
+                            <div class="played-card-info">
+                                <div class="played-player-name">CardMaster</div>
+                                <div class="played-card-desc">Escape</div>
+                            </div>
+                        </div>
+
+                        <div class="played-card-item">
+                            <div class="play-order-badge">6</div>
+                            <div class="mini-card normal blue-suit">
+                                <div>4</div>
+                                <div>♦</div>
+                            </div>
+                            <div class="played-card-info">
+                                <div class="played-player-name">ProPlayer99 (You)</div>
+                                <div class="played-card-desc">Blue 4</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="next-actions">
+                    <button class="action-button primary-button">Continue to Next Trick</button>
+                    <button class="action-button secondary-button">View Round Summary</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="sidebar">
+        <div class="sidebar-section">
+            <div class="trick-complete-badge">
+                Trick 3 of 9 Complete
+            </div>
+
+            <div class="round-progress">
+                <div class="progress-title">Round Progress</div>
+                <div class="progress-text">6 tricks remaining this round</div>
+            </div>
+
+            <h3 class="sidebar-title">Players & Updated Scores</h3>
+            <div class="players-list">
+                <div class="player-item">
+                    <div class="player-info">
+                        <div class="player-name">ProPlayer99 (You)</div>
+                        <div class="player-stats">Ready for next trick</div>
+                    </div>
+                    <div class="player-bid-info">
+                        <div class="player-bid">Bid: 4</div>
+                        <div class="player-tricks">Tricks: 2/4</div>
+                    </div>
+                </div>
+                <div class="player-item">
+                    <div class="player-info">
+                        <div class="player-name">CardMaster</div>
+                        <div class="player-stats">Ready for next trick</div>
+                    </div>
+                    <div class="player-bid-info">
+                        <div class="player-bid">Bid: 3</div>
+                        <div class="player-tricks">Tricks: 0/3</div>
+                    </div>
+                </div>
+                <div class="player-item">
+                    <div class="player-info">
+                        <div class="player-name">SkullHunter</div>
+                        <div class="player-stats">Ready for next trick</div>
+                    </div>
+                    <div class="player-bid-info">
+                        <div class="player-bid">Bid: 5</div>
+                        <div class="player-tricks">Tricks: 0/5</div>
+                    </div>
+                </div>
+                <div class="player-item">
+                    <div class="player-info">
+                        <div class="player-name">TrickTaker</div>
+                        <div class="player-stats">Ready for next trick</div>
+                    </div>
+                    <div class="player-bid-info">
+                        <div class="player-bid">Bid: 2</div>
+                        <div class="player-tricks">Tricks: 0/2</div>
+                    </div>
+                </div>
+                <div class="player-item trick-winner">
+                    <div class="player-info">
+                        <div class="player-name">GameWizard</div>
+                        <div class="player-stats">Trick Winner!</div>
+                    </div>
+                    <div class="player-bid-info">
+                        <div class="player-bid">Bid: 4</div>
+                        <div class="player-tricks">Tricks: 1/4</div>
+                    </div>
+                </div>
+                <div class="player-item">
+                    <div class="player-info">
+                        <div class="player-name">CardSharp</div>
+                        <div class="player-stats">Ready for next trick</div>
+                    </div>
+                    <div class="player-bid-info">
+                        <div class="player-bid">Bid: 3</div>
+                        <div class="player-tricks">Tricks: 0/3</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

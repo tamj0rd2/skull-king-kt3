@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Skull King - Game Complete - Modern</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100vh;
+            color: #e4e4e7;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: radial-gradient(circle at 25% 25%, rgba(56, 189, 248, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 75% 75%, rgba(168, 85, 247, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        /* Confetti Animation */
+        .confetti {
+            position: fixed;
+            top: -10px;
+            left: 50%;
+            width: 10px;
+            height: 10px;
+            background: #fbbf24;
+            animation: confetti-fall 3s linear infinite;
+            z-index: 1000;
+        }
+
+        .confetti:nth-child(odd) {
+            background: #22c55e;
+            animation-delay: -0.5s;
+        }
+
+        .confetti:nth-child(3n) {
+            background: #3b82f6;
+            animation-delay: -1s;
+        }
+
+        .confetti:nth-child(4n) {
+            background: #ef4444;
+            animation-delay: -1.5s;
+        }
+
+        .confetti:nth-child(5n) {
+            background: #a855f7;
+            animation-delay: -2s;
+        }
+
+        @keyframes confetti-fall {
+            to {
+                transform: translateY(100vh) rotateZ(360deg);
+            }
+        }
+
+        .game-container {
+            display: grid;
+            grid-template-columns: 1fr 420px;
+            grid-template-rows: auto 1fr;
+            min-height: 100vh;
+            position: relative;
+            z-index: 1;
+        }
+
+        .game-header {
+            grid-column: 1 / -1;
+            background: rgba(15, 23, 42, 0.8);
+            border-bottom: 1px solid rgba(51, 65, 85, 0.6);
+            padding: 16px 24px;
+            backdrop-filter: blur(20px);
+        }
+
+        .game-title {
+            text-align: center;
+        }
+
+        .completion-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+            animation: title-glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes title-glow {
+            from {
+                filter: drop-shadow(0 0 10px rgba(251, 191, 36, 0.5));
+            }
+            to {
+                filter: drop-shadow(0 0 20px rgba(251, 191, 36, 0.8));
+            }
+        }
+
+        .completion-subtitle {
+            font-size: 1.125rem;
+            color: #cbd5e1;
+        }
+
+        .main-content {
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            overflow-y: auto;
+        }
+
+        .winner-celebration {
+            text-align: center;
+            padding: 32px;
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(245, 158, 11, 0.1));
+            border: 2px solid rgba(251, 191, 36, 0.4);
+            border-radius: 20px;
+            backdrop-filter: blur(20px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .winner-celebration::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(251, 191, 36, 0.1), transparent);
+            animation: winner-shine 3s linear infinite;
+        }
+
+        @keyframes winner-shine {
+            0% {
+                transform: translateX(-100%) translateY(-100%) rotate(45deg);
+            }
+            100% {
+                transform: translateX(100%) translateY(100%) rotate(45deg);
+            }
+        }
+
+        .winner-crown {
+            font-size: 4rem;
+            margin-bottom: 16px;
+            animation: crown-bounce 2s ease-in-out infinite;
+        }
+
+        @keyframes crown-bounce {
+            0%, 100% {
+                transform: translateY(0) scale(1);
+            }
+            50% {
+                transform: translateY(-10px) scale(1.1);
+            }
+        }
+
+        .winner-name {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #fbbf24;
+            margin-bottom: 8px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .winner-score {
+            font-size: 1.5rem;
+            color: #f8fafc;
+            font-weight: 600;
+            position: relative;
+            z-index: 1;
+        }
+
+        .final-rankings {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(51, 65, 85, 0.4);
+            border-radius: 16px;
+            padding: 24px;
+            backdrop-filter: blur(20px);
+        }
+
+        .rankings-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #f8fafc;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .ranking-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .ranking-item {
+            display: flex;
+            align-items: center;
+            padding: 16px 20px;
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(71, 85, 105, 0.4);
+            border-radius: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .ranking-item.first-place {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(245, 158, 11, 0.1));
+            border-color: rgba(251, 191, 36, 0.6);
+            box-shadow: 0 4px 20px rgba(251, 191, 36, 0.2);
+        }
+
+        .ranking-item.second-place {
+            background: linear-gradient(135deg, rgba(156, 163, 175, 0.2), rgba(107, 114, 128, 0.1));
+            border-color: rgba(156, 163, 175, 0.6);
+        }
+
+        .ranking-item.third-place {
+            background: linear-gradient(135deg, rgba(205, 127, 50, 0.2), rgba(180, 83, 9, 0.1));
+            border-color: rgba(205, 127, 50, 0.6);
+        }
+
+        .ranking-item.you {
+            border-color: #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .ranking-item.first-place.you {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.3), rgba(59, 130, 246, 0.1));
+            border-color: #fbbf24;
+        }
+
+        .ranking-position {
+            font-size: 1.5rem;
+            font-weight: 700;
+            width: 40px;
+            text-align: center;
+        }
+
+        .ranking-position.first {
+            color: #fbbf24;
+        }
+
+        .ranking-position.second {
+            color: #9ca3af;
+        }
+
+        .ranking-position.third {
+            color: #cd7f32;
+        }
+
+        .ranking-position.other {
+            color: #6b7280;
+        }
+
+        .ranking-medal {
+            font-size: 1.5rem;
+            margin-right: 12px;
+        }
+
+        .ranking-info {
+            flex: 1;
+            margin-left: 16px;
+        }
+
+        .ranking-name {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #f8fafc;
+            margin-bottom: 4px;
+        }
+
+        .ranking-details {
+            font-size: 0.875rem;
+            color: #94a3b8;
+        }
+
+        .ranking-score {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #f8fafc;
+        }
+
+        .game-stats {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(51, 65, 85, 0.4);
+            border-radius: 16px;
+            padding: 24px;
+            backdrop-filter: blur(20px);
+        }
+
+        .stats-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #f8fafc;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .stat-item {
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(71, 85, 105, 0.4);
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #3b82f6;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: #94a3b8;
+            margin-bottom: 8px;
+        }
+
+        .stat-player {
+            font-size: 0.75rem;
+            color: #cbd5e1;
+            font-weight: 500;
+        }
+
+        .return-action {
+            display: flex;
+            justify-content: center;
+            margin-top: 24px;
+        }
+
+        .action-button {
+            padding: 16px 32px;
+            border-radius: 12px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 1.125rem;
+            background: #3b82f6;
+            color: white;
+        }
+
+        .action-button:hover {
+            background: #2563eb;
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .sidebar {
+            background: rgba(15, 23, 42, 0.9);
+            border-left: 1px solid rgba(51, 65, 85, 0.6);
+            padding: 24px;
+            backdrop-filter: blur(20px);
+            overflow-y: auto;
+        }
+
+        .sidebar-section {
+            margin-bottom: 32px;
+        }
+
+        .sidebar-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #f8fafc;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(51, 65, 85, 0.6);
+        }
+
+        .scorecard-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(71, 85, 105, 0.4);
+            border-radius: 8px;
+            overflow: hidden;
+            font-size: 0.75rem;
+        }
+
+        .scorecard-table th {
+            background: rgba(15, 23, 42, 0.8);
+            color: #cbd5e1;
+            font-weight: 600;
+            padding: 8px 4px;
+            text-align: center;
+            border-bottom: 1px solid rgba(71, 85, 105, 0.4);
+        }
+
+        .scorecard-table td {
+            padding: 6px 4px;
+            text-align: center;
+            border-bottom: 1px solid rgba(71, 85, 105, 0.2);
+            color: #e4e4e7;
+        }
+
+        .scorecard-table tr.you td {
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .scorecard-table tr.winner td {
+            background: rgba(251, 191, 36, 0.1);
+            font-weight: 600;
+        }
+
+        .scorecard-table tr.winner.you td {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(59, 130, 246, 0.1));
+        }
+
+        .player-name-cell {
+            text-align: left !important;
+            font-weight: 500;
+            padding-left: 8px !important;
+        }
+
+        .total-cell {
+            font-weight: 700;
+            color: #f8fafc;
+            background: rgba(15, 23, 42, 0.8) !important;
+        }
+
+        .winner-total {
+            color: #fbbf24 !important;
+        }
+
+        /* Confetti particles */
+        .confetti-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        @media (max-width: 1200px) {
+            .game-container {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto 1fr;
+            }
+
+            .sidebar {
+                border-left: none;
+                border-top: 1px solid rgba(51, 65, 85, 0.6);
+                max-height: 500px;
+            }
+
+            .completion-title {
+                font-size: 2rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- Confetti Animation -->
+<div class="confetti-container">
+    <div class="confetti" style="left: 10%;"></div>
+    <div class="confetti" style="left: 20%;"></div>
+    <div class="confetti" style="left: 30%;"></div>
+    <div class="confetti" style="left: 40%;"></div>
+    <div class="confetti" style="left: 60%;"></div>
+    <div class="confetti" style="left: 70%;"></div>
+    <div class="confetti" style="left: 80%;"></div>
+    <div class="confetti" style="left: 90%;"></div>
+</div>
+
+<div class="game-container">
+    <div class="game-header">
+        <div class="game-title">
+            <h1 class="completion-title">🎉 Game Complete! 🎉</h1>
+            <p class="completion-subtitle">10 rounds of Skull King have been conquered!</p>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="winner-celebration">
+            <div class="winner-crown">👑</div>
+            <div class="winner-name">SkullHunter Wins!</div>
+            <div class="winner-score">Final Score: 580 points</div>
+        </div>
+
+        <div class="final-rankings">
+            <h3 class="rankings-title">Final Rankings</h3>
+            <div class="ranking-list">
+                <div class="ranking-item first-place">
+                    <div class="ranking-position first">1st</div>
+                    <div class="ranking-medal">🥇</div>
+                    <div class="ranking-info">
+                        <div class="ranking-name">SkullHunter</div>
+                        <div class="ranking-details">Dominated with consistent bidding</div>
+                    </div>
+                    <div class="ranking-score">580</div>
+                </div>
+
+                <div class="ranking-item second-place you">
+                    <div class="ranking-position second">2nd</div>
+                    <div class="ranking-medal">🥈</div>
+                    <div class="ranking-info">
+                        <div class="ranking-name">ProPlayer99 (You)</div>
+                        <div class="ranking-details">Strong finish in final rounds</div>
+                    </div>
+                    <div class="ranking-score">520</div>
+                </div>
+
+                <div class="ranking-item third-place">
+                    <div class="ranking-position third">3rd</div>
+                    <div class="ranking-medal">🥉</div>
+                    <div class="ranking-info">
+                        <div class="ranking-name">GameWizard</div>
+                        <div class="ranking-details">Solid mid-game performance</div>
+                    </div>
+                    <div class="ranking-score">410</div>
+                </div>
+
+                <div class="ranking-item">
+                    <div class="ranking-position other">4th</div>
+                    <div class="ranking-medal">4️⃣</div>
+                    <div class="ranking-info">
+                        <div class="ranking-name">CardMaster</div>
+                        <div class="ranking-details">Struggled with higher rounds</div>
+                    </div>
+                    <div class="ranking-score">350</div>
+                </div>
+
+                <div class="ranking-item">
+                    <div class="ranking-position other">5th</div>
+                    <div class="ranking-medal">5️⃣</div>
+                    <div class="ranking-info">
+                        <div class="ranking-name">TrickTaker</div>
+                        <div class="ranking-details">Risky bidding didn't pay off</div>
+                    </div>
+                    <div class="ranking-score">280</div>
+                </div>
+
+                <div class="ranking-item">
+                    <div class="ranking-position other">6th</div>
+                    <div class="ranking-medal">6️⃣</div>
+                    <div class="ranking-info">
+                        <div class="ranking-name">CardSharp</div>
+                        <div class="ranking-details">Tough luck with special cards</div>
+                    </div>
+                    <div class="ranking-score">240</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="game-stats">
+            <h3 class="stats-title">Game Statistics</h3>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value">87%</div>
+                    <div class="stat-label">Best Bid Accuracy</div>
+                    <div class="stat-player">SkullHunter</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">23</div>
+                    <div class="stat-label">Most Tricks Won</div>
+                    <div class="stat-player">SkullHunter</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">120</div>
+                    <div class="stat-label">Biggest Round Score</div>
+                    <div class="stat-player">ProPlayer99</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">8</div>
+                    <div class="stat-label">Skull King Captures</div>
+                    <div class="stat-player">GameWizard</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">15</div>
+                    <div class="stat-label">Pirate Victories</div>
+                    <div class="stat-player">SkullHunter</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">-80</div>
+                    <div class="stat-label">Worst Round Score</div>
+                    <div class="stat-player">TrickTaker</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="return-action">
+            <button class="action-button">Return to Lobby</button>
+        </div>
+    </div>
+
+    <div class="sidebar">
+        <div class="sidebar-section">
+            <h3 class="sidebar-title">Complete Scorecard</h3>
+            <table class="scorecard-table">
+                <thead>
+                <tr>
+                    <th>Player</th>
+                    <th>R1</th>
+                    <th>R2</th>
+                    <th>R3</th>
+                    <th>R4</th>
+                    <th>R5</th>
+                    <th>R6</th>
+                    <th>R7</th>
+                    <th>R8</th>
+                    <th>R9</th>
+                    <th>R10</th>
+                    <th>Final</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr class="you">
+                    <td class="player-name-cell">ProPlayer99</td>
+                    <td>30</td>
+                    <td>40</td>
+                    <td>-20</td>
+                    <td>60</td>
+                    <td>50</td>
+                    <td>40</td>
+                    <td>-10</td>
+                    <td>80</td>
+                    <td>80</td>
+                    <td>170</td>
+                    <td class="total-cell">520</td>
+                </tr>
+                <tr>
+                    <td class="player-name-cell">CardMaster</td>
+                    <td>20</td>
+                    <td>30</td>
+                    <td>60</td>
+                    <td>40</td>
+                    <td>-20</td>
+                    <td>60</td>
+                    <td>70</td>
+                    <td>-20</td>
+                    <td>-30</td>
+                    <td>140</td>
+                    <td class="total-cell">350</td>
+                </tr>
+                <tr class="winner">
+                    <td class="player-name-cell">SkullHunter</td>
+                    <td>20</td>
+                    <td>40</td>
+                    <td>60</td>
+                    <td>-30</td>
+                    <td>50</td>
+                    <td>60</td>
+                    <td>70</td>
+                    <td>-50</td>
+                    <td>100</td>
+                    <td>240</td>
+                    <td class="total-cell winner-total">580</td>
+                </tr>
+                <tr>
+                    <td class="player-name-cell">TrickTaker</td>
+                    <td>20</td>
+                    <td>40</td>
+                    <td>30</td>
+                    <td>40</td>
+                    <td>-30</td>
+                    <td>-20</td>
+                    <td>70</td>
+                    <td>50</td>
+                    <td>-20</td>
+                    <td>100</td>
+                    <td class="total-cell">280</td>
+                </tr>
+                <tr>
+                    <td class="player-name-cell">GameWizard</td>
+                    <td>20</td>
+                    <td>-10</td>
+                    <td>60</td>
+                    <td>40</td>
+                    <td>50</td>
+                    <td>60</td>
+                    <td>-20</td>
+                    <td>70</td>
+                    <td>-40</td>
+                    <td>180</td>
+                    <td class="total-cell">410</td>
+                </tr>
+                <tr>
+                    <td class="player-name-cell">CardSharp</td>
+                    <td>20</td>
+                    <td>-20</td>
+                    <td>30</td>
+                    <td>40</td>
+                    <td>50</td>
+                    <td>-30</td>
+                    <td>70</td>
+                    <td>30</td>
+                    <td>-30</td>
+                    <td>80</td>
+                    <td class="total-cell">240</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+</html>
