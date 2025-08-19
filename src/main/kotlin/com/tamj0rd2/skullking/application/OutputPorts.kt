@@ -14,4 +14,6 @@ data class OutputPorts(
     val subscribeToGameNotificationsPort: SubscribeToGameNotificationsPort,
     val sendGameNotificationPort: SendGameNotificationPort,
     val subscribeToGameEventsPort: SubscribeToGameEventsPort,
-)
+) {
+    companion object
+}
