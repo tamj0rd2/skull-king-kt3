@@ -1,6 +1,6 @@
 package com.tamj0rd2.skullking
 
-import com.tamj0rd2.skullking.application.Application
+import com.tamj0rd2.skullking.application.UseCases
 import com.tamj0rd2.skullking.application.ports.GameNotification
 import com.tamj0rd2.skullking.application.ports.ReceiveGameNotification
 import com.tamj0rd2.skullking.application.ports.input.CreateGameInput
@@ -16,25 +16,25 @@ import strikt.assertions.isEqualTo
 import strikt.assertions.isNotEmpty
 import strikt.assertions.withSingle
 
-class Player(val id: PlayerId, val application: Application) : ReceiveGameNotification {
+class Player(val id: PlayerId, val useCases: UseCases) : ReceiveGameNotification {
     private val receivedNotifications = CopyOnWriteArrayList<GameNotification>()
     private val gameState
         get() = receivedNotifications.fold(GameState(), GameState::apply)
 
     fun `creates a game`() {
-        application.createGameUseCase.execute(CreateGameInput(id))
+        useCases.createGameUseCase.execute(CreateGameInput(id))
     }
 
     fun `sees that the game has been created`() {
-        val games = application.viewGamesUseCase.execute(ViewGamesInput).games
+        val games = useCases.viewGamesUseCase.execute(ViewGamesInput).games
         expectThat(games).withSingle { get { host }.isEqualTo(id) }
     }
 
     fun `joins a game`() {
         gameState
 
-        val game = application.viewGamesUseCase.execute(ViewGamesInput).games.single()
-        application.joinGameUseCase.execute(
+        val game = useCases.viewGamesUseCase.execute(ViewGamesInput).games.single()
+        useCases.joinGameUseCase.execute(
             JoinGameInput(game.id, receiveGameNotification = this, playerId = id)
         )
 

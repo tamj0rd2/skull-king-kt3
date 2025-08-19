@@ -8,18 +8,18 @@ import com.tamj0rd2.skullking.application.services.JoinGameService
 import com.tamj0rd2.skullking.application.services.SendGameNotificationsService
 import com.tamj0rd2.skullking.application.services.ViewGamesService
 
-data class Application(
+data class UseCases(
     val createGameUseCase: CreateGameUseCase,
     val viewGamesUseCase: ViewGamesUseCase,
     val joinGameUseCase: JoinGameUseCase,
 ) {
     companion object {
-        fun createFrom(outputPorts: OutputPorts): Application {
+        fun createFrom(outputPorts: OutputPorts): UseCases {
             outputPorts.subscribeToGameEventsPort.subscribe(
                 SendGameNotificationsService(outputPorts.sendGameNotificationPort)
             )
 
-            return Application(
+            return UseCases(
                 createGameUseCase = CreateGameService(outputPorts.saveGamePort),
                 viewGamesUseCase = ViewGamesService(outputPorts.findGamesPort),
                 joinGameUseCase =
