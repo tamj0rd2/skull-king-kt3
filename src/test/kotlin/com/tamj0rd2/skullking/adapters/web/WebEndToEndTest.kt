@@ -32,7 +32,7 @@ class WebEndToEndTest : EndToEndTestContract {
             deriveGameState =
                 object : DeriveGameState {
                     override fun current(): GameState {
-                        TODO("Not yet implemented")
+                        return GameState()
                     }
 
                     override fun receive(gameNotification: GameNotification) {
