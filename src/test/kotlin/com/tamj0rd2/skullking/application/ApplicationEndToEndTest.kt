@@ -4,12 +4,9 @@ import com.tamj0rd2.skullking.EndToEndTestContract
 import com.tamj0rd2.skullking.Player
 import com.tamj0rd2.skullking.adapters.inmemory.inMemory
 import com.tamj0rd2.skullking.domain.game.PlayerId
-import org.junit.jupiter.api.parallel.Execution
-import org.junit.jupiter.api.parallel.ExecutionMode
 import org.junit.platform.commons.annotation.Testable
 
 @Testable
-@Execution(value = ExecutionMode.SAME_THREAD)
 class ApplicationEndToEndTest : EndToEndTestContract {
     private val application = UseCases.createFrom(OutputPorts.inMemory())
 
