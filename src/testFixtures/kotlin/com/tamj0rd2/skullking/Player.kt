@@ -1,21 +1,24 @@
 package com.tamj0rd2.skullking
 
 import com.tamj0rd2.skullking.application.UseCases
-import com.tamj0rd2.skullking.application.ports.GameNotification
 import com.tamj0rd2.skullking.application.ports.ReceiveGameNotification
 import com.tamj0rd2.skullking.application.ports.input.CreateGameInput
 import com.tamj0rd2.skullking.application.ports.input.JoinGameInput
 import com.tamj0rd2.skullking.application.ports.input.ViewGamesInput
 import com.tamj0rd2.skullking.domain.game.PlayerId
-import com.tamj0rd2.skullking.testsupport.eventually
 import strikt.api.expectThat
+import strikt.assertions.contains
 import strikt.assertions.containsExactlyInAnyOrder
 import strikt.assertions.isEqualTo
 import strikt.assertions.isNotEmpty
-import strikt.assertions.isNotEqualTo
 import strikt.assertions.withSingle
 
-class Player(val id: PlayerId, val useCases: UseCases, val deriveGameState: DeriveGameState) {
+class Player(
+    val id: PlayerId,
+    val useCases: UseCases,
+    val deriveGameState: DeriveGameState,
+    val eventually: (block: () -> Unit) -> Unit,
+) {
     private val gameState
         get() = deriveGameState.current()
 
@@ -39,7 +42,7 @@ class Player(val id: PlayerId, val useCases: UseCases, val deriveGameState: Deri
         )
 
         // todo: this output sucks. I actually want to try hamkrest again.
-        eventually { expectThat(gameState).isNotEqualTo(GameState.EMPTY) }
+        eventually { expectThat(gameState.players).contains(id) }
     }
 
     fun `sees players in the game`(vararg expectedPlayers: Player) {
@@ -50,12 +53,6 @@ class Player(val id: PlayerId, val useCases: UseCases, val deriveGameState: Deri
     }
 
     data class GameState(val players: List<PlayerId>) {
-        fun apply(notification: GameNotification): GameState {
-            return when (notification) {
-                is GameNotification.PlayerJoined -> copy(players = players + notification.playerId)
-            }
-        }
-
         companion object {
             val EMPTY = GameState(players = emptyList())
         }

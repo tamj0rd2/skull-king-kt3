@@ -1,9 +1,8 @@
 package com.tamj0rd2.skullking.testsupport
 
-fun eventually(action: () -> Unit) {
-    val timeoutMillis = 1_000L
+fun eventually(timeoutMs: Long = 1000L, action: () -> Unit) {
     val pollIntervalMillis = 25L
-    val deadline = System.currentTimeMillis() + timeoutMillis
+    val deadline = System.currentTimeMillis() + timeoutMs
     var lastFailure: AssertionError? = null
 
     while (System.currentTimeMillis() < deadline) {
@@ -17,7 +16,7 @@ fun eventually(action: () -> Unit) {
     }
 
     throw AssertionError(
-        "Action did not succeed within ${timeoutMillis}ms. Last failure: ${lastFailure?.message}",
+        "Action did not succeed within ${timeoutMs}ms. Last failure: ${lastFailure?.message}",
         lastFailure,
     )
 }

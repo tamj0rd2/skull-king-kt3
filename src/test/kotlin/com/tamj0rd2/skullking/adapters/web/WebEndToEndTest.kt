@@ -7,6 +7,7 @@ import com.tamj0rd2.skullking.Player
 import com.tamj0rd2.skullking.adapters.inmemory.inMemory
 import com.tamj0rd2.skullking.application.OutputPorts
 import com.tamj0rd2.skullking.domain.game.PlayerId
+import com.tamj0rd2.skullking.testsupport.eventually
 import java.lang.management.ManagementFactory
 import org.junit.jupiter.api.AutoClose
 import org.junit.jupiter.api.TestInstance
@@ -37,6 +38,7 @@ class WebEndToEndTest : EndToEndTestContract {
             id = PlayerId(value = name),
             useCases = webClient.useCases(),
             deriveGameState = webClient,
+            eventually = { block -> eventually(5000, block) },
         )
     }
 
