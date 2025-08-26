@@ -4,13 +4,8 @@ import com.microsoft.playwright.BrowserType
 import com.microsoft.playwright.Playwright
 import com.tamj0rd2.skullking.EndToEndTestContract
 import com.tamj0rd2.skullking.Player
-import com.tamj0rd2.skullking.Player.DeriveGameState
-import com.tamj0rd2.skullking.Player.GameState
 import com.tamj0rd2.skullking.adapters.inmemory.inMemory
-import com.tamj0rd2.skullking.adapters.web.WebClient.Companion.overHttp
 import com.tamj0rd2.skullking.application.OutputPorts
-import com.tamj0rd2.skullking.application.UseCases
-import com.tamj0rd2.skullking.application.ports.GameNotification
 import com.tamj0rd2.skullking.domain.game.PlayerId
 import java.lang.management.ManagementFactory
 import org.junit.jupiter.api.AutoClose
@@ -33,19 +28,15 @@ class WebEndToEndTest : EndToEndTestContract {
 
     override fun createPlayerActor(name: String): Player {
         val page = browser.newContext().newPage()
+        page.setDefaultNavigationTimeout(2000.0)
+        page.setDefaultTimeout(1000.0)
+
+        val webClient = WebClient(page, "http://localhost:$port")
+
         return Player(
             id = PlayerId(value = name),
-            useCases = UseCases.overHttp(page, baseUrl = "http://localhost:$port"),
-            deriveGameState =
-                object : DeriveGameState {
-                    override fun current(): GameState {
-                        return GameState()
-                    }
-
-                    override fun receive(gameNotification: GameNotification) {
-                        TODO("Not yet implemented")
-                    }
-                },
+            useCases = webClient.useCases(),
+            deriveGameState = webClient,
         )
     }
 

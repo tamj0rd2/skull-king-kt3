@@ -1,7 +1,10 @@
 package com.tamj0rd2.skullking.adapters.web
 
 import com.microsoft.playwright.Page
+import com.tamj0rd2.skullking.Player
+import com.tamj0rd2.skullking.Player.DeriveGameState
 import com.tamj0rd2.skullking.application.UseCases
+import com.tamj0rd2.skullking.application.ports.GameNotification
 import com.tamj0rd2.skullking.application.ports.input.CreateGameOutput
 import com.tamj0rd2.skullking.application.ports.input.GameListItem
 import com.tamj0rd2.skullking.application.ports.input.JoinGameOutput
@@ -11,8 +14,8 @@ import com.tamj0rd2.skullking.domain.game.PlayerId
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
 
-class WebClient private constructor(private val page: Page, private val baseUrl: String) {
-    private fun useCases(): UseCases {
+internal class WebClient(private val page: Page, private val baseUrl: String) : DeriveGameState {
+    fun useCases(): UseCases {
         return UseCases(
             createGameUseCase = { useCaseInput ->
                 val response = page.navigate("$baseUrl/games")
@@ -30,9 +33,32 @@ class WebClient private constructor(private val page: Page, private val baseUrl:
 
                 ViewGamesOutput(games = parseGamesList())
             },
-            joinGameUseCase = { JoinGameOutput },
+            joinGameUseCase = { useCaseInput ->
+                val gameElement =
+                    page.findByAttribute("data-game-id", GameId.show(useCaseInput.gameId)).single()
+                gameElement.getByPlaceholder("Player ID").fill(useCaseInput.playerId.value)
+                page.waitingForHtmx { gameElement.getByText("Join").click() }
+                JoinGameOutput
+            },
         )
     }
+
+    override fun current(): Player.GameState {
+        val players =
+            (0 until page.locator("#players li").count()).map { index ->
+                val playerElement = page.locator("#players li").nth(index)
+                playerElement.textContent().let(PlayerId::parse)
+            }
+
+        return Player.GameState(players = players)
+    }
+
+    override fun receive(gameNotification: GameNotification) {
+        TODO("Not yet implemented")
+    }
+
+    private fun Page.findByAttribute(attribute: String, value: String) =
+        locator("[$attribute='$value']").all()
 
     private fun parseGamesList(): List<GameListItem> {
         val games =
@@ -63,11 +89,5 @@ class WebClient private constructor(private val page: Page, private val baseUrl:
         evaluate("window.$htmxSettled = false")
         action()
         waitForFunction("window.$htmxSettled === true")
-    }
-
-    companion object {
-        fun UseCases.Companion.overHttp(page: Page, baseUrl: String): UseCases {
-            return WebClient(page, baseUrl).useCases()
-        }
     }
 }

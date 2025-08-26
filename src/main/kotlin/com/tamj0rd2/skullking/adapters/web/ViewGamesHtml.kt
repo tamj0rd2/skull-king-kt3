@@ -3,6 +3,7 @@ package com.tamj0rd2.skullking.adapters.web
 import com.tamj0rd2.skullking.application.ports.input.GameListItem
 import com.tamj0rd2.skullking.domain.game.GameId
 import com.tamj0rd2.skullking.domain.game.PlayerId
+import kotlinx.html.FORM
 import kotlinx.html.FlowContent
 import kotlinx.html.InputType
 import kotlinx.html.UL
@@ -27,7 +28,17 @@ internal fun viewGamesHtml(games: List<GameListItem>): String =
         }
 
         body {
-            createGameHtml()
+            form {
+                playerIdInput()
+
+                button {
+                    attributes["hx-post"] = "/games"
+                    attributes["hx-target"] = "#games"
+                    attributes["hx-swap"] = "outerHTML"
+                    +"Create Game"
+                }
+            }
+
             div { +"Games" }
             partialGamesHtml(games)
         }
@@ -47,22 +58,23 @@ private fun UL.joinableGameHtml(game: GameListItem) {
         attributes["data-game-id"] = gameId
         attributes["data-host-id"] = hostId
         +"Game $gameId hosted by $hostId"
+
+        form {
+            playerIdInput()
+
+            button {
+                attributes["hx-post"] = "/games/$gameId"
+                attributes["hx-target"] = "body"
+                +"Join"
+            }
+        }
     }
 }
 
-private fun FlowContent.createGameHtml() {
-    form {
-        input {
-            type = InputType.text
-            name = "player_id"
-            placeholder = "Player ID"
-        }
-
-        button {
-            attributes["hx-post"] = "/games"
-            attributes["hx-target"] = "#games"
-            attributes["hx-swap"] = "outerHTML"
-            +"Create Game"
-        }
+private fun FORM.playerIdInput() {
+    input {
+        type = InputType.text
+        name = "playerId"
+        placeholder = "Player ID"
     }
 }

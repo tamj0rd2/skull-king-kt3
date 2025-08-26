@@ -3,8 +3,11 @@ package com.tamj0rd2.skullking.adapters.web
 import com.tamj0rd2.skullking.adapters.web.PartialBlock.Companion.partial
 import com.tamj0rd2.skullking.application.OutputPorts
 import com.tamj0rd2.skullking.application.UseCases
+import com.tamj0rd2.skullking.application.ports.GameNotification
 import com.tamj0rd2.skullking.application.ports.input.CreateGameInput
+import com.tamj0rd2.skullking.application.ports.input.JoinGameInput
 import com.tamj0rd2.skullking.application.ports.input.ViewGamesInput
+import com.tamj0rd2.skullking.domain.game.GameId
 import com.tamj0rd2.skullking.domain.game.PlayerId
 import org.http4k.core.ContentType
 import org.http4k.core.Filter
@@ -14,20 +17,22 @@ import org.http4k.core.Response
 import org.http4k.core.Status
 import org.http4k.core.Uri
 import org.http4k.core.body.form
+import org.http4k.core.query
 import org.http4k.lens.contentType
 import org.http4k.lens.location
 import org.http4k.routing.bindHttp
+import org.http4k.routing.bindWs
+import org.http4k.routing.path
+import org.http4k.routing.poly
 import org.http4k.routing.routes
 import org.http4k.server.Undertow
 import org.http4k.server.asServer
+import org.http4k.websocket.Websocket
+import org.http4k.websocket.WsMessage
+import org.http4k.websocket.WsResponse
 
 class WebServer(outputPorts: OutputPorts, port: Int) : AutoCloseable {
-    private val useCases =
-        UseCases.createFrom(outputPorts)
-            .monitorWith(
-                inputMonitor = { println("Input: $it") },
-                outputMonitor = { println("Output: $it") },
-            )
+    private val useCases = UseCases.createFrom(outputPorts)
 
     private val gamesHttpHandler =
         "/games" bindHttp
@@ -44,7 +49,7 @@ class WebServer(outputPorts: OutputPorts, port: Int) : AutoCloseable {
                     },
                 Method.POST to
                     { req: Request ->
-                        val playerId = checkNotNull(req.form("player_id")).let(PlayerId::parse)
+                        val playerId = checkNotNull(req.form("playerId")).let(PlayerId::parse)
 
                         useCases.createGameUseCase.execute(CreateGameInput(playerId))
 
@@ -52,9 +57,58 @@ class WebServer(outputPorts: OutputPorts, port: Int) : AutoCloseable {
                     },
             )
 
-    private val router = routes(gamesHttpHandler).withFilter(httpExceptionFilter)
+    private val gameHttpHandler =
+        "/games/{gameId}" bindHttp
+            routes(
+                Method.POST to
+                    { req: Request ->
+                        val gameId = checkNotNull(req.path("gameId")).let(GameId::parse)
+                        val playerId = checkNotNull(req.form("playerId")).let(PlayerId::parse)
 
-    private val server = router.asServer(Undertow(port))
+                        val html =
+                            viewGameHtml(
+                                joinGameUri =
+                                    Uri.of("/games/${GameId.show(gameId)}")
+                                        .query("playerId", playerId.value)
+                            )
+
+                        Response(Status.OK).contentType(ContentType.TEXT_HTML).body(html)
+                    }
+            )
+
+    val gameWsHandler =
+        "/games/{gameId}" bindWs
+            { req: Request ->
+                val gameId = checkNotNull(req.path("gameId")).let(GameId::parse)
+                val playerId = checkNotNull(req.query("playerId")).let(PlayerId::parse)
+
+                WsResponse { ws: Websocket ->
+                    useCases.joinGameUseCase.execute(
+                        JoinGameInput(
+                            gameId = gameId,
+                            receiveGameNotification = {
+                                when (it) {
+                                    is GameNotification.PlayerJoined -> {
+                                        val viewFriendlyPlayerId = PlayerId.show(it.playerId)
+                                        // TODO: this isn't great.
+                                        ws.send(
+                                            WsMessage(
+                                                """<ul id="players" hx-swap-oob="beforeend"><li>$viewFriendlyPlayerId</li></ul>"""
+                                            )
+                                        )
+                                    }
+                                }
+                            },
+                            playerId = playerId,
+                        )
+                    )
+                }
+            }
+
+    private val httpRouter =
+        routes(gameHttpHandler, gamesHttpHandler).withFilter(httpExceptionFilter)
+
+    private val server = poly(gameWsHandler, httpRouter).asServer(Undertow(port))
 
     fun start() {
         server.start()

@@ -27,7 +27,7 @@ class ApplicationEndToEndTest : EndToEndTestContract {
                     }
 
                     override fun current(): GameState {
-                        return receivedNotifications.fold(GameState(), GameState::apply)
+                        return receivedNotifications.fold(GameState.EMPTY, GameState::apply)
                     }
                 },
         )

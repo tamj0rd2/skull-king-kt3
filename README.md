@@ -11,6 +11,5 @@ To make OTEL work, set these environment variables before running the applicatio
 
 ### Mikado
 
-- It would actually be much better if the Player wasn't so concerned about notifications. In the real game, the player
-  won't exactly be notified. They'll just see the state change. So, the Player object should be more concerned with how
-  to interpret the current state, rather than notifications.
+- Rather than creating some kind of player specific state in the tests, I want to try promoting that to a use case. It
+  doesn't seem unreasonable to want to figure out what the game looks like to a specific player.
