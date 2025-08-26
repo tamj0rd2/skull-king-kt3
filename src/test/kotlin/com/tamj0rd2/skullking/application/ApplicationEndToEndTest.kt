@@ -6,6 +6,7 @@ import com.tamj0rd2.skullking.Player.DeriveGameState
 import com.tamj0rd2.skullking.Player.GameState
 import com.tamj0rd2.skullking.adapters.inmemory.inMemory
 import com.tamj0rd2.skullking.application.ports.GameNotification
+import com.tamj0rd2.skullking.application.ports.ReceiveGameNotification
 import com.tamj0rd2.skullking.domain.game.PlayerId
 import com.tamj0rd2.skullking.testsupport.eventually
 import java.util.concurrent.CopyOnWriteArrayList
@@ -20,7 +21,7 @@ class ApplicationEndToEndTest : EndToEndTestContract {
             id = PlayerId.of(name),
             useCases = application,
             deriveGameState =
-                object : DeriveGameState {
+                object : DeriveGameState, ReceiveGameNotification {
                     private val receivedNotifications = CopyOnWriteArrayList<GameNotification>()
 
                     override fun receive(gameNotification: GameNotification) {

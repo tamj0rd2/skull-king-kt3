@@ -36,7 +36,9 @@ class Player(
         useCases.joinGameUseCase.execute(
             JoinGameInput(
                 gameId = game.id,
-                receiveGameNotification = deriveGameState,
+                receiveGameNotification =
+                    if (deriveGameState is ReceiveGameNotification) deriveGameState
+                    else ReceiveGameNotification {},
                 playerId = id,
             )
         )
@@ -58,7 +60,7 @@ class Player(
         }
     }
 
-    interface DeriveGameState : ReceiveGameNotification {
+    interface DeriveGameState {
         fun current(): GameState
     }
 }

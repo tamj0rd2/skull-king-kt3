@@ -4,7 +4,6 @@ import com.microsoft.playwright.Page
 import com.tamj0rd2.skullking.Player
 import com.tamj0rd2.skullking.Player.DeriveGameState
 import com.tamj0rd2.skullking.application.UseCases
-import com.tamj0rd2.skullking.application.ports.GameNotification
 import com.tamj0rd2.skullking.application.ports.input.CreateGameOutput
 import com.tamj0rd2.skullking.application.ports.input.GameListItem
 import com.tamj0rd2.skullking.application.ports.input.JoinGameOutput
@@ -51,10 +50,6 @@ internal class WebClient(private val page: Page, private val baseUrl: String) : 
             }
 
         return Player.GameState(players = players)
-    }
-
-    override fun receive(gameNotification: GameNotification) {
-        TODO("Not yet implemented")
     }
 
     private fun Page.findByAttribute(attribute: String, value: String) =
