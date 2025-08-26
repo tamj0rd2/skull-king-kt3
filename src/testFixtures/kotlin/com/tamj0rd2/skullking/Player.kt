@@ -31,8 +31,6 @@ class Player(val id: PlayerId, val useCases: UseCases) : ReceiveGameNotification
     }
 
     fun `joins a game`() {
-        gameState
-
         val game = useCases.viewGamesUseCase.execute(ViewGamesInput).games.single()
         useCases.joinGameUseCase.execute(
             JoinGameInput(game.id, receiveGameNotification = this, playerId = id)
