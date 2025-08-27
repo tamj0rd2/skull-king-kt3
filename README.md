@@ -9,6 +9,11 @@ To make OTEL work, set these environment variables before running the applicatio
 - `JAVA_TOOL_OPTIONS` set to `-javaagent:adapters/web/server/build/agent/opentelemetry-javaagent.jar`
 - `OTEL_SERVICE_NAME` set to `skull-king-kt3`
 
+### Playwright
+
+Playwright jvm is synchronous. Waiting on the main thread will cause playwright's event loop to pause. Causing pain.
+So, being able to effectively react to things happening on the page (such as events) is a no-go. Don't bother.
+
 ### Mikado
 
 - I want to try something out. Rather than the game notifications essentially being event notifications, I want to try
