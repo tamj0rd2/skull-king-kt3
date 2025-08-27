@@ -1,9 +1,9 @@
 package com.tamj0rd2.skullking.adapters.web
 
 import com.microsoft.playwright.Page
-import com.tamj0rd2.skullking.Player
 import com.tamj0rd2.skullking.Player.DeriveGameState
 import com.tamj0rd2.skullking.application.UseCases
+import com.tamj0rd2.skullking.application.ports.PlayerSpecificGameState
 import com.tamj0rd2.skullking.application.ports.input.CreateGameOutput
 import com.tamj0rd2.skullking.application.ports.input.GameListItem
 import com.tamj0rd2.skullking.application.ports.input.JoinGameOutput
@@ -42,14 +42,14 @@ internal class WebClient(private val page: Page, private val baseUrl: String) : 
         )
     }
 
-    override fun current(): Player.GameState {
+    override fun current(): PlayerSpecificGameState {
         val players =
             (0 until page.locator("#players li").count()).map { index ->
                 val playerElement = page.locator("#players li").nth(index)
                 playerElement.textContent().let(PlayerId::parse)
             }
 
-        return Player.GameState(players = players)
+        return PlayerSpecificGameState(players = players)
     }
 
     private fun Page.findByAttribute(attribute: String, value: String) =

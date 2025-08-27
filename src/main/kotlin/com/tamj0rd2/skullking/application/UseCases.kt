@@ -17,7 +17,10 @@ data class UseCases(
     companion object {
         fun createFrom(outputPorts: OutputPorts): UseCases {
             outputPorts.subscribeToGameEventsPort.subscribe(
-                SendGameNotificationsService(outputPorts.sendGameNotificationPort)
+                SendGameNotificationsService(
+                    sendGameNotificationPort = outputPorts.sendGameNotificationPort,
+                    loadGamePort = outputPorts.loadGamePort,
+                )
             )
 
             return UseCases(

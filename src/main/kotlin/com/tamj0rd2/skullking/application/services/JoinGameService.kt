@@ -13,7 +13,7 @@ class JoinGameService(
     private val subscribeToGameNotificationsPort: SubscribeToGameNotificationsPort,
 ) : JoinGameUseCase {
     override fun execute(input: JoinGameInput): JoinGameOutput {
-        subscribeToGameNotificationsPort.subscribe(input.receiveGameNotification)
+        subscribeToGameNotificationsPort.subscribe(input.playerId, input.receiveGameNotification)
 
         val game = loadGamePort.load(input.gameId)!!.addPlayer(input.playerId)
         saveGamePort.save(game)

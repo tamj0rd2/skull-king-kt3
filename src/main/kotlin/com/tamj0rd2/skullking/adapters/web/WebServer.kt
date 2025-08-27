@@ -3,7 +3,6 @@ package com.tamj0rd2.skullking.adapters.web
 import com.tamj0rd2.skullking.adapters.web.PartialBlock.Companion.partial
 import com.tamj0rd2.skullking.application.OutputPorts
 import com.tamj0rd2.skullking.application.UseCases
-import com.tamj0rd2.skullking.application.ports.GameNotification
 import com.tamj0rd2.skullking.application.ports.input.CreateGameInput
 import com.tamj0rd2.skullking.application.ports.input.JoinGameInput
 import com.tamj0rd2.skullking.application.ports.input.ViewGamesInput
@@ -86,18 +85,9 @@ class WebServer(outputPorts: OutputPorts, port: Int) : AutoCloseable {
                     useCases.joinGameUseCase.execute(
                         JoinGameInput(
                             gameId = gameId,
-                            receiveGameNotification = {
-                                when (it) {
-                                    is GameNotification.PlayerJoined -> {
-                                        val viewFriendlyPlayerId = PlayerId.show(it.playerId)
-                                        // TODO: this isn't great.
-                                        ws.send(
-                                            WsMessage(
-                                                """<ul id="players" hx-swap-oob="beforeend"><li>$viewFriendlyPlayerId</li></ul>"""
-                                            )
-                                        )
-                                    }
-                                }
+                            receiveGameNotification = { state ->
+                                println("Notifying $playerId with state $state")
+                                ws.send(WsMessage(partial { partialGameState(state) }))
                             },
                             playerId = playerId,
                         )

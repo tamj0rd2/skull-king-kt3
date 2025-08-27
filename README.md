@@ -11,5 +11,9 @@ To make OTEL work, set these environment variables before running the applicatio
 
 ### Mikado
 
-- Rather than creating some kind of player specific state in the tests, I want to try promoting that to a use case. It
-  doesn't seem unreasonable to want to figure out what the game looks like to a specific player.
+- I want to try something out. Rather than the game notifications essentially being event notifications, I want to try
+  making them Event Carried State Transfer. An annoying thing about the way the game currently works is that
+  notification
+  consumers need to rebuild the full state of the world on their side. What if notifications just gave small bit of
+  information about what happened, but also passed along the full state? That would reduce a lot of annoying state
+  rebuilding.

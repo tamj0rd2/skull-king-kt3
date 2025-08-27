@@ -5,17 +5,15 @@ import com.tamj0rd2.skullking.domain.game.PlayerId
 interface GameNotifier : SubscribeToGameNotificationsPort, SendGameNotificationPort
 
 fun interface SubscribeToGameNotificationsPort {
-    fun subscribe(receiver: ReceiveGameNotification)
+    fun subscribe(playerId: PlayerId, receiver: ReceiveGameNotification)
 }
 
 fun interface SendGameNotificationPort {
-    fun send(gameNotification: GameNotification)
+    fun send(recipient: PlayerId, playerSpecificGameState: PlayerSpecificGameState)
 }
 
 fun interface ReceiveGameNotification {
-    fun receive(gameNotification: GameNotification)
+    fun receive(playerSpecificGameState: PlayerSpecificGameState)
 }
 
-sealed interface GameNotification {
-    data class PlayerJoined(val playerId: PlayerId) : GameNotification
-}
+data class PlayerSpecificGameState(val players: List<PlayerId>)

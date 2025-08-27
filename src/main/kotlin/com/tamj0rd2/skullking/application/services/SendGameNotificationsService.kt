@@ -1,20 +1,21 @@
 package com.tamj0rd2.skullking.application.services
 
-import com.tamj0rd2.skullking.application.ports.GameNotification
+import com.tamj0rd2.skullking.application.ports.PlayerSpecificGameState
 import com.tamj0rd2.skullking.application.ports.SendGameNotificationPort
 import com.tamj0rd2.skullking.application.ports.output.GameEventSubscriber
+import com.tamj0rd2.skullking.application.ports.output.LoadGamePort
 import com.tamj0rd2.skullking.domain.game.GameEvent
 
-class SendGameNotificationsService(private val sendGameNotificationPort: SendGameNotificationPort) :
-    GameEventSubscriber {
+class SendGameNotificationsService(
+    private val sendGameNotificationPort: SendGameNotificationPort,
+    private val loadGamePort: LoadGamePort,
+) : GameEventSubscriber {
 
     override fun notify(event: GameEvent) {
-        event.toGameNotification()?.let(sendGameNotificationPort::send)
-    }
+        val game = checkNotNull(loadGamePort.load(event.gameId))
 
-    private fun GameEvent.toGameNotification(): GameNotification? =
-        when (this) {
-            is GameEvent.GameCreated -> null
-            is GameEvent.PlayerJoined -> GameNotification.PlayerJoined(this.playerId)
+        game.players.forEach {
+            sendGameNotificationPort.send(it, PlayerSpecificGameState(game.players.toList()))
         }
+    }
 }

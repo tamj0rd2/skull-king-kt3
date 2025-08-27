@@ -1,6 +1,7 @@
 package com.tamj0rd2.skullking
 
 import com.tamj0rd2.skullking.application.UseCases
+import com.tamj0rd2.skullking.application.ports.PlayerSpecificGameState
 import com.tamj0rd2.skullking.application.ports.ReceiveGameNotification
 import com.tamj0rd2.skullking.application.ports.input.CreateGameInput
 import com.tamj0rd2.skullking.application.ports.input.JoinGameInput
@@ -54,13 +55,7 @@ class Player(
             .containsExactlyInAnyOrder(expectedPlayers.map { it.id })
     }
 
-    data class GameState(val players: List<PlayerId>) {
-        companion object {
-            val EMPTY = GameState(players = emptyList())
-        }
-    }
-
     interface DeriveGameState {
-        fun current(): GameState
+        fun current(): PlayerSpecificGameState
     }
 }
