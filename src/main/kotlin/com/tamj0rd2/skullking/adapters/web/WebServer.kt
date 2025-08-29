@@ -75,6 +75,21 @@ class WebServer(outputPorts: OutputPorts, port: Int) : AutoCloseable {
                     }
             )
 
+    private val prototypeHandler =
+        "/prototype" bindHttp
+            routes(
+                "/" bindHttp
+                    { _: Request ->
+                        val html = lobbyListHtml()
+                        Response(Status.OK).contentType(ContentType.TEXT_HTML).body(html)
+                    },
+                "create-game" bindHttp
+                    { _: Request ->
+                        val html = createGameHtml()
+                        Response(Status.OK).contentType(ContentType.TEXT_HTML).body(html)
+                    },
+            )
+
     val gameWsHandler =
         "/games/{gameId}" bindWs
             { req: Request ->
@@ -96,7 +111,7 @@ class WebServer(outputPorts: OutputPorts, port: Int) : AutoCloseable {
             }
 
     private val httpRouter =
-        routes(gameHttpHandler, gamesHttpHandler).withFilter(httpExceptionFilter)
+        routes(gameHttpHandler, gamesHttpHandler, prototypeHandler).withFilter(httpExceptionFilter)
 
     private val server = poly(gameWsHandler, httpRouter).asServer(Undertow(port))
 
