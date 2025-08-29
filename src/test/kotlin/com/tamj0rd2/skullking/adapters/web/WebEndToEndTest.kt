@@ -9,10 +9,13 @@ import com.tamj0rd2.skullking.application.OutputPorts
 import com.tamj0rd2.skullking.domain.game.PlayerId
 import com.tamj0rd2.skullking.testsupport.eventually
 import java.lang.management.ManagementFactory
+import java.util.concurrent.TimeUnit
 import org.junit.jupiter.api.AutoClose
 import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.api.Timeout
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@Timeout(10, unit = TimeUnit.SECONDS)
 class WebEndToEndTest : EndToEndTestContract {
     private val port = 8123
 
