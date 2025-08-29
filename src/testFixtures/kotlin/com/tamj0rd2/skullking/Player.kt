@@ -10,9 +10,7 @@ import com.tamj0rd2.skullking.domain.game.PlayerId
 import strikt.api.expectThat
 import strikt.assertions.contains
 import strikt.assertions.containsExactlyInAnyOrder
-import strikt.assertions.isEqualTo
 import strikt.assertions.isNotEmpty
-import strikt.assertions.withSingle
 
 class Player(
     val id: PlayerId,
@@ -24,12 +22,17 @@ class Player(
         get() = deriveGameState.current()
 
     fun `creates a game`() {
-        useCases.createGameUseCase.execute(CreateGameInput(id))
-    }
+        useCases.createGameUseCase.execute(
+            CreateGameInput(
+                receiveGameNotification =
+                    if (deriveGameState is ReceiveGameNotification) deriveGameState
+                    else ReceiveGameNotification {},
+                playerId = id,
+            )
+        )
 
-    fun `sees that the game has been created`() {
-        val games = useCases.viewGamesUseCase.execute(ViewGamesInput).games
-        expectThat(games).withSingle { get { host }.isEqualTo(id) }
+        // todo: this output sucks. I actually want to try hamkrest again.
+        eventually { expectThat(gameState.players).contains(id) }
     }
 
     fun `joins a game`() {

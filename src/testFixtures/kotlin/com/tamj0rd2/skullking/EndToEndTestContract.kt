@@ -14,8 +14,6 @@ interface EndToEndTestContract {
         val ellis = createPlayerActor("Ellis")
 
         cammy.`creates a game`()
-        cammy.`sees that the game has been created`()
-        cammy.`joins a game`()
         cammy.`sees players in the game`(cammy)
 
         ellis.`joins a game`()

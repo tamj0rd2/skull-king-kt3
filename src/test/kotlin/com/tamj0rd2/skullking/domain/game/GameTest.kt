@@ -14,9 +14,9 @@ class GameTest {
         val playerId = PlayerId("test-player")
         val game = Game.new(GameId.random(), playerId).addPlayer(playerId)
 
-        val reconstitutedIgnoringVersion = Game.reconstitute(game.events)
+        val reconstituted = Game.reconstitute(game.events)
 
-        expectThat(reconstitutedIgnoringVersion) {
+        expectThat(reconstituted) {
             get { id }.isEqualTo(game.id)
             get { events }.isEqualTo(game.events)
         }

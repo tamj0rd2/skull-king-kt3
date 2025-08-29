@@ -16,4 +16,4 @@ So, being able to effectively react to things happening on the page (such as eve
 
 ### Mikado
 
-- Having to manually join a game after creating it sucks. Creating a game should automatically join it.
+- 

@@ -4,11 +4,15 @@ data class Game
 private constructor(val id: GameId, val events: List<GameEvent>, val loadedAtVersion: Int) {
     val newEvents = events.drop(loadedAtVersion)
 
+    private val gameCreatedEvent = events.first() as GameEvent.GameCreated
+
     val creator
-        get() = (events.first() as GameEvent.GameCreated).createdBy
+        get() = gameCreatedEvent.createdBy
 
     val players
-        get() = events.filterIsInstance<GameEvent.PlayerJoined>().map { it.playerId }.toSet()
+        get() =
+            setOf(gameCreatedEvent.createdBy) +
+                events.filterIsInstance<GameEvent.PlayerJoined>().map { it.playerId }.toSet()
 
     companion object {
         fun new(id: GameId, createdBy: PlayerId): Game {

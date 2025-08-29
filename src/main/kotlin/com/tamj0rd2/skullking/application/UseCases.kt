@@ -24,7 +24,12 @@ data class UseCases(
             )
 
             return UseCases(
-                createGameUseCase = CreateGameService(outputPorts.saveGamePort),
+                createGameUseCase =
+                    CreateGameService(
+                        saveGamePort = outputPorts.saveGamePort,
+                        subscribeToGameNotificationsPort =
+                            outputPorts.subscribeToGameNotificationsPort,
+                    ),
                 viewGamesUseCase = ViewGamesService(outputPorts.findGamesPort),
                 joinGameUseCase =
                     JoinGameService(

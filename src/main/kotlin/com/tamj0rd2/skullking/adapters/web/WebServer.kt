@@ -50,9 +50,12 @@ class WebServer(outputPorts: OutputPorts, port: Int) : AutoCloseable {
                     { req: Request ->
                         val playerId = checkNotNull(req.form("playerId")).let(PlayerId::parse)
 
-                        useCases.createGameUseCase.execute(CreateGameInput(playerId))
+                        val html =
+                            viewGameHtml(
+                                joinGameUri = Uri.of("/games/new").query("playerId", playerId.value)
+                            )
 
-                        Response(Status.SEE_OTHER).location(Uri.of("/games"))
+                        Response(Status.OK).contentType(ContentType.TEXT_HTML).body(html)
                     },
             )
 
@@ -95,7 +98,25 @@ class WebServer(outputPorts: OutputPorts, port: Int) : AutoCloseable {
                     },
             )
 
-    val gameWsHandler =
+    val createGameWsHandler =
+        "/games/new" bindWs
+            { req: Request ->
+                val playerId = checkNotNull(req.query("playerId")).let(PlayerId::parse)
+
+                WsResponse { ws: Websocket ->
+                    useCases.createGameUseCase.execute(
+                        CreateGameInput(
+                            receiveGameNotification = { state ->
+                                println("Notifying $playerId with state $state")
+                                ws.send(WsMessage(partial { partialGameState(state) }))
+                            },
+                            playerId = playerId,
+                        )
+                    )
+                }
+            }
+
+    val joinGameWsHandler =
         "/games/{gameId}" bindWs
             { req: Request ->
                 val gameId = checkNotNull(req.path("gameId")).let(GameId::parse)
@@ -121,7 +142,8 @@ class WebServer(outputPorts: OutputPorts, port: Int) : AutoCloseable {
         routes(joinGameHttpHandler, gamesHttpHandler, prototypeHandler, staticFiles)
             .withFilter(httpExceptionFilter)
 
-    private val server = poly(gameWsHandler, httpRouter).asServer(Undertow(port))
+    private val server =
+        poly(createGameWsHandler, joinGameWsHandler, httpRouter).asServer(Undertow(port))
 
     fun start() {
         server.start()

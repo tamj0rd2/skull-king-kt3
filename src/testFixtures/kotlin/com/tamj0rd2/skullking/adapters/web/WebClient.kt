@@ -30,8 +30,7 @@ internal class WebClient(private val page: Page, private val baseUrl: String) : 
                 page.getByLabel("Player ID").fill(useCaseInput.playerId.value)
                 page.waitingForHtmx { page.getByRole(BUTTON).withText("Create Game").click() }
 
-                val gameId = parseGamesList().single { it.host == useCaseInput.playerId }.id
-                CreateGameOutput(gameId = gameId)
+                CreateGameOutput
             },
             viewGamesUseCase = {
                 val response = page.navigate("$baseUrl/games")
