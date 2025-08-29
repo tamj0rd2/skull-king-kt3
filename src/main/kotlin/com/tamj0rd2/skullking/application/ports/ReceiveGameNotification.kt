@@ -16,4 +16,8 @@ fun interface ReceiveGameNotification {
     fun receive(playerSpecificGameState: PlayerSpecificGameState)
 }
 
-data class PlayerSpecificGameState(val players: List<PlayerId>)
+data class PlayerSpecificGameState(val players: List<PlayerId>) {
+    companion object {
+        val empty = PlayerSpecificGameState(players = emptyList())
+    }
+}

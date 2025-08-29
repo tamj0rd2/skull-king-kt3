@@ -8,9 +8,9 @@ import com.tamj0rd2.skullking.application.ports.input.UseCases
 import com.tamj0rd2.skullking.application.ports.input.ViewGamesInput
 import com.tamj0rd2.skullking.domain.game.PlayerId
 import strikt.api.expectThat
-import strikt.assertions.contains
 import strikt.assertions.containsExactlyInAnyOrder
 import strikt.assertions.isNotEmpty
+import strikt.assertions.isNotEqualTo
 
 class Player(
     val id: PlayerId,
@@ -21,7 +21,7 @@ class Player(
     private val gameState
         get() = deriveGameState.current()
 
-    fun `creates a game`() {
+    fun `creates a game`() = expectingStateChange {
         useCases.createGameUseCase.execute(
             CreateGameInput(
                 receiveGameNotification =
@@ -30,25 +30,19 @@ class Player(
                 playerId = id,
             )
         )
-
-        // todo: this output sucks. I actually want to try hamkrest again.
-        eventually { expectThat(gameState.players).contains(id) }
     }
 
-    fun `joins a game`() {
-        val game = useCases.viewGamesUseCase.execute(ViewGamesInput).games.single()
+    fun `joins a game`() = expectingStateChange {
+        val gameId = useCases.viewGamesUseCase.execute(ViewGamesInput).games.single().id
         useCases.joinGameUseCase.execute(
             JoinGameInput(
-                gameId = game.id,
+                gameId = gameId,
                 receiveGameNotification =
                     if (deriveGameState is ReceiveGameNotification) deriveGameState
                     else ReceiveGameNotification {},
                 playerId = id,
             )
         )
-
-        // todo: this output sucks. I actually want to try hamkrest again.
-        eventually { expectThat(gameState.players).contains(id) }
     }
 
     fun `sees players in the game`(vararg expectedPlayers: Player) {
@@ -60,5 +54,13 @@ class Player(
 
     interface DeriveGameState {
         fun current(): PlayerSpecificGameState
+    }
+
+    private fun expectingStateChange(block: () -> Unit) {
+        val stateBefore = gameState
+        block()
+
+        // todo: this output sucks. I actually want to try hamkrest again.
+        eventually { expectThat(gameState).isNotEqualTo(stateBefore) }
     }
 }
