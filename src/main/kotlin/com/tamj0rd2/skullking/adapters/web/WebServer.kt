@@ -68,6 +68,24 @@ class WebServer(outputPorts: OutputPorts, port: Int) : AutoCloseable {
                     },
             )
 
+    val createGameWsHandler =
+        "/games/new" bindWs
+            { req: Request ->
+                val playerId = checkNotNull(req.query("playerId")).let(PlayerId::parse)
+
+                WsResponse { ws: Websocket ->
+                    useCases.createGameUseCase.execute(
+                        CreateGameInput(
+                            receiveGameNotification = { state ->
+                                println("Notifying $playerId with state $state")
+                                ws.send(WsMessage(partial { partialGameState(state) }))
+                            },
+                            playerId = playerId,
+                        )
+                    )
+                }
+            }
+
     private val joinGameHttpHandler =
         "/games/{gameId}/join" bindHttp
             routes(
@@ -92,24 +110,6 @@ class WebServer(outputPorts: OutputPorts, port: Int) : AutoCloseable {
                         Response(Status.OK).contentType(ContentType.TEXT_HTML).body(html)
                     },
             )
-
-    val createGameWsHandler =
-        "/games/new" bindWs
-            { req: Request ->
-                val playerId = checkNotNull(req.query("playerId")).let(PlayerId::parse)
-
-                WsResponse { ws: Websocket ->
-                    useCases.createGameUseCase.execute(
-                        CreateGameInput(
-                            receiveGameNotification = { state ->
-                                println("Notifying $playerId with state $state")
-                                ws.send(WsMessage(partial { partialGameState(state) }))
-                            },
-                            playerId = playerId,
-                        )
-                    )
-                }
-            }
 
     val joinGameWsHandler =
         "/games/{gameId}" bindWs
