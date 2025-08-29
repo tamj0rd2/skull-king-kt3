@@ -159,8 +159,5 @@ class WebServer(outputPorts: OutputPorts, port: Int) : AutoCloseable {
                 }
             }
         }
-
-        private val Request.htmx: Boolean
-            get() = header("HX-Request") == "true"
     }
 }
