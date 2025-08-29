@@ -150,7 +150,7 @@ private fun FlowContent.gameSettingsSection(settings: LobbySettings) {
 private fun FlowContent.formActionsSection() {
     div(classes = "form-actions") {
         button(classes = "btn btn-primary") {
-            attributes["hx-post"] = "/games"
+            attributes["hx-post"] = "/games/new"
             attributes["hx-target"] = "body"
             attributes["hx-swap"] = "outerHTML"
 

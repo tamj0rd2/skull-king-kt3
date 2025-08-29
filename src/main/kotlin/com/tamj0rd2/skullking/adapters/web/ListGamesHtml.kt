@@ -44,7 +44,7 @@ fun listGamesHtml(games: List<GameListItem>): String =
 
                 div(classes = "actions") {
                     button(classes = "btn btn-primary") {
-                        attributes["hx-get"] = "/prototype/create-game"
+                        attributes["hx-get"] = "/games/new"
                         attributes["hx-target"] = "body"
 
                         span { +"➕" }

@@ -18,7 +18,6 @@ import org.http4k.core.Uri
 import org.http4k.core.body.form
 import org.http4k.core.query
 import org.http4k.lens.contentType
-import org.http4k.lens.location
 import org.http4k.routing.ResourceLoader
 import org.http4k.routing.bindHttp
 import org.http4k.routing.bindWs
@@ -44,6 +43,16 @@ class WebServer(outputPorts: OutputPorts, port: Int) : AutoCloseable {
 
                         val html = listGamesHtml(output.games)
 
+                        Response(Status.OK).contentType(ContentType.TEXT_HTML).body(html)
+                    }
+            )
+
+    private val createGameHttpHandler =
+        "/games/new" bindHttp
+            routes(
+                Method.GET to
+                    { _: Request ->
+                        val html = createGameHtml()
                         Response(Status.OK).contentType(ContentType.TEXT_HTML).body(html)
                     },
                 Method.POST to
@@ -80,20 +89,6 @@ class WebServer(outputPorts: OutputPorts, port: Int) : AutoCloseable {
                                         .query("playerId", playerId.value)
                             )
 
-                        Response(Status.OK).contentType(ContentType.TEXT_HTML).body(html)
-                    },
-            )
-
-    private val prototypeHandler =
-        "/prototype" bindHttp
-            routes(
-                "/" bindHttp
-                    { _: Request ->
-                        Response(Status.SEE_OTHER).location(Uri.of("/games"))
-                    },
-                "create-game" bindHttp
-                    { _: Request ->
-                        val html = createGameHtml()
                         Response(Status.OK).contentType(ContentType.TEXT_HTML).body(html)
                     },
             )
@@ -139,7 +134,7 @@ class WebServer(outputPorts: OutputPorts, port: Int) : AutoCloseable {
     private val staticFiles = static(ResourceLoader.Classpath("static"))
 
     private val httpRouter =
-        routes(joinGameHttpHandler, gamesHttpHandler, prototypeHandler, staticFiles)
+        routes(joinGameHttpHandler, createGameHttpHandler, gamesHttpHandler, staticFiles)
             .withFilter(httpExceptionFilter)
 
     private val server =
