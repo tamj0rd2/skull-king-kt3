@@ -1,6 +1,8 @@
 package com.tamj0rd2.skullking.adapters.web
 
+import com.microsoft.playwright.Locator
 import com.microsoft.playwright.Page
+import com.microsoft.playwright.options.AriaRole.BUTTON
 import com.tamj0rd2.skullking.Player.DeriveGameState
 import com.tamj0rd2.skullking.application.UseCases
 import com.tamj0rd2.skullking.application.ports.PlayerSpecificGameState
@@ -14,14 +16,19 @@ import strikt.api.expectThat
 import strikt.assertions.isEqualTo
 
 internal class WebClient(private val page: Page, private val baseUrl: String) : DeriveGameState {
+    init {
+        page.onLoad { it.installHtmxSupport() }
+    }
+
     fun useCases(): UseCases {
         return UseCases(
             createGameUseCase = { useCaseInput ->
                 val response = page.navigate("$baseUrl/games")
                 expectThat(response.status()).isEqualTo(200)
 
-                page.getByPlaceholder("Player ID").fill(useCaseInput.playerId.value)
-                page.waitingForHtmx { page.getByText("Create Game").click() }
+                page.waitingForHtmx { page.getByRole(BUTTON).withText("Create Game").click() }
+                page.getByLabel("Player ID").fill(useCaseInput.playerId.value)
+                page.waitingForHtmx { page.getByRole(BUTTON).withText("Create Game").click() }
 
                 val gameId = parseGamesList().single { it.host == useCaseInput.playerId }.id
                 CreateGameOutput(gameId = gameId)
@@ -35,8 +42,11 @@ internal class WebClient(private val page: Page, private val baseUrl: String) : 
             joinGameUseCase = { useCaseInput ->
                 val gameElement =
                     page.findByAttribute("data-game-id", GameId.show(useCaseInput.gameId)).single()
-                gameElement.getByPlaceholder("Player ID").fill(useCaseInput.playerId.value)
-                page.waitingForHtmx { gameElement.getByText("Join").click() }
+
+                page.waitingForHtmx { gameElement.getByRole(BUTTON).withText("Join Game").click() }
+                page.getByLabel("Player ID").fill(useCaseInput.playerId.value)
+                page.waitingForHtmx { page.getByRole(BUTTON).withText("Join Game").click() }
+
                 JoinGameOutput
             },
         )
@@ -44,8 +54,7 @@ internal class WebClient(private val page: Page, private val baseUrl: String) : 
 
     override fun current(): PlayerSpecificGameState {
         val players =
-            (0 until page.locator("#players li").count()).map { index ->
-                val playerElement = page.locator("#players li").nth(index)
+            page.locator("#players li").all().map { playerElement ->
                 playerElement.textContent().let(PlayerId::parse)
             }
 
@@ -55,34 +64,30 @@ internal class WebClient(private val page: Page, private val baseUrl: String) : 
     private fun Page.findByAttribute(attribute: String, value: String) =
         locator("[$attribute='$value']").all()
 
-    private fun parseGamesList(): List<GameListItem> {
-        val games =
-            (0 until page.locator("#games li").count()).map { index ->
-                val gameElement = page.locator("#games li").nth(index)
+    private fun parseGamesList(): List<GameListItem> =
+        page.locator("#games > div").all().map { gameElement ->
+            GameListItem(
+                id = gameElement.getAttribute("data-game-id").let(GameId::parse),
+                host = gameElement.getAttribute("data-host-id").let { PlayerId.parse(it) },
+            )
+        }
 
-                GameListItem(
-                    id = gameElement.getAttribute("data-game-id").let(GameId::parse),
-                    host = gameElement.getAttribute("data-host-id").let { PlayerId.parse(it) },
-                )
-            }
-        return games
-    }
+    companion object {
+        private const val htmxSettled = "htmxHasSettled"
 
-    init {
-        page.onLoad { it.installHtmxSupport() }
-    }
+        private fun Page.installHtmxSupport() {
+            evaluate(
+                "window.$htmxSettled = false; window.addEventListener('htmx:afterSettle', () => window.$htmxSettled = true);"
+            )
+        }
 
-    private val htmxSettled = "htmxHasSettled"
+        private fun Page.waitingForHtmx(action: () -> Unit) {
+            evaluate("window.$htmxSettled = false")
+            action()
+            waitForFunction("window.$htmxSettled === true")
+        }
 
-    private fun Page.installHtmxSupport() {
-        evaluate(
-            "window.$htmxSettled = false; window.addEventListener('htmx:afterSettle', () => window.$htmxSettled = true);"
-        )
-    }
-
-    private fun Page.waitingForHtmx(action: Page.() -> Unit) {
-        evaluate("window.$htmxSettled = false")
-        action()
-        waitForFunction("window.$htmxSettled === true")
+        private fun Locator.withText(text: String): Locator =
+            filter(Locator.FilterOptions().setHasText(text))
     }
 }

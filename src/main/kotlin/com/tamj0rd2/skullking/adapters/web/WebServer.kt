@@ -19,11 +19,13 @@ import org.http4k.core.body.form
 import org.http4k.core.query
 import org.http4k.lens.contentType
 import org.http4k.lens.location
+import org.http4k.routing.ResourceLoader
 import org.http4k.routing.bindHttp
 import org.http4k.routing.bindWs
 import org.http4k.routing.path
 import org.http4k.routing.poly
 import org.http4k.routing.routes
+import org.http4k.routing.static
 import org.http4k.server.Undertow
 import org.http4k.server.asServer
 import org.http4k.websocket.Websocket
@@ -37,12 +39,10 @@ class WebServer(outputPorts: OutputPorts, port: Int) : AutoCloseable {
         "/games" bindHttp
             routes(
                 Method.GET to
-                    { req: Request ->
+                    { _: Request ->
                         val output = useCases.viewGamesUseCase.execute(ViewGamesInput)
 
-                        val html =
-                            if (req.htmx) partial { partialGamesHtml(output.games) }
-                            else viewGamesHtml(output.games)
+                        val html = listGamesHtml(output.games)
 
                         Response(Status.OK).contentType(ContentType.TEXT_HTML).body(html)
                     },
@@ -56,9 +56,15 @@ class WebServer(outputPorts: OutputPorts, port: Int) : AutoCloseable {
                     },
             )
 
-    private val gameHttpHandler =
-        "/games/{gameId}" bindHttp
+    private val joinGameHttpHandler =
+        "/games/{gameId}/join" bindHttp
             routes(
+                Method.GET to
+                    { req: Request ->
+                        val gameId = checkNotNull(req.path("gameId")).let(GameId::parse)
+                        val html = joinGameHtml(gameId)
+                        Response(Status.OK).contentType(ContentType.TEXT_HTML).body(html)
+                    },
                 Method.POST to
                     { req: Request ->
                         val gameId = checkNotNull(req.path("gameId")).let(GameId::parse)
@@ -72,7 +78,7 @@ class WebServer(outputPorts: OutputPorts, port: Int) : AutoCloseable {
                             )
 
                         Response(Status.OK).contentType(ContentType.TEXT_HTML).body(html)
-                    }
+                    },
             )
 
     private val prototypeHandler =
@@ -80,8 +86,7 @@ class WebServer(outputPorts: OutputPorts, port: Int) : AutoCloseable {
             routes(
                 "/" bindHttp
                     { _: Request ->
-                        val html = lobbyListHtml()
-                        Response(Status.OK).contentType(ContentType.TEXT_HTML).body(html)
+                        Response(Status.SEE_OTHER).location(Uri.of("/games"))
                     },
                 "create-game" bindHttp
                     { _: Request ->
@@ -110,8 +115,11 @@ class WebServer(outputPorts: OutputPorts, port: Int) : AutoCloseable {
                 }
             }
 
+    private val staticFiles = static(ResourceLoader.Classpath("static"))
+
     private val httpRouter =
-        routes(gameHttpHandler, gamesHttpHandler, prototypeHandler).withFilter(httpExceptionFilter)
+        routes(joinGameHttpHandler, gamesHttpHandler, prototypeHandler, staticFiles)
+            .withFilter(httpExceptionFilter)
 
     private val server = poly(gameWsHandler, httpRouter).asServer(Undertow(port))
 
