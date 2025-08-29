@@ -21,6 +21,7 @@ internal fun HEAD.styles() {
     styleLink("/css/common.css")
     styleLink("/css/list-games.css")
     styleLink("/css/create-game.css")
+    styleLink("/css/game.css")
 }
 
 fun GameId.forDisplay(): String = GameId.show(this)
