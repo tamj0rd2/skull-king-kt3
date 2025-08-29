@@ -6,6 +6,9 @@ import com.tamj0rd2.skullking.Player.DeriveGameState
 import com.tamj0rd2.skullking.adapters.inmemory.inMemory
 import com.tamj0rd2.skullking.application.ports.PlayerSpecificGameState
 import com.tamj0rd2.skullking.application.ports.ReceiveGameNotification
+import com.tamj0rd2.skullking.application.ports.input.UseCases
+import com.tamj0rd2.skullking.application.ports.output.OutputPorts
+import com.tamj0rd2.skullking.application.services.using
 import com.tamj0rd2.skullking.domain.game.PlayerId
 import com.tamj0rd2.skullking.testsupport.eventually
 import java.util.concurrent.atomic.AtomicReference
@@ -15,7 +18,7 @@ import strikt.assertions.isNotNull
 
 @Testable
 class ApplicationEndToEndTest : EndToEndTestContract {
-    private val application = UseCases.createFrom(OutputPorts.inMemory())
+    private val application = UseCases.using(OutputPorts.inMemory())
 
     override fun createPlayerActor(name: String): Player {
         return Player(

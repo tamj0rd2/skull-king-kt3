@@ -1,11 +1,7 @@
-package com.tamj0rd2.skullking.application
+package com.tamj0rd2.skullking.application.ports.output
 
 import com.tamj0rd2.skullking.application.ports.SendGameNotificationPort
 import com.tamj0rd2.skullking.application.ports.SubscribeToGameNotificationsPort
-import com.tamj0rd2.skullking.application.ports.output.FindGamesPort
-import com.tamj0rd2.skullking.application.ports.output.LoadGamePort
-import com.tamj0rd2.skullking.application.ports.output.SaveGamePort
-import com.tamj0rd2.skullking.application.ports.output.SubscribeToGameEventsPort
 
 data class OutputPorts(
     val saveGamePort: SaveGamePort,

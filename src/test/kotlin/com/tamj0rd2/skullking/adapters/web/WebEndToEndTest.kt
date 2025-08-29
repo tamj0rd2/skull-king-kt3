@@ -4,8 +4,8 @@ import com.microsoft.playwright.BrowserType
 import com.microsoft.playwright.Playwright
 import com.tamj0rd2.skullking.EndToEndTestContract
 import com.tamj0rd2.skullking.Player
-import com.tamj0rd2.skullking.adapters.inmemory.inMemory
-import com.tamj0rd2.skullking.application.OutputPorts
+import com.tamj0rd2.skullking.adapters.configuration.forTesting
+import com.tamj0rd2.skullking.application.ports.output.OutputPorts
 import com.tamj0rd2.skullking.domain.game.PlayerId
 import com.tamj0rd2.skullking.testsupport.eventually
 import java.lang.management.ManagementFactory
@@ -22,7 +22,7 @@ class WebEndToEndTest : EndToEndTestContract {
     @AutoClose
     @Suppress("unused")
     private val webServer =
-        WebServer(outputPorts = OutputPorts.inMemory(), port = port).also { it.start() }
+        WebServer(outputPorts = OutputPorts.forTesting(), port = port).also { it.start() }
 
     @AutoClose private val playwright = Playwright.create()
     private val browser =

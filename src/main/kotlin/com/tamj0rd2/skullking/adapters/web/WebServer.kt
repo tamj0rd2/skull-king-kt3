@@ -1,11 +1,12 @@
 package com.tamj0rd2.skullking.adapters.web
 
 import com.tamj0rd2.skullking.adapters.web.PartialBlock.Companion.partial
-import com.tamj0rd2.skullking.application.OutputPorts
-import com.tamj0rd2.skullking.application.UseCases
 import com.tamj0rd2.skullking.application.ports.input.CreateGameInput
 import com.tamj0rd2.skullking.application.ports.input.JoinGameInput
+import com.tamj0rd2.skullking.application.ports.input.UseCases
 import com.tamj0rd2.skullking.application.ports.input.ViewGamesInput
+import com.tamj0rd2.skullking.application.ports.output.OutputPorts
+import com.tamj0rd2.skullking.application.services.using
 import com.tamj0rd2.skullking.domain.game.GameId
 import com.tamj0rd2.skullking.domain.game.PlayerId
 import org.http4k.core.ContentType
@@ -32,7 +33,7 @@ import org.http4k.websocket.WsMessage
 import org.http4k.websocket.WsResponse
 
 class WebServer(outputPorts: OutputPorts, port: Int) : AutoCloseable {
-    private val useCases = UseCases.createFrom(outputPorts)
+    private val useCases = UseCases.using(outputPorts)
 
     private val gamesHttpHandler =
         "/games" bindHttp
