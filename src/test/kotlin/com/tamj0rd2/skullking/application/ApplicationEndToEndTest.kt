@@ -24,13 +24,13 @@ class ApplicationEndToEndTest : EndToEndTestContract {
             useCases = application,
             deriveGameState =
                 object : DeriveGameState, ReceiveGameNotification {
-                    private val latestState = AtomicReference(PlayerSpecificGameState.empty)
+                    private val latestState = AtomicReference<PlayerSpecificGameState?>(null)
 
                     override fun receive(playerSpecificGameState: PlayerSpecificGameState) {
                         latestState.set(playerSpecificGameState)
                     }
 
-                    override fun current(): PlayerSpecificGameState {
+                    override fun current(): PlayerSpecificGameState? {
                         return latestState.get()
                     }
                 },

@@ -11,6 +11,7 @@ import strikt.api.expectThat
 import strikt.assertions.containsExactlyInAnyOrder
 import strikt.assertions.isNotEmpty
 import strikt.assertions.isNotEqualTo
+import strikt.assertions.isNotNull
 
 class Player(
     val id: PlayerId,
@@ -19,7 +20,7 @@ class Player(
     val eventually: (block: () -> Unit) -> Unit,
 ) {
     private val gameState
-        get() = deriveGameState.current()
+        get() = checkNotNull(deriveGameState.current())
 
     fun `creates a game`() = expectingStateChange {
         useCases.createGameUseCase.execute(
@@ -53,14 +54,14 @@ class Player(
     }
 
     interface DeriveGameState {
-        fun current(): PlayerSpecificGameState
+        fun current(): PlayerSpecificGameState?
     }
 
     private fun expectingStateChange(block: () -> Unit) {
-        val stateBefore = gameState
+        val stateBefore = deriveGameState.current()
         block()
 
         // todo: this output sucks. I actually want to try hamkrest again.
-        eventually { expectThat(gameState).isNotEqualTo(stateBefore) }
+        eventually { expectThat(deriveGameState.current()).isNotNull().isNotEqualTo(stateBefore) }
     }
 }
