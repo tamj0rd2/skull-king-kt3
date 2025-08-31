@@ -6,6 +6,7 @@ import com.tamj0rd2.skullking.application.ports.input.JoinGameOutput
 import com.tamj0rd2.skullking.application.ports.input.JoinGameUseCase
 import com.tamj0rd2.skullking.application.ports.output.LoadGamePort
 import com.tamj0rd2.skullking.application.ports.output.SaveGamePort
+import com.tamj0rd2.skullking.application.ports.output.VersionedAtLoad.Companion.map
 
 class JoinGameService(
     private val saveGamePort: SaveGamePort,
@@ -15,8 +16,8 @@ class JoinGameService(
     override fun execute(input: JoinGameInput): JoinGameOutput {
         subscribeToGameNotificationsPort.subscribe(input.playerId, input.receiveGameNotification)
 
-        val game = loadGamePort.load(input.gameId)!!.addPlayer(input.playerId)
-        saveGamePort.save(game)
+        val versionedGame = loadGamePort.load(input.gameId)!!.map { it.addPlayer(input.playerId) }
+        saveGamePort.save(versionedGame)
         return JoinGameOutput
     }
 }

@@ -2,6 +2,9 @@ package com.tamj0rd2.skullking.adapters.inmemory
 
 import com.tamj0rd2.skullking.application.ports.output.GameEventSubscriber
 import com.tamj0rd2.skullking.application.ports.output.GameRepository
+import com.tamj0rd2.skullking.application.ports.output.Version
+import com.tamj0rd2.skullking.application.ports.output.VersionedAtLoad
+import com.tamj0rd2.skullking.application.ports.output.VersionedAtLoad.Companion.withLoadedVersion
 import com.tamj0rd2.skullking.domain.game.Game
 import com.tamj0rd2.skullking.domain.game.GameEvent
 import com.tamj0rd2.skullking.domain.game.GameId
@@ -27,13 +30,14 @@ class InMemoryGameRepository() : GameRepository {
         scheduler.scheduleAtFixedRate({ processOutbox() }, 0, 1, TimeUnit.MILLISECONDS)
     }
 
-    override fun save(game: Game) {
+    override fun save(game: Game, expectedVersion: Version) {
         events.addAll(game.newEvents)
         outbox.addAll(game.newEvents)
     }
 
-    override fun load(gameId: GameId): Game? {
-        return games[gameId]
+    override fun load(gameId: GameId): VersionedAtLoad<Game>? {
+        val game = games[gameId] ?: return null
+        return game.withLoadedVersion(Version.of(game.events.size))
     }
 
     override fun findAll(): List<Game> {

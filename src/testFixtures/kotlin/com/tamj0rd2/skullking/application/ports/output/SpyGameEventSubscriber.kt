@@ -5,8 +5,13 @@ import java.util.concurrent.CopyOnWriteArrayList
 
 class SpyGameEventSubscriber : GameEventSubscriber {
     private val _events = CopyOnWriteArrayList<GameEvent>()
+
     val events: List<GameEvent>
         get() = _events
+
+    fun reset() {
+        _events.clear()
+    }
 
     override fun notify(event: GameEvent) {
         _events.add(event)
