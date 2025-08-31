@@ -8,14 +8,16 @@ import com.tamj0rd2.skullking.application.ports.input.StartGameInput
 import com.tamj0rd2.skullking.application.ports.input.UseCases
 import com.tamj0rd2.skullking.application.ports.input.ViewGamesInput
 import com.tamj0rd2.skullking.domain.game.PlayerId
+import com.tamj0rd2.skullking.domain.game.RoundNumber
 import strikt.api.expectThat
 import strikt.assertions.containsExactlyInAnyOrder
+import strikt.assertions.isEqualTo
 import strikt.assertions.isNotEmpty
 import strikt.assertions.isNotEqualTo
 import strikt.assertions.isNotNull
 
 class Player(val id: PlayerId, val useCases: UseCases, val deriveGameState: DeriveGameState, val eventually: (block: () -> Unit) -> Unit) {
-    private val gameState
+    private val gameState: PlayerSpecificGameState
         get() = checkNotNull(deriveGameState.current())
 
     fun `creates a game`() = expectingStateChange {
@@ -43,6 +45,10 @@ class Player(val id: PlayerId, val useCases: UseCases, val deriveGameState: Deri
     }
 
     fun `starts the game`() = expectingStateChange { useCases.startGameUseCase.execute(StartGameInput(gameState.gameId)) }
+
+    fun `sees the round number`(expected: RoundNumber) {
+        expectThat(gameState).get { roundNumber }.isNotNull().isEqualTo(expected)
+    }
 
     interface DeriveGameState {
         fun current(): PlayerSpecificGameState?

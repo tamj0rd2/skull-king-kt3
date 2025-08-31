@@ -13,7 +13,10 @@ class SendGameNotificationsService(private val sendGameNotificationPort: SendGam
         val game = checkNotNull(loadGamePort.load(event.gameId)).aggregate
 
         game.players.forEach {
-            sendGameNotificationPort.send(it, PlayerSpecificGameState(gameId = game.id, players = game.players.toList()))
+            sendGameNotificationPort.send(
+                it,
+                PlayerSpecificGameState(gameId = game.id, players = game.players.toList(), roundNumber = game.roundNumber),
+            )
         }
     }
 }

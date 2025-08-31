@@ -17,4 +17,3 @@ So, being able to effectively react to things happening on the page (such as eve
 ### Mikado
 
 - start the game
-    - add new game started event

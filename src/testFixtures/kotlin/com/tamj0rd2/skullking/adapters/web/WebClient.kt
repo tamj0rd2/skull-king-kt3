@@ -57,7 +57,7 @@ internal class WebClient(private val page: Page, private val baseUrl: String) : 
 
         val players = gameElement.locator("#players li").all().map { playerElement -> playerElement.textContent().let(PlayerId::parse) }
 
-        return PlayerSpecificGameState(gameId = gameId, players = players)
+        return PlayerSpecificGameState(gameId = gameId, players = players, roundNumber = null)
     }
 
     private fun Page.findByAttribute(attribute: String, value: String) = locator("[$attribute='$value']").all()

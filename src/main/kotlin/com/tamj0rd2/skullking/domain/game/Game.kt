@@ -6,6 +6,7 @@ private constructor(
     val creator: PlayerId,
     val events: List<GameEvent> = emptyList(),
     val players: Set<PlayerId> = emptySet(),
+    val roundNumber: RoundNumber? = null,
 ) {
     companion object {
         fun new(id: GameId, createdBy: PlayerId): Game {
@@ -23,7 +24,7 @@ private constructor(
     }
 
     fun start(): Game {
-        return copy(events = events + GameEvent.GameStarted(gameId = id))
+        return copy(events = events + GameEvent.GameStarted(gameId = id), roundNumber = RoundNumber.One)
     }
 
     private fun applyEvent(event: GameEvent): Game {
@@ -45,4 +46,17 @@ sealed interface GameEvent {
     data class PlayerJoined(override val gameId: GameId, val playerId: PlayerId) : GameEvent
 
     data class GameStarted(override val gameId: GameId) : GameEvent
+}
+
+enum class RoundNumber {
+    One,
+    Two,
+    Three,
+    Four,
+    Five,
+    Six,
+    Seven,
+    Eight,
+    Nine,
+    Ten,
 }
