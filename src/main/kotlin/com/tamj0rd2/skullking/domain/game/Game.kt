@@ -1,32 +1,38 @@
 package com.tamj0rd2.skullking.domain.game
 
-data class Game private constructor(val id: GameId, val events: List<GameEvent>) {
-    private val gameCreatedEvent = events.first() as GameEvent.GameCreated
-
-    val creator
-        get() = gameCreatedEvent.createdBy
-
-    val players
-        get() =
-            setOf(gameCreatedEvent.createdBy) +
-                events.filterIsInstance<GameEvent.PlayerJoined>().map { it.playerId }.toSet()
-
+data class Game
+private constructor(
+    val id: GameId,
+    val creator: PlayerId,
+    val events: List<GameEvent> = emptyList(),
+    val players: Set<PlayerId> = emptySet(),
+) {
     companion object {
         fun new(id: GameId, createdBy: PlayerId): Game {
-            return Game(
-                id = id,
-                events = listOf(GameEvent.GameCreated(gameId = id, createdBy = createdBy)),
-            )
+            return Game(id = id, creator = createdBy)
+                .applyEvent(GameEvent.GameCreated(gameId = id, createdBy = createdBy))
         }
 
         fun reconstitute(events: List<GameEvent>): Game {
-            val gameId = events.first().gameId
-            return Game(id = gameId, events = events)
+            val creationEvent = events.first() as GameEvent.GameCreated
+            return events.fold(
+                Game(id = creationEvent.gameId, creator = creationEvent.createdBy),
+                Game::applyEvent,
+            )
         }
     }
 
     fun addPlayer(playerId: PlayerId): Game {
-        return copy(events = events + GameEvent.PlayerJoined(gameId = id, playerId = playerId))
+        return applyEvent(GameEvent.PlayerJoined(gameId = id, playerId = playerId))
+    }
+
+    private fun applyEvent(event: GameEvent): Game {
+        return when (event) {
+            is GameEvent.GameCreated ->
+                copy(creator = event.createdBy, players = setOf(event.createdBy))
+
+            is GameEvent.PlayerJoined -> copy(players = players + event.playerId)
+        }.copy(events = events + event)
     }
 }
 

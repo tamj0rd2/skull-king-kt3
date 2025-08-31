@@ -18,5 +18,3 @@ So, being able to effectively react to things happening on the page (such as eve
 
 - start the game
     - add new game started event
-        - make the folding less insane
-            - don't deal with versioning inside the domain layer. keep it strictly to the application layer.
