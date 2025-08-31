@@ -26,13 +26,9 @@ internal class WebClient(private val page: Page, private val baseUrl: String) : 
                 val response = page.navigate("$baseUrl/games")
                 expectThat(response.status()).isEqualTo(200)
 
-                page.waitingForHtmx(http = true) {
-                    page.getByRole(BUTTON).withText("Create Game").click()
-                }
+                page.waitingForHtmx(http = true) { page.getByRole(BUTTON).withText("Create Game").click() }
                 page.getByLabel("Player ID").fill(useCaseInput.playerId.value)
-                page.waitingForHtmx(http = true, ws = true) {
-                    page.getByRole(BUTTON).withText("Create Game").click()
-                }
+                page.waitingForHtmx(http = true, ws = true) { page.getByRole(BUTTON).withText("Create Game").click() }
 
                 CreateGameOutput
             },
@@ -43,16 +39,11 @@ internal class WebClient(private val page: Page, private val baseUrl: String) : 
                 ViewGamesOutput(games = parseGamesList())
             },
             joinGameUseCase = { useCaseInput ->
-                val gameElement =
-                    page.findByAttribute("data-game-id", GameId.show(useCaseInput.gameId)).single()
+                val gameElement = page.findByAttribute("data-game-id", GameId.show(useCaseInput.gameId)).single()
 
-                page.waitingForHtmx(http = true) {
-                    gameElement.getByRole(BUTTON).withText("Join Game").click()
-                }
+                page.waitingForHtmx(http = true) { gameElement.getByRole(BUTTON).withText("Join Game").click() }
                 page.getByLabel("Player ID").fill(useCaseInput.playerId.value)
-                page.waitingForHtmx(http = true, ws = true) {
-                    page.getByRole(BUTTON).withText("Join Game").click()
-                }
+                page.waitingForHtmx(http = true, ws = true) { page.getByRole(BUTTON).withText("Join Game").click() }
 
                 JoinGameOutput
             },
@@ -64,16 +55,12 @@ internal class WebClient(private val page: Page, private val baseUrl: String) : 
         val gameElement = page.locator("#game").firstOrNull() ?: return null
         val gameId = gameElement.getAttribute("data-game-id").let(GameId::parse)
 
-        val players =
-            gameElement.locator("#players li").all().map { playerElement ->
-                playerElement.textContent().let(PlayerId::parse)
-            }
+        val players = gameElement.locator("#players li").all().map { playerElement -> playerElement.textContent().let(PlayerId::parse) }
 
         return PlayerSpecificGameState(gameId = gameId, players = players)
     }
 
-    private fun Page.findByAttribute(attribute: String, value: String) =
-        locator("[$attribute='$value']").all()
+    private fun Page.findByAttribute(attribute: String, value: String) = locator("[$attribute='$value']").all()
 
     private fun parseGamesList(): List<GameListItem> =
         page.locator("#games > div").all().map { gameElement ->
@@ -88,19 +75,11 @@ internal class WebClient(private val page: Page, private val baseUrl: String) : 
         private const val htmxWsSettled = "htmxWsHasSettled"
 
         private fun Page.installHtmxSupport() {
-            evaluate(
-                "window.$htmxSettled = false; window.addEventListener('htmx:afterSettle', () => window.$htmxSettled = true);"
-            )
-            evaluate(
-                "window.$htmxWsSettled = false; window.addEventListener('htmx:wsAfterMessage', () => window.$htmxWsSettled = true);"
-            )
+            evaluate("window.$htmxSettled = false; window.addEventListener('htmx:afterSettle', () => window.$htmxSettled = true);")
+            evaluate("window.$htmxWsSettled = false; window.addEventListener('htmx:wsAfterMessage', () => window.$htmxWsSettled = true);")
         }
 
-        private fun Page.waitingForHtmx(
-            http: Boolean = false,
-            ws: Boolean = false,
-            action: () -> Unit,
-        ) {
+        private fun Page.waitingForHtmx(http: Boolean = false, ws: Boolean = false, action: () -> Unit) {
             require(http || ws) { "Must specify to wait for at least one of http or ws" }
 
             if (http) evaluate("window.$htmxSettled = false")
@@ -112,8 +91,7 @@ internal class WebClient(private val page: Page, private val baseUrl: String) : 
             if (ws) waitForFunction("window.$htmxWsSettled === true")
         }
 
-        private fun Locator.withText(text: String): Locator =
-            filter(Locator.FilterOptions().setHasText(text))
+        private fun Locator.withText(text: String): Locator = filter(Locator.FilterOptions().setHasText(text))
 
         private fun Locator.firstOrNull(): Locator? = if (count() > 0) first() else null
     }

@@ -6,10 +6,6 @@ import com.tamj0rd2.skullking.domain.game.PlayerId
 
 fun interface JoinGameUseCase : UseCase<JoinGameInput, JoinGameOutput>
 
-data class JoinGameInput(
-    val gameId: GameId,
-    val receiveGameNotification: ReceiveGameNotification,
-    val playerId: PlayerId,
-)
+data class JoinGameInput(val gameId: GameId, val receiveGameNotification: ReceiveGameNotification, val playerId: PlayerId)
 
 data object JoinGameOutput

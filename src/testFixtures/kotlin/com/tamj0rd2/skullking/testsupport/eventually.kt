@@ -15,8 +15,5 @@ fun eventually(timeoutMs: Long = 1000L, action: () -> Unit) {
         }
     }
 
-    throw AssertionError(
-        "Action did not succeed within ${timeoutMs}ms. Last failure: ${lastFailure?.message}",
-        lastFailure,
-    )
+    throw AssertionError("Action did not succeed within ${timeoutMs}ms. Last failure: ${lastFailure?.message}", lastFailure)
 }

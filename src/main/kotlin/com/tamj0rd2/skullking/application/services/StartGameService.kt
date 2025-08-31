@@ -7,10 +7,7 @@ import com.tamj0rd2.skullking.application.ports.output.LoadGamePort
 import com.tamj0rd2.skullking.application.ports.output.SaveGamePort
 import com.tamj0rd2.skullking.application.ports.output.VersionedAtLoad.Companion.map
 
-class StartGameService(
-    private val saveGamePort: SaveGamePort,
-    private val loadGamePort: LoadGamePort,
-) : StartGameUseCase {
+class StartGameService(private val saveGamePort: SaveGamePort, private val loadGamePort: LoadGamePort) : StartGameUseCase {
     override fun execute(input: StartGameInput): StartGameOutput {
         val game = loadGamePort.load(input.gameId)!!.map { it.start() }
         saveGamePort.save(game)

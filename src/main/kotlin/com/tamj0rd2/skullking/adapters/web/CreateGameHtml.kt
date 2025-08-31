@@ -116,19 +116,14 @@ private fun FlowContent.gameSettingsSection(settings: LobbySettings) {
                 }
                 select {
                     id = "rounds"
-                    listOf(
-                            6 to "6 Rounds (Quick)",
-                            8 to "8 Rounds",
-                            10 to "10 Rounds (Standard)",
-                            12 to "12 Rounds (Extended)",
-                        )
-                        .forEach { (rounds, label) ->
-                            option {
-                                value = rounds.toString()
-                                if (rounds == settings.rounds) selected = true
-                                +label
-                            }
+                    listOf(6 to "6 Rounds (Quick)", 8 to "8 Rounds", 10 to "10 Rounds (Standard)", 12 to "12 Rounds (Extended)").forEach {
+                        (rounds, label) ->
+                        option {
+                            value = rounds.toString()
+                            if (rounds == settings.rounds) selected = true
+                            +label
                         }
+                    }
                 }
             }
             div(classes = "form-group") {

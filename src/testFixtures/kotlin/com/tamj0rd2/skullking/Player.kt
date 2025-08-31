@@ -14,21 +14,14 @@ import strikt.assertions.isNotEmpty
 import strikt.assertions.isNotEqualTo
 import strikt.assertions.isNotNull
 
-class Player(
-    val id: PlayerId,
-    val useCases: UseCases,
-    val deriveGameState: DeriveGameState,
-    val eventually: (block: () -> Unit) -> Unit,
-) {
+class Player(val id: PlayerId, val useCases: UseCases, val deriveGameState: DeriveGameState, val eventually: (block: () -> Unit) -> Unit) {
     private val gameState
         get() = checkNotNull(deriveGameState.current())
 
     fun `creates a game`() = expectingStateChange {
         useCases.createGameUseCase.execute(
             CreateGameInput(
-                receiveGameNotification =
-                    if (deriveGameState is ReceiveGameNotification) deriveGameState
-                    else ReceiveGameNotification {},
+                receiveGameNotification = if (deriveGameState is ReceiveGameNotification) deriveGameState else ReceiveGameNotification {},
                 playerId = id,
             )
         )
@@ -39,24 +32,17 @@ class Player(
         useCases.joinGameUseCase.execute(
             JoinGameInput(
                 gameId = gameId,
-                receiveGameNotification =
-                    if (deriveGameState is ReceiveGameNotification) deriveGameState
-                    else ReceiveGameNotification {},
+                receiveGameNotification = if (deriveGameState is ReceiveGameNotification) deriveGameState else ReceiveGameNotification {},
                 playerId = id,
             )
         )
     }
 
     fun `sees players in the game`(vararg expectedPlayers: Player) {
-        expectThat(gameState)
-            .get { players }
-            .isNotEmpty()
-            .containsExactlyInAnyOrder(expectedPlayers.map { it.id })
+        expectThat(gameState).get { players }.isNotEmpty().containsExactlyInAnyOrder(expectedPlayers.map { it.id })
     }
 
-    fun `starts the game`() = expectingStateChange {
-        useCases.startGameUseCase.execute(StartGameInput(gameState.gameId))
-    }
+    fun `starts the game`() = expectingStateChange { useCases.startGameUseCase.execute(StartGameInput(gameState.gameId)) }
 
     interface DeriveGameState {
         fun current(): PlayerSpecificGameState?

@@ -9,16 +9,12 @@ private constructor(
 ) {
     companion object {
         fun new(id: GameId, createdBy: PlayerId): Game {
-            return Game(id = id, creator = createdBy)
-                .applyEvent(GameEvent.GameCreated(gameId = id, createdBy = createdBy))
+            return Game(id = id, creator = createdBy).applyEvent(GameEvent.GameCreated(gameId = id, createdBy = createdBy))
         }
 
         fun reconstitute(events: List<GameEvent>): Game {
             val creationEvent = events.first() as GameEvent.GameCreated
-            return events.fold(
-                Game(id = creationEvent.gameId, creator = creationEvent.createdBy),
-                Game::applyEvent,
-            )
+            return events.fold(Game(id = creationEvent.gameId, creator = creationEvent.createdBy), Game::applyEvent)
         }
     }
 
@@ -32,8 +28,7 @@ private constructor(
 
     private fun applyEvent(event: GameEvent): Game {
         return when (event) {
-            is GameEvent.GameCreated ->
-                copy(creator = event.createdBy, players = setOf(event.createdBy))
+            is GameEvent.GameCreated -> copy(creator = event.createdBy, players = setOf(event.createdBy))
 
             is GameEvent.PlayerJoined -> copy(players = players + event.playerId)
 

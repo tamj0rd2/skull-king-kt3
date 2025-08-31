@@ -18,7 +18,7 @@ dependencies {
 }
 
 ktfmt {
-    maxWidth.set(120)
+    maxWidth.set(140)
     kotlinLangStyle()
 }
 

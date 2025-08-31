@@ -33,11 +33,7 @@ fun FlowContent.partialGameState(state: PlayerSpecificGameState) {
         ul(classes = "player-list") {
             id = "players"
 
-            state.players.forEach { playerId ->
-                li(classes = "player-item") {
-                    span(classes = "player-name") { +playerId.forDisplay() }
-                }
-            }
+            state.players.forEach { playerId -> li(classes = "player-item") { span(classes = "player-name") { +playerId.forDisplay() } } }
         }
     }
 }

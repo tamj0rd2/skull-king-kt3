@@ -48,10 +48,7 @@ interface GameRepositoryContract {
         val gameAfterLoad = gameRepository.load(gameBeforeInitialSave.id)!!
         gameRepository.save(gameAfterLoad.map { it.addPlayer(PlayerId("jane")) })
 
-        eventually {
-            expectThat(subscriber.events)
-                .containsExactly(GameEvent.PlayerJoined(gameId, PlayerId("jane")))
-        }
+        eventually { expectThat(subscriber.events).containsExactly(GameEvent.PlayerJoined(gameId, PlayerId("jane"))) }
     }
 
     @Test

@@ -19,11 +19,7 @@ class InMemoryGameRepository() : GameRepository {
     private val eventSubscribers = mutableSetOf<GameEventSubscriber>()
     private val outbox = mutableListOf<GameEvent>()
 
-    private val scheduler =
-        Executors.newScheduledThreadPool(
-            1,
-            Thread.ofVirtual().name("inmem-game-scheduler-", 0).factory(),
-        )
+    private val scheduler = Executors.newScheduledThreadPool(1, Thread.ofVirtual().name("inmem-game-scheduler-", 0).factory())
 
     init {
         // passing a lambda rather than a reference actually improves the stack trace

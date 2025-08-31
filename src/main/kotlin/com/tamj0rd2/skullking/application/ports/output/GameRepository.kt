@@ -9,8 +9,7 @@ interface GameRepository : SaveGamePort, LoadGamePort, FindGamesPort, SubscribeT
 fun interface SaveGamePort {
     fun save(game: Game, expectedVersion: Version)
 
-    fun save(versionedGame: VersionedAtLoad<Game>) =
-        save(versionedGame.aggregate, versionedGame.version)
+    fun save(versionedGame: VersionedAtLoad<Game>) = save(versionedGame.aggregate, versionedGame.version)
 }
 
 fun interface LoadGamePort {

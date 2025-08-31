@@ -19,9 +19,7 @@ val extension = configurations.create("extension")
 dependencies {
     implementation("io.opentelemetry:opentelemetry-api:1.46.0")
     agent("io.opentelemetry.javaagent:opentelemetry-javaagent:2.12.0")
-    extension("io.opentelemetry.contrib:opentelemetry-samplers:1.43.0-alpha") {
-        isTransitive = false
-    }
+    extension("io.opentelemetry.contrib:opentelemetry-samplers:1.43.0-alpha") { isTransitive = false }
 }
 
 val copyAgent =

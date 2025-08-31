@@ -24,10 +24,6 @@ fun UseCases.Companion.using(outputPorts: OutputPorts): UseCases {
                 loadGamePort = outputPorts.loadGamePort,
                 subscribeToGameNotificationsPort = outputPorts.subscribeToGameNotificationsPort,
             ),
-        startGameUseCase =
-            StartGameService(
-                saveGamePort = outputPorts.saveGamePort,
-                loadGamePort = outputPorts.loadGamePort,
-            ),
+        startGameUseCase = StartGameService(saveGamePort = outputPorts.saveGamePort, loadGamePort = outputPorts.loadGamePort),
     )
 }

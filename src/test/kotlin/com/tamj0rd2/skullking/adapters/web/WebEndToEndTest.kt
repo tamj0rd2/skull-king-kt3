@@ -21,14 +21,10 @@ class WebEndToEndTest : EndToEndTestContract {
 
     @AutoClose
     @Suppress("unused")
-    private val webServer =
-        WebServer(outputPorts = OutputPorts.forTesting(), port = port).also { it.start() }
+    private val webServer = WebServer(outputPorts = OutputPorts.forTesting(), port = port).also { it.start() }
 
     @AutoClose private val playwright = Playwright.create()
-    private val browser =
-        playwright
-            .chromium()
-            .launch(BrowserType.LaunchOptions().setHeadless(!isDebuggingInIntellij()))
+    private val browser = playwright.chromium().launch(BrowserType.LaunchOptions().setHeadless(!isDebuggingInIntellij()))
 
     override fun createPlayerActor(name: String): Player {
         val page = browser.newContext().newPage()

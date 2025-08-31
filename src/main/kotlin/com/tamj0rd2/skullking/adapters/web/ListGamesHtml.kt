@@ -76,9 +76,7 @@ fun FlowContent.lobbyCard(game: GameListItem) {
 
         div(classes = "lobby-header") {
             h3(classes = "lobby-name") { +"${game.host.forDisplay()}'s game" }
-            span(classes = "lobby-status ${getStatusClass(gameStatus)}") {
-                +getStatusText(gameStatus)
-            }
+            span(classes = "lobby-status ${getStatusClass(gameStatus)}") { +getStatusText(gameStatus) }
         }
 
         div(classes = "lobby-info") {
@@ -98,9 +96,7 @@ fun FlowContent.lobbyCard(game: GameListItem) {
 
         div(classes = "players-list") {
             h4(classes = "players-title") { +"Players" }
-            div(classes = "player-tags") {
-                players.forEach { player -> span(classes = "player-tag") { +player } }
-            }
+            div(classes = "player-tags") { players.forEach { player -> span(classes = "player-tag") { +player } } }
         }
 
         div(classes = "lobby-actions") {

@@ -59,9 +59,7 @@ tasks.withType(KotlinCompile::class).all {
 class KillKotestAssertionsWithFire : ComponentMetadataRule {
     override fun execute(context: ComponentMetadataContext) {
         context.details.withVariant("jvmApiElements-published") {
-            withDependencies {
-                removeAll { it.group == "io.kotest" && it.module.name.contains("assertions") }
-            }
+            withDependencies { removeAll { it.group == "io.kotest" && it.module.name.contains("assertions") } }
         }
     }
 }
