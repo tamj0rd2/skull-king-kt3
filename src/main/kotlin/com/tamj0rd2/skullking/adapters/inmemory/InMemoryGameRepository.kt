@@ -31,8 +31,9 @@ class InMemoryGameRepository() : GameRepository {
     }
 
     override fun save(game: Game, expectedVersion: Version) {
-        events.addAll(game.newEvents)
-        outbox.addAll(game.newEvents)
+        val newEvents = game.events.drop(expectedVersion.value)
+        events.addAll(newEvents)
+        outbox.addAll(newEvents)
     }
 
     override fun load(gameId: GameId): VersionedAtLoad<Game>? {

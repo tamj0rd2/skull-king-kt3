@@ -1,9 +1,6 @@
 package com.tamj0rd2.skullking.domain.game
 
-data class Game
-private constructor(val id: GameId, val events: List<GameEvent>, val loadedAtVersion: Int) {
-    val newEvents = events.drop(loadedAtVersion)
-
+data class Game private constructor(val id: GameId, val events: List<GameEvent>) {
     private val gameCreatedEvent = events.first() as GameEvent.GameCreated
 
     val creator
@@ -19,13 +16,12 @@ private constructor(val id: GameId, val events: List<GameEvent>, val loadedAtVer
             return Game(
                 id = id,
                 events = listOf(GameEvent.GameCreated(gameId = id, createdBy = createdBy)),
-                loadedAtVersion = 0,
             )
         }
 
         fun reconstitute(events: List<GameEvent>): Game {
             val gameId = events.first().gameId
-            return Game(id = gameId, events = events, loadedAtVersion = events.size)
+            return Game(id = gameId, events = events)
         }
     }
 
