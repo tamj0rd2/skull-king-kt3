@@ -31,14 +31,7 @@ on_exit() {
 }
 trap 'on_exit' EXIT
 
-# Format each file individually with ktfmt
-# ktfmt doesn't accept stdin pattern input like ktlint does
-while IFS= read -r file; do
-  # Only process files that exist (in case they were deleted)
-  if [[ -f "$file" ]]; then
-    ktfmt --kotlinlang-style -F "$file"
-  fi
-done <<< "$files_to_format"
+make format-staged
 
 # Stage the formatted files so they can be committed
 while IFS= read -r file; do
