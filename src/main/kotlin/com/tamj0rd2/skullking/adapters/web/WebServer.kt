@@ -1,6 +1,8 @@
 package com.tamj0rd2.skullking.adapters.web
 
 import com.tamj0rd2.skullking.adapters.web.PartialBlock.Companion.partial
+import com.tamj0rd2.skullking.application.ports.PlayerSpecificGameState
+import com.tamj0rd2.skullking.application.ports.ReceiveGameNotification
 import com.tamj0rd2.skullking.application.ports.input.CreateGameInput
 import com.tamj0rd2.skullking.application.ports.input.JoinGameInput
 import com.tamj0rd2.skullking.application.ports.input.UseCases
@@ -73,13 +75,7 @@ class WebServer(outputPorts: OutputPorts, port: Int) : AutoCloseable {
 
                 WsResponse { ws: Websocket ->
                     useCases.createGameUseCase.execute(
-                        CreateGameInput(
-                            receiveGameNotification = { state ->
-                                println("Notifying $playerId with state $state")
-                                ws.send(WsMessage(partial { partialGameState(state) }))
-                            },
-                            playerId = playerId,
-                        )
+                        CreateGameInput(receiveGameNotification = PlayerWsHandler(playerId, ws), playerId = playerId)
                     )
                 }
             }
@@ -112,14 +108,7 @@ class WebServer(outputPorts: OutputPorts, port: Int) : AutoCloseable {
 
                 WsResponse { ws: Websocket ->
                     useCases.joinGameUseCase.execute(
-                        JoinGameInput(
-                            gameId = gameId,
-                            receiveGameNotification = { state ->
-                                println("Notifying $playerId with state $state")
-                                ws.send(WsMessage(partial { partialGameState(state) }))
-                            },
-                            playerId = playerId,
-                        )
+                        JoinGameInput(gameId = gameId, receiveGameNotification = PlayerWsHandler(playerId, ws), playerId = playerId)
                     )
                 }
             }
@@ -150,5 +139,12 @@ class WebServer(outputPorts: OutputPorts, port: Int) : AutoCloseable {
                 }
             }
         }
+    }
+}
+
+private class PlayerWsHandler(private val playerId: PlayerId, private val ws: Websocket) : ReceiveGameNotification {
+    override fun receive(state: PlayerSpecificGameState) {
+        println("Notifying $playerId with state $state")
+        ws.send(WsMessage(partial { partialGameState(state) }))
     }
 }

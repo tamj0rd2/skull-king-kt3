@@ -17,3 +17,4 @@ So, being able to effectively react to things happening on the page (such as eve
 ### Mikado
 
 - start the game
+    - introcue a player websocket to reduce duplication between join and create ws handlers.

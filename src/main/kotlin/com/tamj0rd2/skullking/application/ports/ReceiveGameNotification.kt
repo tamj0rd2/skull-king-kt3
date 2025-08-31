@@ -15,7 +15,7 @@ fun interface SendGameNotificationPort {
 }
 
 fun interface ReceiveGameNotification {
-    fun receive(playerSpecificGameState: PlayerSpecificGameState)
+    fun receive(state: PlayerSpecificGameState)
 }
 
 data class PlayerSpecificGameState(val gameId: GameId, val players: List<PlayerId>, val roundNumber: RoundNumber?)
