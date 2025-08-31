@@ -1,5 +1,6 @@
 package com.tamj0rd2.skullking.application.ports
 
+import com.tamj0rd2.skullking.domain.game.GameId
 import com.tamj0rd2.skullking.domain.game.PlayerId
 
 interface GameNotifier : SubscribeToGameNotificationsPort, SendGameNotificationPort
@@ -16,4 +17,4 @@ fun interface ReceiveGameNotification {
     fun receive(playerSpecificGameState: PlayerSpecificGameState)
 }
 
-data class PlayerSpecificGameState(val players: List<PlayerId>)
+data class PlayerSpecificGameState(val gameId: GameId, val players: List<PlayerId>)

@@ -26,6 +26,7 @@ fun viewGameHtml(joinGameUri: Uri): String =
 fun FlowContent.partialGameState(state: PlayerSpecificGameState) {
     main(classes = "container") {
         attributes["id"] = "game"
+        attributes["data-game-id"] = state.gameId.forDisplay()
 
         h2 { +"Players" }
 

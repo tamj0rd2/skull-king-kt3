@@ -15,7 +15,10 @@ class SendGameNotificationsService(
         val game = checkNotNull(loadGamePort.load(event.gameId))
 
         game.players.forEach {
-            sendGameNotificationPort.send(it, PlayerSpecificGameState(game.players.toList()))
+            sendGameNotificationPort.send(
+                it,
+                PlayerSpecificGameState(gameId = game.id, players = game.players.toList()),
+            )
         }
     }
 }
