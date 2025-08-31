@@ -26,12 +26,18 @@ private constructor(
         return applyEvent(GameEvent.PlayerJoined(gameId = id, playerId = playerId))
     }
 
+    fun start(): Game {
+        return copy(events = events + GameEvent.GameStarted(gameId = id))
+    }
+
     private fun applyEvent(event: GameEvent): Game {
         return when (event) {
             is GameEvent.GameCreated ->
                 copy(creator = event.createdBy, players = setOf(event.createdBy))
 
             is GameEvent.PlayerJoined -> copy(players = players + event.playerId)
+
+            is GameEvent.GameStarted -> this
         }.copy(events = events + event)
     }
 }
@@ -42,4 +48,6 @@ sealed interface GameEvent {
     data class GameCreated(override val gameId: GameId, val createdBy: PlayerId) : GameEvent
 
     data class PlayerJoined(override val gameId: GameId, val playerId: PlayerId) : GameEvent
+
+    data class GameStarted(override val gameId: GameId) : GameEvent
 }

@@ -4,6 +4,7 @@ import com.tamj0rd2.skullking.application.ports.PlayerSpecificGameState
 import com.tamj0rd2.skullking.application.ports.ReceiveGameNotification
 import com.tamj0rd2.skullking.application.ports.input.CreateGameInput
 import com.tamj0rd2.skullking.application.ports.input.JoinGameInput
+import com.tamj0rd2.skullking.application.ports.input.StartGameInput
 import com.tamj0rd2.skullking.application.ports.input.UseCases
 import com.tamj0rd2.skullking.application.ports.input.ViewGamesInput
 import com.tamj0rd2.skullking.domain.game.PlayerId
@@ -51,6 +52,10 @@ class Player(
             .get { players }
             .isNotEmpty()
             .containsExactlyInAnyOrder(expectedPlayers.map { it.id })
+    }
+
+    fun `starts the game`() = expectingStateChange {
+        useCases.startGameUseCase.execute(StartGameInput(gameState.gameId))
     }
 
     interface DeriveGameState {

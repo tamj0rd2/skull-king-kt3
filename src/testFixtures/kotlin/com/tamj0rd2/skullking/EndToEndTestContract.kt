@@ -19,6 +19,10 @@ interface EndToEndTestContract {
         ellis.`joins a game`()
         ellis.`sees players in the game`(cammy, ellis)
         cammy.`sees players in the game`(cammy, ellis)
+
+        // todo: continue from here.
+        //        cammy.`starts the game`()
+
         // todo: continue until the game is completed.
     }
 }

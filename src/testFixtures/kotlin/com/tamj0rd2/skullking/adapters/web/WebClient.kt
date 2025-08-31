@@ -56,6 +56,7 @@ internal class WebClient(private val page: Page, private val baseUrl: String) : 
 
                 JoinGameOutput
             },
+            startGameUseCase = { useCaseInput -> TODO() },
         )
     }
 
