@@ -13,9 +13,9 @@ dependencies {
 
     testImplementation(libs.konsist)
     testImplementation("com.microsoft.playwright:playwright:1.54.0")
-    testImplementation("com.natpryce:hamkrest:1.8.0.1")
+    testImplementation(libs.hamkrest)
 
-    testFixturesImplementation("com.natpryce:hamkrest:1.8.0.1")
+    testFixturesImplementation(libs.hamkrest)
     testFixturesImplementation("com.microsoft.playwright:playwright:1.54.0")
     testFixturesImplementation(libs.values4k)
 }

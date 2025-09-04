@@ -1,5 +1,9 @@
 package com.tamj0rd2.skullking.application.ports.output
 
+import com.natpryce.hamkrest.assertion.assertThat
+import com.natpryce.hamkrest.equalTo
+import com.natpryce.hamkrest.greaterThan
+import com.natpryce.hamkrest.hasElement
 import com.tamj0rd2.skullking.domain.game.Game
 import com.tamj0rd2.skullking.domain.game.GameEvent
 import com.tamj0rd2.skullking.domain.game.GameId
@@ -7,11 +11,6 @@ import com.tamj0rd2.skullking.domain.game.PlayerId
 import com.tamj0rd2.skullking.testsupport.eventually
 import dev.forkhandles.values.random
 import org.junit.jupiter.api.Test
-import strikt.api.expectThat
-import strikt.assertions.contains
-import strikt.assertions.containsExactly
-import strikt.assertions.isEqualTo
-import strikt.assertions.isGreaterThan
 
 interface GameRepositoryContract {
 
@@ -23,11 +22,10 @@ interface GameRepositoryContract {
         gameRepository.save(game, LoadedVersion.initial)
 
         val (loadedGame, _) = gameRepository.load(game.id)!!
-        expectThat(loadedGame.id).isEqualTo(game.id)
-        expectThat(loadedGame.events).isEqualTo(game.events)
+        assertThat(loadedGame, equalTo(game))
 
         val allGames = gameRepository.findAll()
-        expectThat(allGames.map { it.id }).contains(game.id)
+        assertThat(allGames.map { it.id }, hasElement(game.id))
     }
 
     @Test
@@ -38,13 +36,13 @@ interface GameRepositoryContract {
 
         gameRepository.subscribe(subscriber)
         gameRepository.save(gameBeforeInitialSave, LoadedVersion.initial)
-        eventually { expectThat(subscriber.events).isEqualTo(gameBeforeInitialSave.events) }
+        eventually { assertThat(subscriber.events, equalTo(gameBeforeInitialSave.events)) }
 
         subscriber.reset()
         val (gameAfterLoad, version) = gameRepository.load(gameBeforeInitialSave.id)!!
         gameRepository.save(gameAfterLoad.addPlayer(PlayerId("jane")), version)
 
-        eventually { expectThat(subscriber.events).containsExactly(GameEvent.PlayerJoined(gameId, PlayerId("jane"))) }
+        eventually { assertThat(subscriber.events, equalTo(listOf(GameEvent.PlayerJoined(gameId, PlayerId("jane"))))) }
     }
 
     @Test
@@ -66,6 +64,6 @@ interface GameRepositoryContract {
         val game = Game.new(GameId.random(), PlayerId("test-player"))
         gameRepository.save(game, LoadedVersion.initial)
 
-        eventually { expectThat(subscriber.callCount).isGreaterThan(1) }
+        eventually { assertThat(subscriber.callCount, greaterThan(1)) }
     }
 }

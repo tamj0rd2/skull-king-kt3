@@ -3,6 +3,8 @@ package com.tamj0rd2.skullking
 import com.natpryce.hamkrest.and
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
+import com.natpryce.hamkrest.has
+import com.natpryce.hamkrest.isEmpty
 import com.tamj0rd2.skullking.application.ports.PlayerSpecificGameState
 import com.tamj0rd2.skullking.application.ports.ReceiveGameNotification
 import com.tamj0rd2.skullking.application.ports.input.CreateGameInput
@@ -12,11 +14,6 @@ import com.tamj0rd2.skullking.application.ports.input.UseCases
 import com.tamj0rd2.skullking.application.ports.input.ViewGamesInput
 import com.tamj0rd2.skullking.domain.game.PlayerId
 import com.tamj0rd2.skullking.domain.game.RoundNumber
-import strikt.api.expectThat
-import strikt.assertions.containsExactlyInAnyOrder
-import strikt.assertions.isEqualTo
-import strikt.assertions.isNotEmpty
-import strikt.assertions.isNotNull
 
 class Player(val id: PlayerId, val useCases: UseCases, val deriveGameState: DeriveGameState, val eventually: (block: () -> Unit) -> Unit) {
     private val gameState: PlayerSpecificGameState
@@ -43,13 +40,13 @@ class Player(val id: PlayerId, val useCases: UseCases, val deriveGameState: Deri
     }
 
     fun `sees players in the game`(vararg expectedPlayers: Player) {
-        expectThat(gameState).get { players }.isNotEmpty().containsExactlyInAnyOrder(expectedPlayers.map { it.id })
+        assertThat(gameState, has(PlayerSpecificGameState::players, !isEmpty and equalTo(expectedPlayers.map { it.id })))
     }
 
     fun `starts the game`() = expectingStateChange { useCases.startGameUseCase.execute(StartGameInput(gameState.gameId)) }
 
     fun `sees the round number`(expected: RoundNumber) {
-        expectThat(gameState).get { roundNumber }.isNotNull().isEqualTo(expected)
+        assertThat(gameState, has(PlayerSpecificGameState::roundNumber, !isNull and equalTo(expected)))
     }
 
     interface DeriveGameState {

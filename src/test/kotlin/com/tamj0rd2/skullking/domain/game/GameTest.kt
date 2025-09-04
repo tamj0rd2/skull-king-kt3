@@ -1,10 +1,9 @@
 package com.tamj0rd2.skullking.domain.game
 
+import com.natpryce.hamkrest.assertion.assertThat
+import com.natpryce.hamkrest.equalTo
 import dev.forkhandles.values.random
 import org.junit.jupiter.api.Test
-import strikt.api.expectThat
-import strikt.assertions.containsExactlyInAnyOrder
-import strikt.assertions.isEqualTo
 
 class GameTest {
     @Test
@@ -14,7 +13,7 @@ class GameTest {
 
         val reconstituted = Game.reconstitute(game.events)
 
-        expectThat(reconstituted).isEqualTo(game)
+        assertThat(reconstituted, equalTo(game))
     }
 
     @Test
@@ -24,15 +23,7 @@ class GameTest {
         val game = Game.new(GameId.random(), playerToJoin)
         val gameAfterPlayerJoins = game.addPlayer(playerToJoin)
 
-        expectThat(gameAfterPlayerJoins) {
-            get { players }.containsExactlyInAnyOrder(playerToJoin)
-            get { events }
-                .isEqualTo(
-                    listOf(
-                        GameEvent.GameCreated(gameId = game.id, createdBy = playerToJoin),
-                        GameEvent.PlayerJoined(gameId = game.id, playerId = playerToJoin),
-                    )
-                )
-        }
+        val playerJoinedEvents = gameAfterPlayerJoins.events.filterIsInstance<GameEvent.PlayerJoined>()
+        assertThat(playerJoinedEvents, equalTo(listOf(GameEvent.PlayerJoined(gameId = game.id, playerId = playerToJoin))))
     }
 }

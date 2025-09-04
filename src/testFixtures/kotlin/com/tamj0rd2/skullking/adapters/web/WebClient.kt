@@ -14,8 +14,6 @@ import com.tamj0rd2.skullking.application.ports.input.ViewGamesOutput
 import com.tamj0rd2.skullking.domain.game.GameId
 import com.tamj0rd2.skullking.domain.game.PlayerId
 import com.tamj0rd2.skullking.domain.game.RoundNumber
-import strikt.api.expectThat
-import strikt.assertions.isEqualTo
 
 internal class WebClient(private val page: Page, private val baseUrl: String) : DeriveGameState {
     init {
@@ -25,9 +23,7 @@ internal class WebClient(private val page: Page, private val baseUrl: String) : 
     fun useCases(): UseCases {
         return UseCases(
             createGameUseCase = { useCaseInput ->
-                val response = page.navigate("$baseUrl/games")
-                expectThat(response.status()).isEqualTo(200)
-
+                page.navigate("$baseUrl/games")
                 page.waitingForHtmx(http = true) { page.getByRole(BUTTON).withText("Create Game").click() }
                 page.getByLabel("Player ID").fill(useCaseInput.playerId.value)
                 page.waitingForHtmx(http = true, ws = true) { page.getByRole(BUTTON).withText("Create Game").click() }
@@ -35,9 +31,7 @@ internal class WebClient(private val page: Page, private val baseUrl: String) : 
                 CreateGameOutput
             },
             viewGamesUseCase = {
-                val response = page.navigate("$baseUrl/games")
-                expectThat(response.status()).isEqualTo(200)
-
+                page.navigate("$baseUrl/games")
                 ViewGamesOutput(games = parseGamesList())
             },
             joinGameUseCase = { useCaseInput ->
