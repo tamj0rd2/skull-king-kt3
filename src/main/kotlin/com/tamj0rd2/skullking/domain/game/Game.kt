@@ -24,7 +24,7 @@ private constructor(
     }
 
     fun start(): Game {
-        return applyEvent(GameEvent.GameStarted(gameId = id))
+        return applyEvent(GameEvent.RoundStarted(gameId = id, roundNumber = RoundNumber.One))
     }
 
     private fun applyEvent(event: GameEvent): Game {
@@ -33,7 +33,7 @@ private constructor(
 
             is GameEvent.PlayerJoined -> copy(players = players + event.playerId)
 
-            is GameEvent.GameStarted -> copy(roundNumber = RoundNumber.One)
+            is GameEvent.RoundStarted -> copy(roundNumber = event.roundNumber)
         }.copy(events = events + event)
     }
 }
@@ -45,7 +45,7 @@ sealed interface GameEvent {
 
     data class PlayerJoined(override val gameId: GameId, val playerId: PlayerId) : GameEvent
 
-    data class GameStarted(override val gameId: GameId) : GameEvent
+    data class RoundStarted(override val gameId: GameId, val roundNumber: RoundNumber) : GameEvent
 }
 
 enum class RoundNumber(private val value: Int) {
