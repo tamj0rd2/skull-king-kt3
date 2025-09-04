@@ -24,7 +24,7 @@ private constructor(
     }
 
     fun start(): Game {
-        return copy(events = events + GameEvent.GameStarted(gameId = id), roundNumber = RoundNumber.One)
+        return applyEvent(GameEvent.GameStarted(gameId = id))
     }
 
     private fun applyEvent(event: GameEvent): Game {
@@ -33,7 +33,7 @@ private constructor(
 
             is GameEvent.PlayerJoined -> copy(players = players + event.playerId)
 
-            is GameEvent.GameStarted -> this
+            is GameEvent.GameStarted -> copy(roundNumber = RoundNumber.One)
         }.copy(events = events + event)
     }
 }
@@ -48,15 +48,25 @@ sealed interface GameEvent {
     data class GameStarted(override val gameId: GameId) : GameEvent
 }
 
-enum class RoundNumber {
-    One,
-    Two,
-    Three,
-    Four,
-    Five,
-    Six,
-    Seven,
-    Eight,
-    Nine,
-    Ten,
+enum class RoundNumber(private val value: Int) {
+    One(1),
+    Two(2),
+    Three(3),
+    Four(4),
+    Five(5),
+    Six(6),
+    Seven(7),
+    Eight(8),
+    Nine(9),
+    Ten(10);
+
+    fun toInt(): Int = value
+
+    companion object {
+        private val reverseMapping = entries.associateBy { it.value }
+
+        fun fromInt(value: Int): RoundNumber {
+            return reverseMapping.getValue(value)
+        }
+    }
 }

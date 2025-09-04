@@ -8,10 +8,12 @@ import com.tamj0rd2.skullking.application.ports.PlayerSpecificGameState
 import com.tamj0rd2.skullking.application.ports.input.CreateGameOutput
 import com.tamj0rd2.skullking.application.ports.input.GameListItem
 import com.tamj0rd2.skullking.application.ports.input.JoinGameOutput
+import com.tamj0rd2.skullking.application.ports.input.StartGameOutput
 import com.tamj0rd2.skullking.application.ports.input.UseCases
 import com.tamj0rd2.skullking.application.ports.input.ViewGamesOutput
 import com.tamj0rd2.skullking.domain.game.GameId
 import com.tamj0rd2.skullking.domain.game.PlayerId
+import com.tamj0rd2.skullking.domain.game.RoundNumber
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
 
@@ -47,7 +49,11 @@ internal class WebClient(private val page: Page, private val baseUrl: String) : 
 
                 JoinGameOutput
             },
-            startGameUseCase = { useCaseInput -> TODO() },
+            startGameUseCase = { useCaseInput ->
+                page.waitingForHtmx(ws = true) { page.getByRole(BUTTON).withText("Start Game").click() }
+
+                StartGameOutput
+            },
         )
     }
 
@@ -56,8 +62,9 @@ internal class WebClient(private val page: Page, private val baseUrl: String) : 
         val gameId = gameElement.getAttribute("data-game-id").let(GameId::parse)
 
         val players = gameElement.locator("#players li").all().map { playerElement -> playerElement.textContent().let(PlayerId::parse) }
+        val roundNumber = gameElement.getByTestId("round-number").firstOrNull()?.textContent()?.toInt()?.let(RoundNumber::fromInt)
 
-        return PlayerSpecificGameState(gameId = gameId, players = players, roundNumber = null)
+        return PlayerSpecificGameState(gameId = gameId, players = players, roundNumber = roundNumber)
     }
 
     private fun Page.findByAttribute(attribute: String, value: String) = locator("[$attribute='$value']").all()

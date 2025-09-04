@@ -2,6 +2,8 @@
 
 ## Notes to self:
 
+Hamkrest cheat sheet - https://blog.gypsydave5.com/posts/2024/4/21/a-quick-guide-to-hamkrest/
+
 ### OTEL
 
 To make OTEL work, set these environment variables before running the application:
@@ -17,4 +19,4 @@ So, being able to effectively react to things happening on the page (such as eve
 ### Mikado
 
 - start the game
-    - introcue a player websocket to reduce duplication between join and create ws handlers.
+- finish switching from strict to hamkrest

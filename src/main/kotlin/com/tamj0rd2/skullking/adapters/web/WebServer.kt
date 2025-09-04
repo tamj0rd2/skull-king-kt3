@@ -5,12 +5,16 @@ import com.tamj0rd2.skullking.application.ports.PlayerSpecificGameState
 import com.tamj0rd2.skullking.application.ports.ReceiveGameNotification
 import com.tamj0rd2.skullking.application.ports.input.CreateGameInput
 import com.tamj0rd2.skullking.application.ports.input.JoinGameInput
+import com.tamj0rd2.skullking.application.ports.input.StartGameInput
 import com.tamj0rd2.skullking.application.ports.input.UseCases
 import com.tamj0rd2.skullking.application.ports.input.ViewGamesInput
 import com.tamj0rd2.skullking.application.ports.output.OutputPorts
 import com.tamj0rd2.skullking.application.services.using
 import com.tamj0rd2.skullking.domain.game.GameId
 import com.tamj0rd2.skullking.domain.game.PlayerId
+import com.ubertob.kondor.json.JAny
+import com.ubertob.kondor.json.jsonnode.JsonNodeObject
+import com.ubertob.kondor.json.str
 import org.http4k.core.ContentType
 import org.http4k.core.Filter
 import org.http4k.core.Method
@@ -74,8 +78,15 @@ class WebServer(outputPorts: OutputPorts, port: Int) : AutoCloseable {
                 val playerId = checkNotNull(req.query("playerId")).let(PlayerId::parse)
 
                 WsResponse { ws: Websocket ->
+                    var handler: PlayerWsHandler? = null
                     useCases.createGameUseCase.execute(
-                        CreateGameInput(receiveGameNotification = PlayerWsHandler(playerId, ws), playerId = playerId)
+                        CreateGameInput(
+                            receiveGameNotification = {
+                                if (handler == null) handler = PlayerWsHandler(useCases, playerId, ws, it.gameId)
+                                handler.receive(it)
+                            },
+                            playerId = playerId,
+                        )
                     )
                 }
             }
@@ -108,7 +119,11 @@ class WebServer(outputPorts: OutputPorts, port: Int) : AutoCloseable {
 
                 WsResponse { ws: Websocket ->
                     useCases.joinGameUseCase.execute(
-                        JoinGameInput(gameId = gameId, receiveGameNotification = PlayerWsHandler(playerId, ws), playerId = playerId)
+                        JoinGameInput(
+                            gameId = gameId,
+                            receiveGameNotification = PlayerWsHandler(useCases, playerId, ws, gameId),
+                            playerId = playerId,
+                        )
                     )
                 }
             }
@@ -142,9 +157,44 @@ class WebServer(outputPorts: OutputPorts, port: Int) : AutoCloseable {
     }
 }
 
-private class PlayerWsHandler(private val playerId: PlayerId, private val ws: Websocket) : ReceiveGameNotification {
+private class PlayerWsHandler(
+    private val useCases: UseCases,
+    private val playerId: PlayerId,
+    private val ws: Websocket,
+    private val gameId: GameId,
+) : ReceiveGameNotification {
+    init {
+        ws.onClose { println("WebSocket closed for player $playerId") }
+
+        ws.onError { error -> println("WebSocket error for player $playerId: ${error.message}") }
+
+        ws.onMessage {
+            println("Received message from player $playerId: $it")
+            val message = JIncomingHtmxMessage.fromJson(it.bodyString()).orThrow()
+            when (message.action) {
+                Action.StartGame -> {
+                    useCases.startGameUseCase.execute(StartGameInput(gameId))
+                }
+            }
+        }
+    }
+
     override fun receive(state: PlayerSpecificGameState) {
         println("Notifying $playerId with state $state")
         ws.send(WsMessage(partial { partialGameState(state) }))
+    }
+}
+
+private data class IncomingHtmxMessage(val action: Action)
+
+enum class Action {
+    StartGame
+}
+
+private object JIncomingHtmxMessage : JAny<IncomingHtmxMessage>() {
+    private val action by str(IncomingHtmxMessage::action)
+
+    override fun JsonNodeObject.deserializeOrThrow(): IncomingHtmxMessage {
+        return IncomingHtmxMessage(action = +action)
     }
 }

@@ -1,5 +1,6 @@
 package com.tamj0rd2.skullking
 
+import com.tamj0rd2.skullking.domain.game.RoundNumber
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.parallel.Execution
 import org.junit.jupiter.api.parallel.ExecutionMode
@@ -20,9 +21,9 @@ interface EndToEndTestContract {
         ellis.`sees players in the game`(cammy, ellis)
         cammy.`sees players in the game`(cammy, ellis)
 
-        // todo: continue from here.
-        //        cammy.`starts the game`()
-        //        cammy.`sees the round number`(RoundNumber.One)
+        cammy.`starts the game`()
+        cammy.`sees the round number`(RoundNumber.One)
+        ellis.`sees the round number`(RoundNumber.One)
 
         // todo: continue until the game is completed.
     }

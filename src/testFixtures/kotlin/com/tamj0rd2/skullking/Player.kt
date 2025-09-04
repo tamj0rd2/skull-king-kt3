@@ -1,5 +1,8 @@
 package com.tamj0rd2.skullking
 
+import com.natpryce.hamkrest.and
+import com.natpryce.hamkrest.assertion.assertThat
+import com.natpryce.hamkrest.equalTo
 import com.tamj0rd2.skullking.application.ports.PlayerSpecificGameState
 import com.tamj0rd2.skullking.application.ports.ReceiveGameNotification
 import com.tamj0rd2.skullking.application.ports.input.CreateGameInput
@@ -13,7 +16,6 @@ import strikt.api.expectThat
 import strikt.assertions.containsExactlyInAnyOrder
 import strikt.assertions.isEqualTo
 import strikt.assertions.isNotEmpty
-import strikt.assertions.isNotEqualTo
 import strikt.assertions.isNotNull
 
 class Player(val id: PlayerId, val useCases: UseCases, val deriveGameState: DeriveGameState, val eventually: (block: () -> Unit) -> Unit) {
@@ -57,8 +59,10 @@ class Player(val id: PlayerId, val useCases: UseCases, val deriveGameState: Deri
     private fun expectingStateChange(block: () -> Unit) {
         val stateBefore = deriveGameState.current()
         block()
-
-        // todo: this output sucks. I actually want to try hamkrest again.
-        eventually { expectThat(deriveGameState.current()).isNotNull().isNotEqualTo(stateBefore) }
+        eventually {
+            assertThat(deriveGameState.current(), !isNull and !equalTo(stateBefore)) {
+                "expected the state to change after performing the action"
+            }
+        }
     }
 }
