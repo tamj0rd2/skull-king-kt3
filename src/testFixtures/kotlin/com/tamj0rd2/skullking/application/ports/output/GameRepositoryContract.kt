@@ -1,6 +1,5 @@
 package com.tamj0rd2.skullking.application.ports.output
 
-import com.tamj0rd2.skullking.application.ports.output.VersionedAtLoad.Companion.map
 import com.tamj0rd2.skullking.domain.game.Game
 import com.tamj0rd2.skullking.domain.game.GameEvent
 import com.tamj0rd2.skullking.domain.game.GameId
@@ -13,7 +12,6 @@ import strikt.assertions.contains
 import strikt.assertions.containsExactly
 import strikt.assertions.isEqualTo
 import strikt.assertions.isGreaterThan
-import strikt.assertions.isNotNull
 
 interface GameRepositoryContract {
 
@@ -22,13 +20,11 @@ interface GameRepositoryContract {
     @Test
     fun `can save and load a game`() {
         val game = Game.new(GameId.random(), PlayerId("test-player"))
-        gameRepository.save(game, Version.initial)
+        gameRepository.save(game, LoadedVersion.initial)
 
-        val versionedGame = gameRepository.load(game.id)
-        expectThat(versionedGame).isNotNull().and {
-            get { aggregate.id }.isEqualTo(game.id)
-            get { aggregate.events }.isEqualTo(game.events)
-        }
+        val (loadedGame, _) = gameRepository.load(game.id)!!
+        expectThat(loadedGame.id).isEqualTo(game.id)
+        expectThat(loadedGame.events).isEqualTo(game.events)
 
         val allGames = gameRepository.findAll()
         expectThat(allGames.map { it.id }).contains(game.id)
@@ -41,12 +37,12 @@ interface GameRepositoryContract {
         val gameBeforeInitialSave = Game.new(gameId, PlayerId("john"))
 
         gameRepository.subscribe(subscriber)
-        gameRepository.save(gameBeforeInitialSave, Version.initial)
+        gameRepository.save(gameBeforeInitialSave, LoadedVersion.initial)
         eventually { expectThat(subscriber.events).isEqualTo(gameBeforeInitialSave.events) }
 
         subscriber.reset()
-        val gameAfterLoad = gameRepository.load(gameBeforeInitialSave.id)!!
-        gameRepository.save(gameAfterLoad.map { it.addPlayer(PlayerId("jane")) })
+        val (gameAfterLoad, version) = gameRepository.load(gameBeforeInitialSave.id)!!
+        gameRepository.save(gameAfterLoad.addPlayer(PlayerId("jane")), version)
 
         eventually { expectThat(subscriber.events).containsExactly(GameEvent.PlayerJoined(gameId, PlayerId("jane"))) }
     }
@@ -68,7 +64,7 @@ interface GameRepositoryContract {
         gameRepository.subscribe(subscriber)
 
         val game = Game.new(GameId.random(), PlayerId("test-player"))
-        gameRepository.save(game, Version.initial)
+        gameRepository.save(game, LoadedVersion.initial)
 
         eventually { expectThat(subscriber.callCount).isGreaterThan(1) }
     }

@@ -7,13 +7,11 @@ import com.tamj0rd2.skullking.domain.game.GameId
 interface GameRepository : SaveGamePort, LoadGamePort, FindGamesPort, SubscribeToGameEventsPort
 
 fun interface SaveGamePort {
-    fun save(game: Game, expectedVersion: Version)
-
-    fun save(versionedGame: VersionedAtLoad<Game>) = save(versionedGame.aggregate, versionedGame.version)
+    fun save(game: Game, loadedVersion: LoadedVersion)
 }
 
 fun interface LoadGamePort {
-    fun load(gameId: GameId): VersionedAtLoad<Game>?
+    fun load(gameId: GameId): Pair<Game, LoadedVersion>?
 }
 
 fun interface FindGamesPort {
