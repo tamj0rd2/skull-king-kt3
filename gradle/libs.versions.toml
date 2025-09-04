@@ -9,25 +9,24 @@ kotest = "5.9.1"
 
 [libraries]
 eventstoredb = { module = "com.eventstore:db-client-java", version = "5.4.5"}
+hamkrest = { module = "com.natpryce:hamkrest", version = "1.8.0.1" }
 http4k-bom = { module = "org.http4k:http4k-bom", version.ref = "http4k" }
-http4k-client-apache = { module = "org.http4k:http4k-client-apache" }
-http4k-client-websocket = { module = "org.http4k:http4k-client-websocket"}
-http4k-contract = { module = "org.http4k:http4k-api-openapi", version.ref = "http4k" }
 http4k-core = { module = "org.http4k:http4k-core", version.ref = "http4k" }
 http4k-format-kondor = { module = "org.http4k:http4k-format-kondor-json", version.ref = "http4k" }
-http4k-template-handlebars = { module = "org.http4k:http4k-template-handlebars", version.ref = "http4k" }
 http4k-server-undertow = { module = "org.http4k:http4k-server-undertow", version.ref = "http4k" }
+http4k-template-handlebars = { module = "org.http4k:http4k-template-handlebars", version.ref = "http4k" }
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version = "5.13.4" }
 junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher", version = "1.13.4" }
 kondor = { module = "com.ubertob.kondor:kondor-core", version = "3.5.2" }
 konsist = { module = "com.lemonappdev:konsist", version = "0.17.3" }
 kotest-property = { module = "io.kotest:kotest-property", version.ref = "kotest" }
 kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin-gradle-plugin" }
+kotlinx-html = { module = "org.jetbrains.kotlinx:kotlinx-html-jvm", version = "0.8.0" }
+playwright = { module = "com.microsoft.playwright:playwright", version = "1.54.0" }
 result4k = { module = "dev.forkhandles:result4k", version.ref = "forkhandles" }
 retrytests-plugin = { module = "org.gradle:test-retry-gradle-plugin", version = "1.6.0"}
 slf4j = { module = "org.slf4j:slf4j-jdk14", version = "2.0.17"}
 values4k = { module = "dev.forkhandles:values4k", version.ref = "forkhandles" }
-hamkrest = { module = "com.natpryce:hamkrest", version = "1.8.0.1" }
 
 [bundles]
 http4k-server = [

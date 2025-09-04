@@ -6,17 +6,18 @@ plugins {
 }
 
 dependencies {
+    implementation(libs.slf4j)
     implementation(libs.values4k)
     implementation(libs.bundles.http4k.server)
-    implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:0.8.0")
+    implementation(libs.kotlinx.html)
     implementation(libs.kondor)
 
     testImplementation(libs.konsist)
-    testImplementation("com.microsoft.playwright:playwright:1.54.0")
+    testImplementation(libs.playwright)
     testImplementation(libs.hamkrest)
 
     testFixturesImplementation(libs.hamkrest)
-    testFixturesImplementation("com.microsoft.playwright:playwright:1.54.0")
+    testFixturesImplementation(libs.playwright)
     testFixturesImplementation(libs.values4k)
 }
 
