@@ -36,13 +36,13 @@ interface GameRepositoryContract {
 
         gameRepository.subscribe(subscriber)
         gameRepository.save(gameBeforeInitialSave, Version.initial)
-        eventually { assertThat(subscriber.events, equalTo(gameBeforeInitialSave.events)) }
+        eventually { assertThat(subscriber.receivedEvents, equalTo(gameBeforeInitialSave.events)) }
 
         subscriber.reset()
         val (gameAfterLoad, version) = gameRepository.load(gameId)!!
         gameRepository.save(gameAfterLoad.execute(GameCommand.AddPlayer(PlayerId.of("jane"))), version)
 
-        eventually { assertThat(subscriber.events, equalTo(listOf(GameEvent.PlayerJoined(gameId, PlayerId.of("jane"))))) }
+        eventually { assertThat(subscriber.receivedEvents, equalTo(listOf(GameEvent.PlayerJoined(gameId, PlayerId.of("jane"))))) }
     }
 
     @Test

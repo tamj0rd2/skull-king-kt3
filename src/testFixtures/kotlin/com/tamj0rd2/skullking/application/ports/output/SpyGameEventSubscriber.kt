@@ -6,7 +6,7 @@ import java.util.concurrent.CopyOnWriteArrayList
 class SpyGameEventSubscriber : GameEventSubscriber {
     private val _events = CopyOnWriteArrayList<GameEvent>()
 
-    val events: List<GameEvent>
+    val receivedEvents: List<GameEvent>
         get() = _events
 
     fun reset() {
