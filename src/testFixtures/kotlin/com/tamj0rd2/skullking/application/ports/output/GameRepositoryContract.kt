@@ -24,8 +24,11 @@ interface GameRepositoryContract {
         val (loadedGame, _) = gameRepository.load(game.id)!!
         assertThat(loadedGame, equalTo(game))
 
-        val allGames = gameRepository.findAll()
-        assertThat(allGames.map { it.id }, hasElement(game.id))
+        eventually {
+            // this one's a projection
+            val allGames = gameRepository.findAll()
+            assertThat(allGames.map { it.id }, hasElement(game.id))
+        }
     }
 
     @Test

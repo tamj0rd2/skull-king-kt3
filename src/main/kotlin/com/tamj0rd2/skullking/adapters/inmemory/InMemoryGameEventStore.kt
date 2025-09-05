@@ -3,13 +3,16 @@ package com.tamj0rd2.skullking.adapters.inmemory
 import com.tamj0rd2.skullking.application.ports.output.CannotSaveEventsForMultipleGames
 import com.tamj0rd2.skullking.application.ports.output.GameEventStore
 import com.tamj0rd2.skullking.application.ports.output.GameEventSubscriber
+import com.tamj0rd2.skullking.application.ports.output.GameNotFoundException
+import com.tamj0rd2.skullking.application.ports.output.OptimisticLockingException
+import com.tamj0rd2.skullking.domain.Version
 import com.tamj0rd2.skullking.domain.game.GameEvent
 import com.tamj0rd2.skullking.domain.game.GameId
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 class InMemoryGameEventStore : GameEventStore {
-    private val events = mutableListOf<GameEvent>()
+    private val events = mutableMapOf<GameId, List<GameEvent>>()
     private val eventSubscribers = mutableSetOf<GameEventSubscriber>()
     private val outbox = mutableListOf<GameEvent>()
     private val scheduler = Executors.newScheduledThreadPool(1, Thread.ofVirtual().factory())
@@ -19,16 +22,21 @@ class InMemoryGameEventStore : GameEventStore {
         scheduler.scheduleAtFixedRate({ processOutbox() }, 0, 1, TimeUnit.MILLISECONDS)
     }
 
-    override fun append(events: List<GameEvent>) {
-        val first = events.first()
-        if (events.any { it.gameId != first.gameId }) throw CannotSaveEventsForMultipleGames()
+    override fun append(newEvents: List<GameEvent>, expectedVersion: Version) {
+        val gameId = newEvents.first().gameId
+        if (newEvents.any { it.gameId != gameId }) throw CannotSaveEventsForMultipleGames()
 
-        this.events.addAll(events)
-        outbox.addAll(events)
+        val currentEvents = this.events[gameId] ?: emptyList()
+        if (currentEvents.size != expectedVersion.value) {
+            throw OptimisticLockingException()
+        }
+
+        this.events[gameId] = currentEvents + newEvents
+        outbox.addAll(newEvents)
     }
 
     override fun read(gameId: GameId): List<GameEvent> {
-        return events.filter { it.gameId == gameId }
+        return events[gameId] ?: throw GameNotFoundException(gameId)
     }
 
     override fun subscribe(subscriber: GameEventSubscriber) {

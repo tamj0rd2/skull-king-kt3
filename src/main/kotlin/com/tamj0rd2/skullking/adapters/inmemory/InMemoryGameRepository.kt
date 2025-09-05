@@ -16,7 +16,7 @@ class InMemoryGameRepository : GameRepository {
 
     override fun save(game: Game, expectedVersion: Version) {
         val newEvents = game.events.drop(expectedVersion.value)
-        eventStore.append(newEvents)
+        eventStore.append(newEvents, expectedVersion)
     }
 
     override fun load(gameId: GameId): Pair<Game, Version> {
