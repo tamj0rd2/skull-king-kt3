@@ -17,12 +17,7 @@ import org.junit.jupiter.api.Test
 class GameInvariantsTest {
     @Test
     fun `a game always start with a GameCreated event`() {
-        propertyTest {
-            checkAll(propTestConfig, Arb.game) { game ->
-                // TODO: use this test to figure out how to make a custom shrinker for game
-                assertThat(game.events.first(), isA<GameEvent.GameCreated>())
-            }
-        }
+        propertyTest { checkAll(propTestConfig, Arb.game) { game -> assertThat(game.events.first(), isA<GameEvent.GameCreated>()) } }
     }
 
     @Test
