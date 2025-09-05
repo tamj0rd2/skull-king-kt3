@@ -18,7 +18,7 @@ interface GameRepositoryContract {
 
     @Test
     fun `can save and load a game`() {
-        val game = Game.new(PlayerId("test-player"))
+        val game = Game.new(PlayerId.of("test-player"))
         gameRepository.save(game, Version.initial)
 
         val (loadedGame, _) = gameRepository.load(game.id)!!
@@ -31,7 +31,7 @@ interface GameRepositoryContract {
     @Test
     fun `when a game is saved, only new events are emitted`() {
         val subscriber = SpyGameEventSubscriber()
-        val gameBeforeInitialSave = Game.new(PlayerId("john"))
+        val gameBeforeInitialSave = Game.new(PlayerId.of("john"))
         val gameId = gameBeforeInitialSave.id
 
         gameRepository.subscribe(subscriber)
@@ -40,9 +40,9 @@ interface GameRepositoryContract {
 
         subscriber.reset()
         val (gameAfterLoad, version) = gameRepository.load(gameId)!!
-        gameRepository.save(gameAfterLoad.execute(GameCommand.AddPlayer(PlayerId("jane"))), version)
+        gameRepository.save(gameAfterLoad.execute(GameCommand.AddPlayer(PlayerId.of("jane"))), version)
 
-        eventually { assertThat(subscriber.events, equalTo(listOf(GameEvent.PlayerJoined(gameId, PlayerId("jane"))))) }
+        eventually { assertThat(subscriber.events, equalTo(listOf(GameEvent.PlayerJoined(gameId, PlayerId.of("jane"))))) }
     }
 
     @Test
@@ -61,7 +61,7 @@ interface GameRepositoryContract {
             }
         gameRepository.subscribe(subscriber)
 
-        val game = Game.new(PlayerId("test-player"))
+        val game = Game.new(PlayerId.of("test-player"))
         gameRepository.save(game, Version.initial)
 
         eventually { assertThat(subscriber.callCount, greaterThan(1)) }

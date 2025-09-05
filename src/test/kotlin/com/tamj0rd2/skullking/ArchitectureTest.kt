@@ -29,7 +29,7 @@ class ArchitectureTest {
     }
 
     val domainLayerAllowList =
-        setOf("java.", "com.tamj0rd2.skullking.", "dev.forkhandles.values.", "com.natpryce.hamkrest.", "org.junit", "io.kotest.property.")
+        setOf("java.", "com.tamj0rd2.skullking.", "dev.forkhandles.values.", "com.natpryce.hamkrest.", "org.junit", "net.jqwik.")
 
     @Test
     fun `the domain layer only uses allowed libraries`() {

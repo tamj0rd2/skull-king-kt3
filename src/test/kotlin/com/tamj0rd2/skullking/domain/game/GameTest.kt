@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test
 class GameTest {
     @Test
     fun `a game can be reconstituted from its events`() {
-        val playerId = PlayerId("test-player")
+        val playerId = PlayerId.of("test-player")
         val game = Game.new(playerId).execute(GameCommand.AddPlayer(playerId))
 
         val reconstituted = Game.reconstitute(game.events)
@@ -17,7 +17,7 @@ class GameTest {
 
     @Test
     fun `when a player joins, an event is recorded`() {
-        val playerToJoin = PlayerId("host-player")
+        val playerToJoin = PlayerId.of("host-player")
 
         val game = Game.new(playerToJoin)
         val gameAfterPlayerJoins = game.execute(GameCommand.AddPlayer(playerToJoin))

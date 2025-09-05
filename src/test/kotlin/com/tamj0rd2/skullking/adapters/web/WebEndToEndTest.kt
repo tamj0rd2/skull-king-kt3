@@ -34,7 +34,7 @@ class WebEndToEndTest : EndToEndTestContract {
         val webClient = WebClient(page, "http://localhost:$port")
 
         return Player(
-            id = PlayerId(value = name),
+            id = PlayerId.of(value = name),
             useCases = webClient.useCases(),
             deriveGameState = webClient,
             eventually = { block -> eventually(5000, block) },

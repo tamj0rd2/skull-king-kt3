@@ -20,15 +20,11 @@ repositories {
 }
 
 dependencies {
-    components {
-        withModule<KillKotestAssertionsWithFire>("io.kotest:kotest-assertions-shared")
-        withModule<KillKotestAssertionsWithFire>("io.kotest:kotest-assertions-core")
-    }
-
     implementation(platform(libs.http4k.bom))
     implementation(libs.result4k)
     testFixturesApi(libs.bundles.junit)
-    testFixturesApi(libs.kotest.property)
+    testFixturesApi(libs.jqwik)
+
     compileOnly("org.jetbrains:annotations:23.0.0")
 }
 
@@ -36,7 +32,7 @@ dependencies {
 java { toolchain { languageVersion = JavaLanguageVersion.of(21) } }
 
 tasks.named<Test>("test") {
-    useJUnitPlatform()
+    useJUnitPlatform { includeEngines("jqwik", "junit-jupiter") }
     systemProperty("junit.jupiter.execution.parallel.enabled", "true")
     systemProperty("junit.jupiter.execution.parallel.mode.default", "concurrent")
     systemProperty("junit.jupiter.execution.parallel.mode.classes.default", "concurrent")
@@ -52,13 +48,5 @@ tasks.withType(KotlinCompile::class).all {
             "-Xconsistent-data-class-copy-visibility",
         )
         javaParameters = true
-    }
-}
-
-class KillKotestAssertionsWithFire : ComponentMetadataRule {
-    override fun execute(context: ComponentMetadataContext) {
-        context.details.withVariant("jvmApiElements-published") {
-            withDependencies { removeAll { it.group == "io.kotest" && it.module.name.contains("assertions") } }
-        }
     }
 }

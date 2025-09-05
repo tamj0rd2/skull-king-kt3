@@ -4,6 +4,6 @@ import dev.forkhandles.values.StringValueFactory
 import dev.forkhandles.values.Value
 
 @JvmInline
-value class PlayerId(override val value: String) : Value<String> {
+value class PlayerId private constructor(override val value: String) : Value<String> {
     companion object : StringValueFactory<PlayerId>(::PlayerId)
 }

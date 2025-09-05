@@ -5,7 +5,6 @@
 forkhandles = "2.22.4.0"
 kotlin-gradle-plugin = "2.2.0"
 http4k = "6.15.1.0"
-kotest = "5.9.1"
 
 [libraries]
 eventstoredb = { module = "com.eventstore:db-client-java", version = "5.4.5"}
@@ -19,7 +18,6 @@ junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version = "5.13.4"
 junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher", version = "1.13.4" }
 kondor = { module = "com.ubertob.kondor:kondor-core", version = "3.5.2" }
 konsist = { module = "com.lemonappdev:konsist", version = "0.17.3" }
-kotest-property = { module = "io.kotest:kotest-property", version.ref = "kotest" }
 kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin-gradle-plugin" }
 kotlinx-html = { module = "org.jetbrains.kotlinx:kotlinx-html-jvm", version = "0.8.0" }
 playwright = { module = "com.microsoft.playwright:playwright", version = "1.54.0" }
@@ -27,6 +25,7 @@ result4k = { module = "dev.forkhandles:result4k", version.ref = "forkhandles" }
 retrytests-plugin = { module = "org.gradle:test-retry-gradle-plugin", version = "1.6.0"}
 slf4j = { module = "org.slf4j:slf4j-jdk14", version = "2.0.17"}
 values4k = { module = "dev.forkhandles:values4k", version.ref = "forkhandles" }
+jqwik = { module = "net.jqwik:jqwik-kotlin", version = "1.9.3" }
 
 [bundles]
 http4k-server = [
