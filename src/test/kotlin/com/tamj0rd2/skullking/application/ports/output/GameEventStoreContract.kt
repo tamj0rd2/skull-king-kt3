@@ -5,13 +5,13 @@ import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
 import com.natpryce.hamkrest.hasElement
 import com.natpryce.hamkrest.isEmpty
+import com.natpryce.hamkrest.throws
 import com.tamj0rd2.skullking.domain.game.Game
 import com.tamj0rd2.skullking.domain.game.GameEvent
 import com.tamj0rd2.skullking.domain.game.GameId
 import com.tamj0rd2.skullking.domain.game.PlayerId
 import com.tamj0rd2.skullking.testsupport.eventually
 import dev.forkhandles.values.random
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 fun PlayerId.Companion.random() = PlayerId.of("test-player")
@@ -41,9 +41,14 @@ interface GameEventStoreContract {
     }
 
     @Test
-    @Disabled
     fun `can only append events for a single entity at a time`() {
-        TODO()
+        val gameId1 = GameId.random()
+        val gameId2 = GameId.random()
+
+        val eventsToAppend =
+            listOf(GameEvent.GameCreated(gameId1, PlayerId.of("test-player")), GameEvent.GameCreated(gameId2, PlayerId.of("test-player")))
+
+        assertThat({ eventStore.append(eventsToAppend) }, throws<CannotSaveEventsForMultipleGames>())
     }
 
     //    @Test

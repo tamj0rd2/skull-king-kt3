@@ -1,5 +1,6 @@
 package com.tamj0rd2.skullking.adapters.inmemory
 
+import com.tamj0rd2.skullking.application.ports.output.CannotSaveEventsForMultipleGames
 import com.tamj0rd2.skullking.application.ports.output.GameEventStore
 import com.tamj0rd2.skullking.application.ports.output.GameEventSubscriber
 import com.tamj0rd2.skullking.domain.game.GameEvent
@@ -19,6 +20,9 @@ class InMemoryGameEventStore : GameEventStore {
     }
 
     override fun append(events: List<GameEvent>) {
+        val first = events.first()
+        if (events.any { it.gameId != first.gameId }) throw CannotSaveEventsForMultipleGames()
+
         this.events.addAll(events)
         outbox.addAll(events)
     }
