@@ -9,10 +9,6 @@ class SpyGameEventSubscriber : GameEventSubscriber {
     val receivedEvents: List<GameEvent>
         get() = _events
 
-    fun reset() {
-        _events.clear()
-    }
-
     override fun notify(event: GameEvent) {
         _events.add(event)
     }

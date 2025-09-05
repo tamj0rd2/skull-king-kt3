@@ -3,6 +3,7 @@ package com.tamj0rd2.skullking.application.ports.output
 import com.natpryce.hamkrest.and
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
+import com.natpryce.hamkrest.greaterThan
 import com.natpryce.hamkrest.hasElement
 import com.natpryce.hamkrest.isEmpty
 import com.natpryce.hamkrest.throws
@@ -82,6 +83,28 @@ interface GameEventStoreContract {
         val gameId = GameId.random()
         assertThat({ eventStore.read(gameId) }, throws<GameNotFoundException>())
     }
+
+    @Test
+    fun `if notifying of a game event fails, it will be retried to achieve at least once delivery`() {
+        val subscriber =
+            object : GameEventSubscriber {
+                var callCount = 0
+
+                override fun notify(event: GameEvent) {
+                    callCount++
+                    if (callCount == 1) {
+                        throw RuntimeException("Simulated failure")
+                    }
+                    println("success")
+                }
+            }
+
+        eventStore.subscribe(subscriber)
+
+        eventStore.append(listOf(GameEvent.GameCreated(GameId.random(), PlayerId.random())), Version.initial)
+
+        eventually { assertThat(subscriber.callCount, greaterThan(1)) }
+    }
 }
 
-private fun PlayerId.Companion.random() = PlayerId.of("test-player-${UUID.randomUUID().toString().take(8)}")
+internal fun PlayerId.Companion.random() = PlayerId.of("test-player-${UUID.randomUUID().toString().take(8)}")
