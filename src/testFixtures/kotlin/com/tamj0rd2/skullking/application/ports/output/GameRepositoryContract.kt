@@ -8,10 +8,8 @@ import com.tamj0rd2.skullking.domain.Version
 import com.tamj0rd2.skullking.domain.game.Game
 import com.tamj0rd2.skullking.domain.game.GameCommand
 import com.tamj0rd2.skullking.domain.game.GameEvent
-import com.tamj0rd2.skullking.domain.game.GameId
 import com.tamj0rd2.skullking.domain.game.PlayerId
 import com.tamj0rd2.skullking.testsupport.eventually
-import dev.forkhandles.values.random
 import org.junit.jupiter.api.Test
 
 interface GameRepositoryContract {
@@ -20,7 +18,7 @@ interface GameRepositoryContract {
 
     @Test
     fun `can save and load a game`() {
-        val game = Game.new(GameId.random(), PlayerId("test-player"))
+        val game = Game.new(PlayerId("test-player"))
         gameRepository.save(game, Version.initial)
 
         val (loadedGame, _) = gameRepository.load(game.id)!!
@@ -33,15 +31,15 @@ interface GameRepositoryContract {
     @Test
     fun `when a game is saved, only new events are emitted`() {
         val subscriber = SpyGameEventSubscriber()
-        val gameId = GameId.random()
-        val gameBeforeInitialSave = Game.new(gameId, PlayerId("john"))
+        val gameBeforeInitialSave = Game.new(PlayerId("john"))
+        val gameId = gameBeforeInitialSave.id
 
         gameRepository.subscribe(subscriber)
         gameRepository.save(gameBeforeInitialSave, Version.initial)
         eventually { assertThat(subscriber.events, equalTo(gameBeforeInitialSave.events)) }
 
         subscriber.reset()
-        val (gameAfterLoad, version) = gameRepository.load(gameBeforeInitialSave.id)!!
+        val (gameAfterLoad, version) = gameRepository.load(gameId)!!
         gameRepository.save(gameAfterLoad.execute(GameCommand.AddPlayer(PlayerId("jane"))), version)
 
         eventually { assertThat(subscriber.events, equalTo(listOf(GameEvent.PlayerJoined(gameId, PlayerId("jane"))))) }
@@ -63,7 +61,7 @@ interface GameRepositoryContract {
             }
         gameRepository.subscribe(subscriber)
 
-        val game = Game.new(GameId.random(), PlayerId("test-player"))
+        val game = Game.new(PlayerId("test-player"))
         gameRepository.save(game, Version.initial)
 
         eventually { assertThat(subscriber.callCount, greaterThan(1)) }

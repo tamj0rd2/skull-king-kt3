@@ -1,6 +1,7 @@
 package com.tamj0rd2.skullking.domain.game
 
 import com.tamj0rd2.skullking.domain.Version
+import dev.forkhandles.values.random
 
 data class Game
 private constructor(
@@ -13,7 +14,8 @@ private constructor(
     val version = Version.of(events.size)
 
     companion object {
-        fun new(id: GameId, createdBy: PlayerId): Game {
+        fun new(createdBy: PlayerId): Game {
+            val id = GameId.random()
             return Game(id = id, creator = createdBy).applyEvent(GameEvent.GameCreated(gameId = id, createdBy = createdBy))
         }
 
