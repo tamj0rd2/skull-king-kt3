@@ -10,7 +10,7 @@ class SendGameNotificationsService(private val sendGameNotificationPort: SendGam
     GameEventSubscriber {
 
     override fun notify(event: GameEvent) {
-        val (game, _) = checkNotNull(loadGamePort.load(event.gameId))
+        val (game, _) = loadGamePort.load(event.gameId)
 
         game.players.forEach {
             sendGameNotificationPort.send(

@@ -16,7 +16,7 @@ class JoinGameService(
     override fun execute(input: JoinGameInput): JoinGameOutput {
         subscribeToGameNotificationsPort.subscribe(input.playerId, input.receiveGameNotification)
 
-        val (game, version) = loadGamePort.load(input.gameId)!!
+        val (game, version) = loadGamePort.load(input.gameId)
         saveGamePort.save(game.execute(GameCommand.AddPlayer(input.playerId)), version)
         return JoinGameOutput
     }

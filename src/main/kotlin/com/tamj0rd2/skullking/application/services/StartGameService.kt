@@ -9,7 +9,7 @@ import com.tamj0rd2.skullking.domain.game.GameCommand
 
 class StartGameService(private val saveGamePort: SaveGamePort, private val loadGamePort: LoadGamePort) : StartGameUseCase {
     override fun execute(input: StartGameInput): StartGameOutput {
-        val (game, version) = loadGamePort.load(input.gameId)!!
+        val (game, version) = loadGamePort.load(input.gameId)
         saveGamePort.save(game.execute(GameCommand.StartGame), version)
         return StartGameOutput
     }

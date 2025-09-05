@@ -26,7 +26,7 @@ class InMemoryGameRepository : GameRepository {
     }
 
     override fun findAll(): List<Game> {
-        return gameIds.map { load(it)!!.first }
+        return gameIds.map { load(it).first }
     }
 
     override fun subscribe(subscriber: GameEventSubscriber) {

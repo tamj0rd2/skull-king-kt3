@@ -12,7 +12,7 @@ fun interface SaveGamePort {
 }
 
 fun interface LoadGamePort {
-    fun load(gameId: GameId): Pair<Game, Version>?
+    fun load(gameId: GameId): Pair<Game, Version>
 }
 
 fun interface FindGamesPort {
