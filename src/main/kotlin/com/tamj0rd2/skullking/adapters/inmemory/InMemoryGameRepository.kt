@@ -32,7 +32,7 @@ class InMemoryGameRepository() : GameRepository {
 
     override fun load(gameId: GameId): Pair<Game, Version>? {
         val game = games[gameId] ?: return null
-        return game to Version.of(game.events.size)
+        return game to game.version
     }
 
     override fun findAll(): List<Game> {

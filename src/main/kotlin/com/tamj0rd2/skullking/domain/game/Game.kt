@@ -1,5 +1,7 @@
 package com.tamj0rd2.skullking.domain.game
 
+import com.tamj0rd2.skullking.domain.Version
+
 data class Game
 private constructor(
     val id: GameId,
@@ -8,6 +10,8 @@ private constructor(
     val players: Set<PlayerId> = emptySet(),
     val roundNumber: RoundNumber? = null,
 ) {
+    val version = Version.of(events.size)
+
     companion object {
         fun new(id: GameId, createdBy: PlayerId): Game {
             return Game(id = id, creator = createdBy).applyEvent(GameEvent.GameCreated(gameId = id, createdBy = createdBy))
