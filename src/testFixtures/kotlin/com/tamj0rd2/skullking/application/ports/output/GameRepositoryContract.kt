@@ -4,6 +4,7 @@ import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
 import com.natpryce.hamkrest.greaterThan
 import com.natpryce.hamkrest.hasElement
+import com.tamj0rd2.skullking.domain.Version
 import com.tamj0rd2.skullking.domain.game.Game
 import com.tamj0rd2.skullking.domain.game.GameEvent
 import com.tamj0rd2.skullking.domain.game.GameId
@@ -19,7 +20,7 @@ interface GameRepositoryContract {
     @Test
     fun `can save and load a game`() {
         val game = Game.new(GameId.random(), PlayerId("test-player"))
-        gameRepository.save(game, LoadedVersion.initial)
+        gameRepository.save(game, Version.initial)
 
         val (loadedGame, _) = gameRepository.load(game.id)!!
         assertThat(loadedGame, equalTo(game))
@@ -35,7 +36,7 @@ interface GameRepositoryContract {
         val gameBeforeInitialSave = Game.new(gameId, PlayerId("john"))
 
         gameRepository.subscribe(subscriber)
-        gameRepository.save(gameBeforeInitialSave, LoadedVersion.initial)
+        gameRepository.save(gameBeforeInitialSave, Version.initial)
         eventually { assertThat(subscriber.events, equalTo(gameBeforeInitialSave.events)) }
 
         subscriber.reset()
@@ -62,7 +63,7 @@ interface GameRepositoryContract {
         gameRepository.subscribe(subscriber)
 
         val game = Game.new(GameId.random(), PlayerId("test-player"))
-        gameRepository.save(game, LoadedVersion.initial)
+        gameRepository.save(game, Version.initial)
 
         eventually { assertThat(subscriber.callCount, greaterThan(1)) }
     }
