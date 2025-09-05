@@ -1,18 +1,17 @@
 package com.tamj0rd2.skullking
 
+import com.tamj0rd2.skullking.application.ports.input.HasTestScenario
 import com.tamj0rd2.skullking.domain.game.RoundNumber
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.parallel.Execution
 import org.junit.jupiter.api.parallel.ExecutionMode
 
 @Execution(value = ExecutionMode.SAME_THREAD)
-interface EndToEndTestContract {
-    fun createPlayerActor(name: String): Player
-
+interface EndToEndTestContract : HasTestScenario {
     @Test
     fun `can play a 2 player game`() {
-        val cammy = createPlayerActor("Cammy")
-        val ellis = createPlayerActor("Ellis")
+        val cammy = scenario.createPlayerActor("Cammy")
+        val ellis = scenario.createPlayerActor("Ellis")
 
         cammy.`creates a game`()
         cammy.`sees players in the game`(cammy)
