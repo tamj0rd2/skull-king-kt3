@@ -2,28 +2,27 @@ package com.tamj0rd2.skullking.application.services
 
 import com.tamj0rd2.skullking.application.ports.input.UseCases
 import com.tamj0rd2.skullking.application.ports.output.OutputPorts
+import com.tamj0rd2.skullking.application.repositories.GameRepository
 
 fun UseCases.Companion.using(outputPorts: OutputPorts): UseCases {
-    outputPorts.subscribeToGameEventsPort.subscribe(
-        SendGameNotificationsService(
-            sendGameNotificationPort = outputPorts.sendGameNotificationPort,
-            loadGamePort = outputPorts.loadGamePort,
-        )
+    val gameRepository = GameRepository(outputPorts.gameEventStore)
+
+    gameRepository.subscribe(
+        SendGameNotificationsService(sendGameNotificationPort = outputPorts.sendGameNotificationPort, gameRepository = gameRepository)
     )
 
     return UseCases(
         createGameUseCase =
             CreateGameService(
-                saveGamePort = outputPorts.saveGamePort,
+                gameRepository = gameRepository,
                 subscribeToGameNotificationsPort = outputPorts.subscribeToGameNotificationsPort,
             ),
-        viewGamesUseCase = ViewGamesService(outputPorts.findGamesPort),
+        viewGamesUseCase = ViewGamesService(gameRepository),
         joinGameUseCase =
             JoinGameService(
-                saveGamePort = outputPorts.saveGamePort,
-                loadGamePort = outputPorts.loadGamePort,
+                gameRepository = gameRepository,
                 subscribeToGameNotificationsPort = outputPorts.subscribeToGameNotificationsPort,
             ),
-        startGameUseCase = StartGameService(saveGamePort = outputPorts.saveGamePort, loadGamePort = outputPorts.loadGamePort),
+        startGameUseCase = StartGameService(gameRepository = gameRepository),
     )
 }

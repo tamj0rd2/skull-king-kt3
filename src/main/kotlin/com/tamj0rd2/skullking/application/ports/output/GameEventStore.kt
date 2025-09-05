@@ -12,6 +12,10 @@ interface GameEventStore {
     fun subscribe(subscriber: GameEventSubscriber)
 }
 
+fun interface GameEventSubscriber {
+    fun notify(event: GameEvent)
+}
+
 class CannotSaveEventsForMultipleGames : IllegalArgumentException("Cannot save events for multiple games at once")
 
 class OptimisticLockingException :

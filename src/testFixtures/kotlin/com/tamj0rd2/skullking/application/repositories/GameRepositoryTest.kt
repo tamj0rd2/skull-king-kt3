@@ -1,9 +1,12 @@
-package com.tamj0rd2.skullking.application.ports.output
+package com.tamj0rd2.skullking.application.repositories
 
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
 import com.natpryce.hamkrest.greaterThan
 import com.natpryce.hamkrest.hasElement
+import com.tamj0rd2.skullking.adapters.inmemory.InMemoryGameEventStore
+import com.tamj0rd2.skullking.application.ports.output.GameEventSubscriber
+import com.tamj0rd2.skullking.application.ports.output.SpyGameEventSubscriber
 import com.tamj0rd2.skullking.domain.Version
 import com.tamj0rd2.skullking.domain.game.Game
 import com.tamj0rd2.skullking.domain.game.GameCommand
@@ -12,13 +15,14 @@ import com.tamj0rd2.skullking.domain.game.PlayerId
 import com.tamj0rd2.skullking.testsupport.eventually
 import org.junit.jupiter.api.Test
 
-interface GameRepositoryContract {
+class GameRepositoryTest {
 
-    val gameRepository: GameRepository
+    private val gameRepository = GameRepository(InMemoryGameEventStore())
 
     @Test
     fun `can save and load a game`() {
         val game = Game.new(PlayerId.of("test-player"))
+
         gameRepository.save(game, Version.initial)
 
         val (loadedGame, _) = gameRepository.load(game.id)
@@ -62,6 +66,7 @@ interface GameRepositoryContract {
                     println("success")
                 }
             }
+
         gameRepository.subscribe(subscriber)
 
         val game = Game.new(PlayerId.of("test-player"))
