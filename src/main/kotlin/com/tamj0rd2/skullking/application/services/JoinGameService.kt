@@ -6,6 +6,7 @@ import com.tamj0rd2.skullking.application.ports.input.JoinGameOutput
 import com.tamj0rd2.skullking.application.ports.input.JoinGameUseCase
 import com.tamj0rd2.skullking.application.ports.output.LoadGamePort
 import com.tamj0rd2.skullking.application.ports.output.SaveGamePort
+import com.tamj0rd2.skullking.domain.game.GameCommand
 
 class JoinGameService(
     private val saveGamePort: SaveGamePort,
@@ -16,7 +17,7 @@ class JoinGameService(
         subscribeToGameNotificationsPort.subscribe(input.playerId, input.receiveGameNotification)
 
         val (game, version) = loadGamePort.load(input.gameId)!!
-        saveGamePort.save(game.addPlayer(input.playerId), version)
+        saveGamePort.save(game.execute(GameCommand.AddPlayer(input.playerId)), version)
         return JoinGameOutput
     }
 }

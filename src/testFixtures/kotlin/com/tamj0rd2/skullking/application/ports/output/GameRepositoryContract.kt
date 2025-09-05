@@ -6,6 +6,7 @@ import com.natpryce.hamkrest.greaterThan
 import com.natpryce.hamkrest.hasElement
 import com.tamj0rd2.skullking.domain.Version
 import com.tamj0rd2.skullking.domain.game.Game
+import com.tamj0rd2.skullking.domain.game.GameCommand
 import com.tamj0rd2.skullking.domain.game.GameEvent
 import com.tamj0rd2.skullking.domain.game.GameId
 import com.tamj0rd2.skullking.domain.game.PlayerId
@@ -41,7 +42,7 @@ interface GameRepositoryContract {
 
         subscriber.reset()
         val (gameAfterLoad, version) = gameRepository.load(gameBeforeInitialSave.id)!!
-        gameRepository.save(gameAfterLoad.addPlayer(PlayerId("jane")), version)
+        gameRepository.save(gameAfterLoad.execute(GameCommand.AddPlayer(PlayerId("jane"))), version)
 
         eventually { assertThat(subscriber.events, equalTo(listOf(GameEvent.PlayerJoined(gameId, PlayerId("jane"))))) }
     }

@@ -9,7 +9,7 @@ class GameTest {
     @Test
     fun `a game can be reconstituted from its events`() {
         val playerId = PlayerId("test-player")
-        val game = Game.new(GameId.random(), playerId).addPlayer(playerId)
+        val game = Game.new(GameId.random(), playerId).execute(GameCommand.AddPlayer(playerId))
 
         val reconstituted = Game.reconstitute(game.events)
 
@@ -21,7 +21,7 @@ class GameTest {
         val playerToJoin = PlayerId("host-player")
 
         val game = Game.new(GameId.random(), playerToJoin)
-        val gameAfterPlayerJoins = game.addPlayer(playerToJoin)
+        val gameAfterPlayerJoins = game.execute(GameCommand.AddPlayer(playerToJoin))
 
         val playerJoinedEvents = gameAfterPlayerJoins.events.filterIsInstance<GameEvent.PlayerJoined>()
         assertThat(playerJoinedEvents, equalTo(listOf(GameEvent.PlayerJoined(gameId = game.id, playerId = playerToJoin))))

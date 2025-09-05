@@ -23,11 +23,18 @@ private constructor(
         }
     }
 
-    fun addPlayer(playerId: PlayerId): Game {
+    fun execute(command: GameCommand): Game {
+        return when (command) {
+            is GameCommand.AddPlayer -> addPlayer(command.playerId)
+            GameCommand.StartGame -> start()
+        }
+    }
+
+    private fun addPlayer(playerId: PlayerId): Game {
         return applyEvent(GameEvent.PlayerJoined(gameId = id, playerId = playerId))
     }
 
-    fun start(): Game {
+    private fun start(): Game {
         return applyEvent(GameEvent.RoundStarted(gameId = id, roundNumber = RoundNumber.One))
     }
 
@@ -40,6 +47,12 @@ private constructor(
             is GameEvent.RoundStarted -> copy(roundNumber = event.roundNumber)
         }.copy(events = events + event)
     }
+}
+
+sealed interface GameCommand {
+    data class AddPlayer(val playerId: PlayerId) : GameCommand
+
+    object StartGame : GameCommand
 }
 
 sealed interface GameEvent {
