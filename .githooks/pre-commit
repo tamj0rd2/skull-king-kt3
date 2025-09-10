@@ -19,14 +19,10 @@ fi
 
 echo "Formatting kotlin files..."
 
-# keep a copy of any unstaged files
-git diff > unstaged.diff
-git apply --allow-empty -R unstaged.diff
+git stash save -ku
 
 on_exit() {
-  # re-apply the unstaged files
-  git apply --allow-empty unstaged.diff
-  rm unstaged.diff
+  git stash pop
   exit 0
 }
 trap 'on_exit' EXIT
