@@ -21,5 +21,8 @@ enum class Bid(private val value: Int) {
         fun fromInt(value: Int): Bid {
             return reverseMapping.getValue(value)
         }
+
+        val min = Zero
+        val max = Ten
     }
 }

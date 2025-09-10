@@ -5,14 +5,19 @@ import com.tamj0rd2.skullking.application.ports.PlayerSpecificGameState
 import com.tamj0rd2.skullking.application.ports.ReceiveGameNotification
 import com.tamj0rd2.skullking.application.ports.input.CreateGameInput
 import com.tamj0rd2.skullking.application.ports.input.JoinGameInput
+import com.tamj0rd2.skullking.application.ports.input.PlaceBidInput
 import com.tamj0rd2.skullking.application.ports.input.StartGameInput
 import com.tamj0rd2.skullking.application.ports.input.UseCases
 import com.tamj0rd2.skullking.application.ports.input.ViewGamesInput
 import com.tamj0rd2.skullking.application.ports.output.OutputPorts
 import com.tamj0rd2.skullking.application.services.using
+import com.tamj0rd2.skullking.domain.game.Bid
 import com.tamj0rd2.skullking.domain.game.GameId
 import com.tamj0rd2.skullking.domain.game.PlayerId
 import com.ubertob.kondor.json.JAny
+import com.ubertob.kondor.json.JSealed
+import com.ubertob.kondor.json.JStringRepresentable
+import com.ubertob.kondor.json.ObjectNodeConverter
 import com.ubertob.kondor.json.jsonnode.JsonNodeObject
 import com.ubertob.kondor.json.str
 import org.http4k.core.ContentType
@@ -170,11 +175,9 @@ private class PlayerWsHandler(
 
         ws.onMessage {
             println("Received message from player $playerId: $it")
-            val message = JIncomingHtmxMessage.fromJson(it.bodyString()).orThrow()
-            when (message.action) {
-                Action.StartGame -> {
-                    useCases.startGameUseCase.execute(StartGameInput(gameId))
-                }
+            when (val message = JIncomingHtmxMessage.fromJson(it.bodyString()).orThrow()) {
+                is IncomingHtmxMessage.StartGame -> useCases.startGameUseCase.execute(StartGameInput(gameId))
+                is IncomingHtmxMessage.PlaceBid -> useCases.placeBidUseCase.execute(PlaceBidInput(gameId, playerId, message.bid))
             }
         }
     }
@@ -185,16 +188,36 @@ private class PlayerWsHandler(
     }
 }
 
-private data class IncomingHtmxMessage(val action: Action)
+sealed class IncomingHtmxMessage {
+    data object StartGame : IncomingHtmxMessage()
 
-enum class Action {
-    StartGame
+    data class PlaceBid(val bid: Bid) : IncomingHtmxMessage()
 }
 
-private object JIncomingHtmxMessage : JAny<IncomingHtmxMessage>() {
-    private val action by str(IncomingHtmxMessage::action)
+private object JIncomingHtmxMessage : JSealed<IncomingHtmxMessage>() {
+    override val discriminatorFieldName: String = "_action"
 
-    override fun JsonNodeObject.deserializeOrThrow(): IncomingHtmxMessage {
-        return IncomingHtmxMessage(action = +action)
-    }
+    override fun extractTypeName(obj: IncomingHtmxMessage): String =
+        when (obj) {
+            is IncomingHtmxMessage.StartGame -> "StartGame"
+            is IncomingHtmxMessage.PlaceBid -> "PlaceBid"
+        }
+
+    override val subConverters: Map<String, ObjectNodeConverter<out IncomingHtmxMessage>> =
+        mapOf("StartGame" to JStartGame, "PlaceBid" to JPlaceBid)
+}
+
+private object JStartGame : JAny<IncomingHtmxMessage.StartGame>() {
+    override fun JsonNodeObject.deserializeOrThrow() = IncomingHtmxMessage.StartGame
+}
+
+private object JPlaceBid : JAny<IncomingHtmxMessage.PlaceBid>() {
+    private val bid by str(JBid, IncomingHtmxMessage.PlaceBid::bid)
+
+    override fun JsonNodeObject.deserializeOrThrow() = IncomingHtmxMessage.PlaceBid(bid = +bid)
+}
+
+private object JBid : JStringRepresentable<Bid>() {
+    override val cons: (String) -> Bid = { it.toInt().let(Bid::fromInt) }
+    override val render: (Bid) -> String = { it.toInt().toString() }
 }

@@ -12,7 +12,9 @@ import com.tamj0rd2.skullking.application.ports.input.PlaceBidOutput
 import com.tamj0rd2.skullking.application.ports.input.StartGameOutput
 import com.tamj0rd2.skullking.application.ports.input.UseCases
 import com.tamj0rd2.skullking.application.ports.input.ViewGamesOutput
+import com.tamj0rd2.skullking.domain.game.Bid
 import com.tamj0rd2.skullking.domain.game.GameId
+import com.tamj0rd2.skullking.domain.game.GamePhase
 import com.tamj0rd2.skullking.domain.game.PlayerId
 import com.tamj0rd2.skullking.domain.game.RoundNumber
 
@@ -49,8 +51,10 @@ internal class WebClient(private val page: Page, private val baseUrl: String) : 
 
                 StartGameOutput
             },
-            placeBidUseCase = {
-                page.waitingForHtmx(ws = true) { page.getByRole(BUTTON).withText("Bid ${it.bid.toInt()}").click() }
+            placeBidUseCase = { useCaseInput ->
+                repeat(useCaseInput.bid.toInt()) { page.getByRole(BUTTON).withText("+").click() }
+
+                page.waitingForHtmx(ws = true) { page.getByRole(BUTTON).withText("Place Bid").click() }
 
                 PlaceBidOutput
             },
@@ -63,8 +67,15 @@ internal class WebClient(private val page: Page, private val baseUrl: String) : 
 
         val players = gameElement.locator("#players li").all().map { playerElement -> playerElement.textContent().let(PlayerId::parse) }
         val roundNumber = gameElement.getByTestId("round-number").firstOrNull()?.textContent()?.toInt()?.let(RoundNumber::fromInt)
+        val myBid = gameElement.getByTestId("player-bid").firstOrNull()?.textContent()?.toInt()?.let(Bid::fromInt)
 
-        return PlayerSpecificGameState(gameId = gameId, players = players, roundNumber = roundNumber, myBid = null)
+        return PlayerSpecificGameState(
+            gameId = gameId,
+            players = players,
+            roundNumber = roundNumber,
+            myBid = myBid,
+            phase = GamePhase.WaitingForPlayers,
+        )
     }
 
     private fun Page.findByAttribute(attribute: String, value: String) = locator("[$attribute='$value']").all()

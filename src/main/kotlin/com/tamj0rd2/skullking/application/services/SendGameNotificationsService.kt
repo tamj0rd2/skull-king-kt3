@@ -23,6 +23,7 @@ class SendGameNotificationsService(
                     players = game.players.toList(),
                     roundNumber = game.roundNumber,
                     myBid = game.placedBids[playerId],
+                    phase = game.phase,
                 ),
             )
         }

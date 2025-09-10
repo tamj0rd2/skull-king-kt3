@@ -19,6 +19,11 @@ internal fun HEAD.scripts() {
         attributes["src"] = "https://unpkg.com/htmx-ext-ws@2.0.2"
         attributes["crossorigin"] = "anonymous"
     }
+    script {
+        defer = true
+        src = "https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
+        attributes["crossorigin"] = "anonymous"
+    }
 }
 
 internal fun HEAD.styles() {

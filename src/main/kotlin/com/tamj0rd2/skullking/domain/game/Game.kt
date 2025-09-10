@@ -11,6 +11,7 @@ private constructor(
     val players: Set<PlayerId> = emptySet(),
     val roundNumber: RoundNumber? = null,
     val placedBids: Map<PlayerId, Bid> = emptyMap(),
+    val phase: GamePhase = GamePhase.WaitingForPlayers,
 ) {
     val version = Version.of(events.size)
 
@@ -52,11 +53,16 @@ private constructor(
 
             is GameEvent.PlayerJoined -> copy(players = players + event.playerId)
 
-            is GameEvent.RoundStarted -> copy(roundNumber = event.roundNumber)
+            is GameEvent.RoundStarted -> copy(roundNumber = event.roundNumber, phase = GamePhase.Bidding)
 
             is GameEvent.BidPlaced -> copy(placedBids = placedBids + (event.playerId to event.bid))
         }.copy(events = events + event)
     }
+}
+
+enum class GamePhase {
+    WaitingForPlayers,
+    Bidding,
 }
 
 sealed interface GameCommand {
