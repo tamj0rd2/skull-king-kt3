@@ -5,6 +5,8 @@ import kotlinx.html.FlowContent
 import kotlinx.html.body
 import kotlinx.html.button
 import kotlinx.html.div
+import kotlinx.html.dom.createHTMLDocument
+import kotlinx.html.dom.serialize
 import kotlinx.html.h1
 import kotlinx.html.h3
 import kotlinx.html.h4
@@ -15,7 +17,6 @@ import kotlinx.html.lang
 import kotlinx.html.meta
 import kotlinx.html.p
 import kotlinx.html.span
-import kotlinx.html.stream.createHTML
 import kotlinx.html.title
 
 enum class GameStatus {
@@ -26,43 +27,45 @@ enum class GameStatus {
 }
 
 fun listGamesHtml(games: List<GameListItem>): String =
-    createHTML().html {
-        lang = "en"
-        head {
-            meta(charset = "UTF-8")
-            meta(name = "viewport", content = "width=device-width, initial-scale=1.0")
-            title("Skull King - Games")
-            styles()
-            scripts()
-        }
-        body {
-            div(classes = "container") {
-                header(classes = "header") {
-                    h1(classes = "title") { +"Skull King" }
-                    p(classes = "subtitle") { +"Join the ultimate card battle" }
-                }
-
-                div(classes = "actions") {
-                    button(classes = "btn btn-primary") {
-                        attributes["hx-get"] = "/games/new"
-                        attributes["hx-target"] = "body"
-
-                        span { +"➕" }
-                        +"Create Game"
+    createHTMLDocument()
+        .html {
+            lang = "en"
+            head {
+                meta(charset = "UTF-8")
+                meta(name = "viewport", content = "width=device-width, initial-scale=1.0")
+                title("Skull King - Games")
+                styles()
+                scripts()
+            }
+            body {
+                div(classes = "container") {
+                    header(classes = "header") {
+                        h1(classes = "title") { +"Skull King" }
+                        p(classes = "subtitle") { +"Join the ultimate card battle" }
                     }
-                    button(classes = "btn btn-secondary") {
-                        span { +"🔄" }
-                        +"Refresh"
-                    }
-                }
 
-                div(classes = "lobby-grid") {
-                    attributes["id"] = "games"
-                    games.forEach(::lobbyCard)
+                    div(classes = "actions") {
+                        button(classes = "btn btn-primary") {
+                            attributes["hx-get"] = "/games/new"
+                            attributes["hx-target"] = "body"
+
+                            span { +"➕" }
+                            +"Create Game"
+                        }
+                        button(classes = "btn btn-secondary") {
+                            span { +"🔄" }
+                            +"Refresh"
+                        }
+                    }
+
+                    div(classes = "lobby-grid") {
+                        attributes["id"] = "games"
+                        games.forEach(::lobbyCard)
+                    }
                 }
             }
         }
-    }
+        .serialize(true)
 
 fun FlowContent.lobbyCard(game: GameListItem) {
     val gameStatus = GameStatus.TODO

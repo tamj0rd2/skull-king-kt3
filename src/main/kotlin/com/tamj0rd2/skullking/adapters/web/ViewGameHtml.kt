@@ -4,6 +4,8 @@ import com.tamj0rd2.skullking.application.ports.PlayerSpecificGameState
 import kotlinx.html.FlowContent
 import kotlinx.html.InputType
 import kotlinx.html.div
+import kotlinx.html.dom.createHTMLDocument
+import kotlinx.html.dom.serialize
 import kotlinx.html.form
 import kotlinx.html.h2
 import kotlinx.html.id
@@ -11,20 +13,21 @@ import kotlinx.html.input
 import kotlinx.html.li
 import kotlinx.html.main
 import kotlinx.html.span
-import kotlinx.html.stream.createHTML
 import kotlinx.html.ul
 import org.http4k.core.Uri
 
 fun viewGameHtml(joinGameUri: Uri): String =
-    createHTML().div {
-        attributes["hx-ext"] = "ws"
-        attributes["ws-connect"] = joinGameUri.toString()
+    createHTMLDocument()
+        .div {
+            attributes["hx-ext"] = "ws"
+            attributes["ws-connect"] = joinGameUri.toString()
 
-        main {
-            attributes["id"] = "game"
-            +"Loading game..."
+            main {
+                attributes["id"] = "game"
+                +"Loading game..."
+            }
         }
-    }
+        .serialize(true)
 
 fun FlowContent.partialGameState(state: PlayerSpecificGameState) {
     main(classes = "container") {

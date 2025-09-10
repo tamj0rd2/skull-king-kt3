@@ -61,3 +61,4 @@ httpRequests
 # Android studio 3.1+ serialized cache file
 caches/build_file_checksums.ser
 /copilotDiffState.xml
+/copilot.data.migration.agent.xml

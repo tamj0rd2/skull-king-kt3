@@ -7,6 +7,8 @@ import kotlinx.html.a
 import kotlinx.html.body
 import kotlinx.html.button
 import kotlinx.html.div
+import kotlinx.html.dom.createHTMLDocument
+import kotlinx.html.dom.serialize
 import kotlinx.html.form
 import kotlinx.html.h1
 import kotlinx.html.h2
@@ -19,46 +21,47 @@ import kotlinx.html.label
 import kotlinx.html.lang
 import kotlinx.html.meta
 import kotlinx.html.span
-import kotlinx.html.stream.createHTML
 import kotlinx.html.title
 
 fun joinGameHtml(gameId: GameId): String =
-    createHTML().html {
-        lang = "en"
-        head {
-            meta(charset = "UTF-8")
-            meta(name = "viewport", content = "width=device-width, initial-scale=1.0")
-            title("Skull King - Join Game")
-            styles()
-            scripts()
-        }
-        body {
-            div(classes = "container") {
-                div(classes = "back-nav") {
-                    a(href = "/games", classes = "back-link") {
-                        attributes["hx-boost"] = "true"
-                        +"← Back to Games List"
+    createHTMLDocument()
+        .html {
+            lang = "en"
+            head {
+                meta(charset = "UTF-8")
+                meta(name = "viewport", content = "width=device-width, initial-scale=1.0")
+                title("Skull King - Join Game")
+                styles()
+                scripts()
+            }
+            body {
+                div(classes = "container") {
+                    div(classes = "back-nav") {
+                        a(href = "/games", classes = "back-link") {
+                            attributes["hx-boost"] = "true"
+                            +"← Back to Games List"
+                        }
                     }
-                }
 
-                header(classes = "header") { h1(classes = "title") { +"Join Game" } }
+                    header(classes = "header") { h1(classes = "title") { +"Join Game" } }
 
-                div(classes = "form-card") {
-                    form {
-                        gameSettingsSection()
-                        div(classes = "form-actions") {
-                            button(classes = "btn btn-primary") {
-                                attributes["hx-post"] = "/games/${gameId.forDisplay()}/join"
-                                attributes["hx-target"] = "body"
-                                attributes["hx-swap"] = "outerHTML"
-                                +"Join Game"
+                    div(classes = "form-card") {
+                        form {
+                            gameSettingsSection()
+                            div(classes = "form-actions") {
+                                button(classes = "btn btn-primary") {
+                                    attributes["hx-post"] = "/games/${gameId.forDisplay()}/join"
+                                    attributes["hx-target"] = "body"
+                                    attributes["hx-swap"] = "outerHTML"
+                                    +"Join Game"
+                                }
                             }
                         }
                     }
                 }
             }
         }
-    }
+        .serialize(true)
 
 private fun FlowContent.gameSettingsSection() {
     div(classes = "form-section") {

@@ -6,6 +6,8 @@ import kotlinx.html.a
 import kotlinx.html.body
 import kotlinx.html.button
 import kotlinx.html.div
+import kotlinx.html.dom.createHTMLDocument
+import kotlinx.html.dom.serialize
 import kotlinx.html.form
 import kotlinx.html.h1
 import kotlinx.html.h2
@@ -21,7 +23,6 @@ import kotlinx.html.option
 import kotlinx.html.p
 import kotlinx.html.select
 import kotlinx.html.span
-import kotlinx.html.stream.createHTML
 import kotlinx.html.title
 
 data class LobbySettings(
@@ -37,38 +38,40 @@ data class LobbySettings(
 )
 
 fun createGameHtml(settings: LobbySettings = LobbySettings()): String =
-    createHTML().html {
-        lang = "en"
-        head {
-            meta(charset = "UTF-8")
-            meta(name = "viewport", content = "width=device-width, initial-scale=1.0")
-            title("Skull King - Create Game")
-            styles()
-            scripts()
-        }
-        body {
-            div(classes = "container") {
-                div(classes = "back-nav") {
-                    a(href = "/games", classes = "back-link") {
-                        attributes["hx-boost"] = "true"
-                        +"← Back to Games List"
+    createHTMLDocument()
+        .html {
+            lang = "en"
+            head {
+                meta(charset = "UTF-8")
+                meta(name = "viewport", content = "width=device-width, initial-scale=1.0")
+                title("Skull King - Create Game")
+                styles()
+                scripts()
+            }
+            body {
+                div(classes = "container") {
+                    div(classes = "back-nav") {
+                        a(href = "/games", classes = "back-link") {
+                            attributes["hx-boost"] = "true"
+                            +"← Back to Games List"
+                        }
                     }
-                }
 
-                header(classes = "header") {
-                    h1(classes = "title") { +"Create Lobby" }
-                    p(classes = "subtitle") { +"Set up your game room" }
-                }
+                    header(classes = "header") {
+                        h1(classes = "title") { +"Create Lobby" }
+                        p(classes = "subtitle") { +"Set up your game room" }
+                    }
 
-                div(classes = "form-card") {
-                    form {
-                        gameSettingsSection(settings)
-                        formActionsSection()
+                    div(classes = "form-card") {
+                        form {
+                            gameSettingsSection(settings)
+                            formActionsSection()
+                        }
                     }
                 }
             }
         }
-    }
+        .serialize(true)
 
 private fun FlowContent.gameSettingsSection(settings: LobbySettings) {
     div(classes = "form-section") {

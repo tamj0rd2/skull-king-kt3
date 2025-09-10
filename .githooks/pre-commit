@@ -22,7 +22,7 @@ echo "Formatting kotlin files..."
 git stash save -ku
 
 on_exit() {
-  git stash pop
+  git stash pop || echo "if changes were stashed, you should manually re-apply them"
   exit 0
 }
 trap 'on_exit' EXIT
