@@ -14,10 +14,16 @@ class SendGameNotificationsService(
     override fun notify(event: GameEvent) {
         val (game, _) = gameRepository.load(event.gameId)
 
-        game.players.forEach {
+        println(game)
+        game.players.forEach { playerId ->
             sendGameNotificationPort.send(
-                it,
-                PlayerSpecificGameState(gameId = game.id, players = game.players.toList(), roundNumber = game.roundNumber),
+                playerId,
+                PlayerSpecificGameState(
+                    gameId = game.id,
+                    players = game.players.toList(),
+                    roundNumber = game.roundNumber,
+                    myBid = game.placedBids[playerId],
+                ),
             )
         }
     }

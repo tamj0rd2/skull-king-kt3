@@ -10,6 +10,7 @@ private constructor(
     val events: List<GameEvent> = emptyList(),
     val players: Set<PlayerId> = emptySet(),
     val roundNumber: RoundNumber? = null,
+    val placedBids: Map<PlayerId, Bid> = emptyMap(),
 ) {
     val version = Version.of(events.size)
 
@@ -28,7 +29,8 @@ private constructor(
     fun execute(command: GameCommand): Game {
         return when (command) {
             is GameCommand.AddPlayer -> addPlayer(command.playerId)
-            GameCommand.StartGame -> start()
+            is GameCommand.StartGame -> start()
+            is GameCommand.PlaceBid -> placeBid(command.playerId, command.bid)
         }
     }
 
@@ -40,6 +42,10 @@ private constructor(
         return applyEvent(GameEvent.RoundStarted(gameId = id, roundNumber = RoundNumber.One))
     }
 
+    private fun placeBid(playerId: PlayerId, bid: Bid): Game {
+        return applyEvent(GameEvent.BidPlaced(gameId = id, playerId = playerId, bid = bid))
+    }
+
     private fun applyEvent(event: GameEvent): Game {
         return when (event) {
             is GameEvent.GameCreated -> copy(creator = event.createdBy, players = setOf(event.createdBy))
@@ -47,12 +53,16 @@ private constructor(
             is GameEvent.PlayerJoined -> copy(players = players + event.playerId)
 
             is GameEvent.RoundStarted -> copy(roundNumber = event.roundNumber)
+
+            is GameEvent.BidPlaced -> copy(placedBids = placedBids + (event.playerId to event.bid))
         }.copy(events = events + event)
     }
 }
 
 sealed interface GameCommand {
     data class AddPlayer(val playerId: PlayerId) : GameCommand
+
+    data class PlaceBid(val playerId: PlayerId, val bid: Bid) : GameCommand
 
     object StartGame : GameCommand
 }
@@ -65,6 +75,8 @@ sealed interface GameEvent {
     data class PlayerJoined(override val gameId: GameId, val playerId: PlayerId) : GameEvent
 
     data class RoundStarted(override val gameId: GameId, val roundNumber: RoundNumber) : GameEvent
+
+    data class BidPlaced(override val gameId: GameId, val playerId: PlayerId, val bid: Bid) : GameEvent
 }
 
 enum class RoundNumber(private val value: Int) {

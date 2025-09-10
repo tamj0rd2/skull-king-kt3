@@ -24,5 +24,6 @@ fun UseCases.Companion.using(outputPorts: OutputPorts): UseCases {
                 subscribeToGameNotificationsPort = outputPorts.subscribeToGameNotificationsPort,
             ),
         startGameUseCase = StartGameService(gameRepository = gameRepository),
+        placeBidUseCase = PlaceBidService(gameRepository = gameRepository),
     )
 }

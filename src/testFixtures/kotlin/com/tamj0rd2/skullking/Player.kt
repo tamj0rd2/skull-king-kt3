@@ -9,9 +9,11 @@ import com.tamj0rd2.skullking.application.ports.PlayerSpecificGameState
 import com.tamj0rd2.skullking.application.ports.ReceiveGameNotification
 import com.tamj0rd2.skullking.application.ports.input.CreateGameInput
 import com.tamj0rd2.skullking.application.ports.input.JoinGameInput
+import com.tamj0rd2.skullking.application.ports.input.PlaceBidInput
 import com.tamj0rd2.skullking.application.ports.input.StartGameInput
 import com.tamj0rd2.skullking.application.ports.input.UseCases
 import com.tamj0rd2.skullking.application.ports.input.ViewGamesInput
+import com.tamj0rd2.skullking.domain.game.Bid
 import com.tamj0rd2.skullking.domain.game.PlayerId
 import com.tamj0rd2.skullking.domain.game.RoundNumber
 
@@ -46,7 +48,15 @@ class Player(val id: PlayerId, val useCases: UseCases, val deriveGameState: Deri
     fun `starts the game`() = expectingStateChange { useCases.startGameUseCase.execute(StartGameInput(gameState.gameId)) }
 
     fun `sees the round number`(expected: RoundNumber) {
-        assertThat(gameState, has(PlayerSpecificGameState::roundNumber, !isNull and equalTo(expected)))
+        assertThat(gameState, has(PlayerSpecificGameState::roundNumber, equalTo(expected)))
+    }
+
+    fun bids(bid: Bid) = expectingStateChange {
+        useCases.placeBidUseCase.execute(PlaceBidInput(gameId = gameState.gameId, playerId = id, bid = bid))
+    }
+
+    fun `sees own bid`(expected: Bid) {
+        assertThat(gameState.myBid, equalTo(expected)) { "$id's own bid is not what they placed" }
     }
 
     interface DeriveGameState {
@@ -57,9 +67,7 @@ class Player(val id: PlayerId, val useCases: UseCases, val deriveGameState: Deri
         val stateBefore = deriveGameState.current()
         block()
         eventually {
-            assertThat(deriveGameState.current(), !isNull and !equalTo(stateBefore)) {
-                "expected the state to change after performing the action"
-            }
+            assertThat(deriveGameState.current(), !equalTo(stateBefore)) { "expected the state to change after performing the action" }
         }
     }
 }

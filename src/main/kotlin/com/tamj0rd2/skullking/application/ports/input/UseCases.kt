@@ -5,6 +5,7 @@ data class UseCases(
     val viewGamesUseCase: ViewGamesUseCase,
     val joinGameUseCase: JoinGameUseCase,
     val startGameUseCase: StartGameUseCase,
+    val placeBidUseCase: PlaceBidUseCase,
 ) {
     companion object
 }

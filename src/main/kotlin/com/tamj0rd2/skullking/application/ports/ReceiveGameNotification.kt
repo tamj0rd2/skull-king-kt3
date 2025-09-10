@@ -1,5 +1,6 @@
 package com.tamj0rd2.skullking.application.ports
 
+import com.tamj0rd2.skullking.domain.game.Bid
 import com.tamj0rd2.skullking.domain.game.GameId
 import com.tamj0rd2.skullking.domain.game.PlayerId
 import com.tamj0rd2.skullking.domain.game.RoundNumber
@@ -18,4 +19,4 @@ fun interface ReceiveGameNotification {
     fun receive(state: PlayerSpecificGameState)
 }
 
-data class PlayerSpecificGameState(val gameId: GameId, val players: List<PlayerId>, val roundNumber: RoundNumber?)
+data class PlayerSpecificGameState(val gameId: GameId, val players: List<PlayerId>, val roundNumber: RoundNumber?, val myBid: Bid?)
