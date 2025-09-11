@@ -2,132 +2,80 @@ package com.tamj0rd2.skullking.adapters.web
 
 import com.tamj0rd2.skullking.application.ports.input.GameListItem
 import kotlinx.html.FlowContent
+import kotlinx.html.article
 import kotlinx.html.body
 import kotlinx.html.button
-import kotlinx.html.div
 import kotlinx.html.dom.createHTMLDocument
 import kotlinx.html.dom.serialize
+import kotlinx.html.footer
 import kotlinx.html.h1
+import kotlinx.html.h2
 import kotlinx.html.h3
 import kotlinx.html.h4
-import kotlinx.html.head
 import kotlinx.html.header
 import kotlinx.html.html
-import kotlinx.html.lang
-import kotlinx.html.meta
-import kotlinx.html.p
+import kotlinx.html.li
+import kotlinx.html.main
 import kotlinx.html.span
-import kotlinx.html.title
-
-enum class GameStatus {
-    TODO,
-    WAITING,
-    PLAYING,
-    FULL,
-}
+import kotlinx.html.ul
 
 fun listGamesHtml(games: List<GameListItem>): String =
     createHTMLDocument()
         .html {
-            lang = "en"
-            head {
-                meta(charset = "UTF-8")
-                meta(name = "viewport", content = "width=device-width, initial-scale=1.0")
-                title("Skull King - Games")
-                styles()
-                scripts()
-            }
+            common("Skull King - Games")
+
             body {
-                div {
-                    header {
-                        h1 { +"Skull King" }
-                        p { +"Join the ultimate card battle" }
+                header {
+                    h1 { +"Skull King" }
+
+                    button {
+                        attributes["hx-get"] = "/games/new"
+                        attributes["hx-target"] = "body"
+
+                        +"Create Game"
                     }
+                }
 
-                    div {
-                        button {
-                            attributes["hx-get"] = "/games/new"
-                            attributes["hx-target"] = "body"
-
-                            span { +"➕" }
-                            +"Create Game"
+                main(classes = "container") {
+                    if (games.isNotEmpty()) {
+                        article {
+                            h2 { +"Games" }
+                            attributes["id"] = "games"
+                            games.forEach(::gameCard)
                         }
-                        button {
-                            span { +"🔄" }
-                            +"Refresh"
-                        }
-                    }
-
-                    div {
-                        attributes["id"] = "games"
-                        games.forEach(::lobbyCard)
                     }
                 }
             }
         }
         .serialize(true)
 
-fun FlowContent.lobbyCard(game: GameListItem) {
-    val gameStatus = GameStatus.TODO
-    val rounds = 10
-    val maxPlayers = 6
+private fun FlowContent.gameCard(game: GameListItem) {
     val players = listOf("TODO", "TODO", "TODO")
 
-    div {
+    article {
         attributes["data-game-id"] = game.id.forDisplay()
         attributes["data-host-id"] = game.host.forDisplay()
 
-        div {
-            h3 { +"${game.host.forDisplay()}'s game" }
-            span { +getStatusText(gameStatus) }
-        }
+        header {
+            h3 {
+                span {
+                    attributes["data-testid"] = "host"
+                    +game.host.forDisplay()
+                }
 
-        div {
-            div {
-                span { +"Players" }
-                span { +"${players.size}/$maxPlayers" }
-            }
-            div {
-                span { +"Rounds" }
-                span { +rounds.toString() }
-            }
-            div {
-                span { +"Host" }
-                span { +game.host.forDisplay() }
+                +"'s game"
             }
         }
 
-        div {
-            h4 { +"Players" }
-            div { players.forEach { player -> span { +player } } }
-        }
+        h4 { +"Players" }
+        ul { players.forEach { player -> li { +player } } }
 
-        div {
+        footer {
             button {
                 attributes["hx-get"] = "/games/${game.id.forDisplay()}/join"
                 attributes["hx-target"] = "body"
                 +"Join Game"
             }
-            button {
-                disabled = true
-                +"Spectate"
-            }
         }
     }
 }
-
-private fun getStatusClass(status: GameStatus): String =
-    when (status) {
-        GameStatus.TODO -> "status-playing"
-        GameStatus.WAITING -> "status-waiting"
-        GameStatus.PLAYING -> "status-playing"
-        GameStatus.FULL -> "status-full"
-    }
-
-private fun getStatusText(status: GameStatus): String =
-    when (status) {
-        GameStatus.TODO -> "TODO"
-        GameStatus.WAITING -> "Waiting"
-        GameStatus.PLAYING -> "Active"
-        GameStatus.FULL -> "Full"
-    }

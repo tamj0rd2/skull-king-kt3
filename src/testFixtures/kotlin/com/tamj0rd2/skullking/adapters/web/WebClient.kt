@@ -81,7 +81,7 @@ internal class WebClient(private val page: Page, private val baseUrl: String) : 
     private fun Page.findByAttribute(attribute: String, value: String) = locator("[$attribute='$value']").all()
 
     private fun parseGamesList(): List<GameListItem> =
-        page.locator("#games > div").all().map { gameElement ->
+        page.locator("#games > article").all().map { gameElement ->
             GameListItem(
                 id = gameElement.getAttribute("data-game-id").let(GameId::parse),
                 host = gameElement.getAttribute("data-host-id").let { PlayerId.parse(it) },

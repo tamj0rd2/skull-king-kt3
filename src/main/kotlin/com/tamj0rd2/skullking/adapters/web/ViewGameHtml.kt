@@ -6,19 +6,22 @@ import com.tamj0rd2.skullking.domain.game.GamePhase
 import kotlinx.html.ButtonType
 import kotlinx.html.FlowContent
 import kotlinx.html.InputType
+import kotlinx.html.MAIN
 import kotlinx.html.button
 import kotlinx.html.div
 import kotlinx.html.dom.createHTMLDocument
 import kotlinx.html.dom.serialize
+import kotlinx.html.fieldSet
 import kotlinx.html.form
 import kotlinx.html.h1
 import kotlinx.html.h2
 import kotlinx.html.h3
+import kotlinx.html.header
 import kotlinx.html.id
 import kotlinx.html.input
+import kotlinx.html.legend
 import kotlinx.html.li
 import kotlinx.html.main
-import kotlinx.html.p
 import kotlinx.html.span
 import kotlinx.html.ul
 import org.http4k.core.Uri
@@ -41,30 +44,11 @@ fun FlowContent.partialGameState(state: PlayerSpecificGameState) {
         attributes["id"] = "game"
         attributes["data-game-id"] = state.gameId.forDisplay()
 
-        div { highLevelRoundInfo(state) }
+        highLevelRoundInfo(state)
 
         when (state.phase) {
             GamePhase.WaitingForPlayers -> {}
-            GamePhase.Bidding -> {
-                if (state.myBid == null) {
-                    div {
-                        h3 { +"Place Your Bid" }
-                        biddingControls()
-                    }
-                } else {
-                    div {
-                        h3 {
-                            +"You bid "
-                            span {
-                                attributes["data-testid"] = "player-bid"
-                                +"${state.myBid.toInt()}"
-                            }
-                        }
-
-                        p { +"Waiting for other players to finish bidding..." }
-                    }
-                }
-            }
+            GamePhase.Bidding -> if (state.myBid == null) biddingForm() else placedBid(state.myBid)
         }
 
         h2 { +"Players" }
@@ -87,8 +71,18 @@ fun FlowContent.partialGameState(state: PlayerSpecificGameState) {
     }
 }
 
-private fun FlowContent.highLevelRoundInfo(state: PlayerSpecificGameState) {
-    div {
+private fun MAIN.placedBid(myBid: Bid) {
+    h3 {
+        +"You bid "
+        span {
+            attributes["data-testid"] = "player-bid"
+            +"${myBid.toInt()}"
+        }
+    }
+}
+
+private fun MAIN.highLevelRoundInfo(state: PlayerSpecificGameState) {
+    header {
         h1 {
             when (state.phase) {
                 GamePhase.WaitingForPlayers -> +"Lobby"
@@ -102,44 +96,35 @@ private fun FlowContent.highLevelRoundInfo(state: PlayerSpecificGameState) {
                 }
             }
         }
-
-        when (state.phase) {
-            GamePhase.WaitingForPlayers -> div { span { +"Waiting for host to start the game..." } }
-
-            GamePhase.Bidding -> div { span { +"Waiting for all bids..." } }
-        }
     }
 }
 
-private fun FlowContent.biddingControls() {
+private fun MAIN.biddingForm() {
     form {
-        val defaultBid = Bid.min.toInt()
-        val maxBid = Bid.max.toInt()
-
         attributes["ws-send"] = ""
-        attributes["x-data"] = "{ bid: $defaultBid }"
+        attributes["x-data"] = "{ bid: 0, defaultBid: ${Bid.min.toInt()}, maxBid: ${Bid.max.toInt()} }"
 
-        div {
-            div { +"Number of tricks you think you'll win:" }
-            div {
-                button {
-                    attributes["x-on:click"] = "bid > $defaultBid ? bid-- : bid"
-                    type = ButtonType.button
-                    +"-"
-                }
+        h3 { +"Place Your Bid" }
 
-                div { attributes["x-text"] = "bid" }
-                button {
-                    attributes["x-on:click"] = "bid < $maxBid ? bid++ : bid"
-                    type = ButtonType.button
-                    +"+"
-                }
+        fieldSet {
+            legend { +"Number of tricks you think you'll win:" }
+
+            button(type = ButtonType.button) {
+                attributes["x-on:click"] = "bid > defaultBid ? bid-- : bid"
+                +"-"
             }
-        }
 
-        input(type = InputType.hidden) {
-            attributes["x-bind:value"] = "bid"
-            name = "bid"
+            input(type = InputType.text) {
+                name = "bid"
+                attributes["x-bind:value"] = "bid"
+                attributes["inputmode"] = "numeric"
+                attributes["pattern"] = "[0-9]*"
+            }
+
+            button(type = ButtonType.button) {
+                attributes["x-on:click"] = "bid < maxBid ? bid++ : bid"
+                +"+"
+            }
         }
 
         input(type = InputType.hidden) {
