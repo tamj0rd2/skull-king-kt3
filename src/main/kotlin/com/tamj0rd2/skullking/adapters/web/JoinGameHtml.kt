@@ -35,21 +35,21 @@ fun joinGameHtml(gameId: GameId): String =
                 scripts()
             }
             body {
-                div(classes = "container") {
-                    div(classes = "back-nav") {
-                        a(href = "/games", classes = "back-link") {
+                div {
+                    div {
+                        a(href = "/games") {
                             attributes["hx-boost"] = "true"
                             +"← Back to Games List"
                         }
                     }
 
-                    header(classes = "header") { h1(classes = "title") { +"Join Game" } }
+                    header { h1 { +"Join Game" } }
 
-                    div(classes = "form-card") {
+                    div {
                         form {
                             gameSettingsSection()
-                            div(classes = "form-actions") {
-                                button(classes = "btn btn-primary") {
+                            div {
+                                button {
                                     attributes["hx-post"] = "/games/${gameId.forDisplay()}/join"
                                     attributes["hx-target"] = "body"
                                     attributes["hx-swap"] = "outerHTML"
@@ -64,13 +64,13 @@ fun joinGameHtml(gameId: GameId): String =
         .serialize(true)
 
 private fun FlowContent.gameSettingsSection() {
-    div(classes = "form-section") {
-        h2(classes = "section-title") {
+    div {
+        h2 {
             span { +"🎮" }
             +"Settings"
         }
-        div(classes = "form-grid") {
-            div(classes = "form-group") {
+        div {
+            div {
                 label {
                     htmlFor = "playerId"
                     +"Player ID"

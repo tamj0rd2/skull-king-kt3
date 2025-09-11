@@ -38,27 +38,27 @@ fun listGamesHtml(games: List<GameListItem>): String =
                 scripts()
             }
             body {
-                div(classes = "container") {
-                    header(classes = "header") {
-                        h1(classes = "title") { +"Skull King" }
-                        p(classes = "subtitle") { +"Join the ultimate card battle" }
+                div {
+                    header {
+                        h1 { +"Skull King" }
+                        p { +"Join the ultimate card battle" }
                     }
 
-                    div(classes = "actions") {
-                        button(classes = "btn btn-primary") {
+                    div {
+                        button {
                             attributes["hx-get"] = "/games/new"
                             attributes["hx-target"] = "body"
 
                             span { +"➕" }
                             +"Create Game"
                         }
-                        button(classes = "btn btn-secondary") {
+                        button {
                             span { +"🔄" }
                             +"Refresh"
                         }
                     }
 
-                    div(classes = "lobby-grid") {
+                    div {
                         attributes["id"] = "games"
                         games.forEach(::lobbyCard)
                     }
@@ -73,42 +73,42 @@ fun FlowContent.lobbyCard(game: GameListItem) {
     val maxPlayers = 6
     val players = listOf("TODO", "TODO", "TODO")
 
-    div(classes = "lobby-card") {
+    div {
         attributes["data-game-id"] = game.id.forDisplay()
         attributes["data-host-id"] = game.host.forDisplay()
 
-        div(classes = "lobby-header") {
-            h3(classes = "lobby-name") { +"${game.host.forDisplay()}'s game" }
-            span(classes = "lobby-status ${getStatusClass(gameStatus)}") { +getStatusText(gameStatus) }
+        div {
+            h3 { +"${game.host.forDisplay()}'s game" }
+            span { +getStatusText(gameStatus) }
         }
 
-        div(classes = "lobby-info") {
-            div(classes = "info-item") {
-                span(classes = "info-label") { +"Players" }
-                span(classes = "info-value") { +"${players.size}/$maxPlayers" }
+        div {
+            div {
+                span { +"Players" }
+                span { +"${players.size}/$maxPlayers" }
             }
-            div(classes = "info-item") {
-                span(classes = "info-label") { +"Rounds" }
-                span(classes = "info-value") { +rounds.toString() }
+            div {
+                span { +"Rounds" }
+                span { +rounds.toString() }
             }
-            div(classes = "info-item") {
-                span(classes = "info-label") { +"Host" }
-                span(classes = "info-value") { +game.host.forDisplay() }
+            div {
+                span { +"Host" }
+                span { +game.host.forDisplay() }
             }
         }
 
-        div(classes = "players-list") {
-            h4(classes = "players-title") { +"Players" }
-            div(classes = "player-tags") { players.forEach { player -> span(classes = "player-tag") { +player } } }
+        div {
+            h4 { +"Players" }
+            div { players.forEach { player -> span { +player } } }
         }
 
-        div(classes = "lobby-actions") {
-            button(classes = "btn btn-primary btn-small") {
+        div {
+            button {
                 attributes["hx-get"] = "/games/${game.id.forDisplay()}/join"
                 attributes["hx-target"] = "body"
                 +"Join Game"
             }
-            button(classes = "btn btn-secondary btn-small") {
+            button {
                 disabled = true
                 +"Spectate"
             }

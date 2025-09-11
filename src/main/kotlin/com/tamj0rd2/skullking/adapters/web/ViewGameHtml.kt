@@ -37,23 +37,23 @@ fun viewGameHtml(joinGameUri: Uri): String =
         .serialize(true)
 
 fun FlowContent.partialGameState(state: PlayerSpecificGameState) {
-    main(classes = "game-container") {
+    main {
         attributes["id"] = "game"
         attributes["data-game-id"] = state.gameId.forDisplay()
 
-        div(classes = "game-header") { highLevelRoundInfo(state) }
+        div { highLevelRoundInfo(state) }
 
         when (state.phase) {
             GamePhase.WaitingForPlayers -> {}
             GamePhase.Bidding -> {
                 if (state.myBid == null) {
-                    div(classes = "bidding-section") {
-                        h3(classes = "bidding-title") { +"Place Your Bid" }
+                    div {
+                        h3 { +"Place Your Bid" }
                         biddingControls()
                     }
                 } else {
-                    div(classes = "bidding-section") {
-                        h3(classes = "bidding-title") {
+                    div {
+                        h3 {
                             +"You bid "
                             span {
                                 attributes["data-testid"] = "player-bid"
@@ -61,7 +61,7 @@ fun FlowContent.partialGameState(state: PlayerSpecificGameState) {
                             }
                         }
 
-                        p(classes = "waiting-message") { +"Waiting for other players to finish bidding..." }
+                        p { +"Waiting for other players to finish bidding..." }
                     }
                 }
             }
@@ -69,10 +69,10 @@ fun FlowContent.partialGameState(state: PlayerSpecificGameState) {
 
         h2 { +"Players" }
 
-        ul(classes = "player-list") {
+        ul {
             id = "players"
 
-            state.players.forEach { playerId -> li(classes = "player-item") { span(classes = "player-name") { +playerId.forDisplay() } } }
+            state.players.forEach { playerId -> li { span { +playerId.forDisplay() } } }
         }
 
         form {
@@ -82,14 +82,14 @@ fun FlowContent.partialGameState(state: PlayerSpecificGameState) {
                 value = "StartGame"
             }
 
-            input(type = InputType.submit, classes = "btn btn-primary") { value = "Start Game" }
+            input(type = InputType.submit) { value = "Start Game" }
         }
     }
 }
 
 private fun FlowContent.highLevelRoundInfo(state: PlayerSpecificGameState) {
-    div(classes = "round-info") {
-        h1(classes = "round-title") {
+    div {
+        h1 {
             when (state.phase) {
                 GamePhase.WaitingForPlayers -> +"Lobby"
 
@@ -104,32 +104,32 @@ private fun FlowContent.highLevelRoundInfo(state: PlayerSpecificGameState) {
         }
 
         when (state.phase) {
-            GamePhase.WaitingForPlayers -> div(classes = "round-details") { span { +"Waiting for host to start the game..." } }
+            GamePhase.WaitingForPlayers -> div { span { +"Waiting for host to start the game..." } }
 
-            GamePhase.Bidding -> div(classes = "round-details") { span { +"Waiting for all bids..." } }
+            GamePhase.Bidding -> div { span { +"Waiting for all bids..." } }
         }
     }
 }
 
 private fun FlowContent.biddingControls() {
-    form(classes = "bid-controls") {
+    form {
         val defaultBid = Bid.min.toInt()
         val maxBid = Bid.max.toInt()
 
         attributes["ws-send"] = ""
         attributes["x-data"] = "{ bid: $defaultBid }"
 
-        div(classes = "bid-input-section") {
-            div(classes = "bid-label") { +"Number of tricks you think you'll win:" }
-            div(classes = "bid-input") {
-                button(classes = "bid-button") {
+        div {
+            div { +"Number of tricks you think you'll win:" }
+            div {
+                button {
                     attributes["x-on:click"] = "bid > $defaultBid ? bid-- : bid"
                     type = ButtonType.button
                     +"-"
                 }
 
-                div(classes = "bid-value") { attributes["x-text"] = "bid" }
-                button(classes = "bid-button") {
+                div { attributes["x-text"] = "bid" }
+                button {
                     attributes["x-on:click"] = "bid < $maxBid ? bid++ : bid"
                     type = ButtonType.button
                     +"+"
@@ -147,6 +147,6 @@ private fun FlowContent.biddingControls() {
             value = "PlaceBid"
         }
 
-        input(type = InputType.submit, classes = "btn btn-primary") { value = "Place Bid" }
+        input(type = InputType.submit) { value = "Place Bid" }
     }
 }

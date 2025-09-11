@@ -49,20 +49,20 @@ fun createGameHtml(settings: LobbySettings = LobbySettings()): String =
                 scripts()
             }
             body {
-                div(classes = "container") {
-                    div(classes = "back-nav") {
-                        a(href = "/games", classes = "back-link") {
+                div {
+                    div {
+                        a(href = "/games") {
                             attributes["hx-boost"] = "true"
                             +"← Back to Games List"
                         }
                     }
 
-                    header(classes = "header") {
-                        h1(classes = "title") { +"Create Lobby" }
-                        p(classes = "subtitle") { +"Set up your game room" }
+                    header {
+                        h1 { +"Create Lobby" }
+                        p { +"Set up your game room" }
                     }
 
-                    div(classes = "form-card") {
+                    div {
                         form {
                             gameSettingsSection(settings)
                             formActionsSection()
@@ -74,13 +74,13 @@ fun createGameHtml(settings: LobbySettings = LobbySettings()): String =
         .serialize(true)
 
 private fun FlowContent.gameSettingsSection(settings: LobbySettings) {
-    div(classes = "form-section") {
-        h2(classes = "section-title") {
+    div {
+        h2 {
             span { +"🎮" }
             +"Game Settings"
         }
-        div(classes = "form-grid") {
-            div(classes = "form-group") {
+        div {
+            div {
                 label {
                     htmlFor = "playerId"
                     +"Player ID"
@@ -92,9 +92,9 @@ private fun FlowContent.gameSettingsSection(settings: LobbySettings) {
                     placeholder = "Enter player id..."
                     value = settings.name
                 }
-                div(classes = "help-text") { +"Choose a memorable name for your game" }
+                div { +"Choose a memorable name for your game" }
             }
-            div(classes = "form-group") {
+            div {
                 label {
                     htmlFor = "max-players"
                     +"Max Players"
@@ -111,8 +111,8 @@ private fun FlowContent.gameSettingsSection(settings: LobbySettings) {
                 }
             }
         }
-        div(classes = "form-grid") {
-            div(classes = "form-group") {
+        div {
+            div {
                 label {
                     htmlFor = "rounds"
                     +"Number of Rounds"
@@ -129,7 +129,7 @@ private fun FlowContent.gameSettingsSection(settings: LobbySettings) {
                     }
                 }
             }
-            div(classes = "form-group") {
+            div {
                 label {
                     htmlFor = "password"
                     +"Password (Optional)"
@@ -139,15 +139,15 @@ private fun FlowContent.gameSettingsSection(settings: LobbySettings) {
                     placeholder = "Enter password..."
                     value = settings.password
                 }
-                div(classes = "help-text") { +"Private lobby requires password to join" }
+                div { +"Private lobby requires password to join" }
             }
         }
     }
 }
 
 private fun FlowContent.formActionsSection() {
-    div(classes = "form-actions") {
-        button(classes = "btn btn-primary") {
+    div {
+        button {
             attributes["hx-post"] = "/games/new"
             attributes["hx-target"] = "body"
             attributes["hx-swap"] = "outerHTML"
