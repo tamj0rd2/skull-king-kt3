@@ -60,11 +60,6 @@ private constructor(
     }
 }
 
-enum class GamePhase {
-    WaitingForPlayers,
-    Bidding,
-}
-
 sealed interface GameCommand {
     data class AddPlayer(val playerId: PlayerId) : GameCommand
 
@@ -73,37 +68,7 @@ sealed interface GameCommand {
     object StartGame : GameCommand
 }
 
-sealed interface GameEvent {
-    val gameId: GameId
-
-    data class GameCreated(override val gameId: GameId, val createdBy: PlayerId) : GameEvent
-
-    data class PlayerJoined(override val gameId: GameId, val playerId: PlayerId) : GameEvent
-
-    data class RoundStarted(override val gameId: GameId, val roundNumber: RoundNumber) : GameEvent
-
-    data class BidPlaced(override val gameId: GameId, val playerId: PlayerId, val bid: Bid) : GameEvent
-}
-
-enum class RoundNumber(private val value: Int) {
-    One(1),
-    Two(2),
-    Three(3),
-    Four(4),
-    Five(5),
-    Six(6),
-    Seven(7),
-    Eight(8),
-    Nine(9),
-    Ten(10);
-
-    fun toInt(): Int = value
-
-    companion object {
-        private val reverseMapping = entries.associateBy { it.value }
-
-        fun fromInt(value: Int): RoundNumber {
-            return reverseMapping.getValue(value)
-        }
-    }
+enum class GamePhase {
+    WaitingForPlayers,
+    Bidding,
 }
